@@ -20,6 +20,7 @@
     <div class="navbar-logo"><i class="bi bi-printer-fill"></i></div>
     <span class="text-gradient">Print-Edge</span>
   </a>
+  <button class="mobile-toggle" id="mobileToggle" style="display:none;background:none;border:none;color:var(--text);font-size:1.5rem;margin-left:auto;"><i class="bi bi-list"></i></button>
   <div class="navbar-nav" id="navLinks">
     <a href="{% url 'public_index' %}" class="nav-link {% if request.resolver_match.url_name == 'public_index' %}active{% endif %}">Home</a>
     <a href="{% url 'public_pricing_page' %}" class="nav-link {% if request.resolver_match.url_name == 'public_pricing_page' %}active{% endif %}">Pricing</a>
@@ -84,6 +85,15 @@ btn.addEventListener('click', () => {
 setTimeout(() => {
   document.querySelectorAll('.toast').forEach(t => t.remove());
 }, 5000);
+
+// Mobile Nav Toggle
+const mobileBtn = document.getElementById('mobileToggle');
+const navLinks = document.getElementById('navLinks');
+if(mobileBtn) {
+  mobileBtn.addEventListener('click', () => {
+    navLinks.classList.toggle('show');
+  });
+}
 </script>
 {% block extra_js %}{% endblock %}
 </body>

@@ -3,7 +3,7 @@
 {% block content %}
 <div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+  <div class="flex-between" style="margin-bottom:2rem;">
     <div>
       <h1 style="font-size:1.6rem;margin-bottom:.2rem;">My Dashboard</h1>
       <p class="text-muted" style="font-size:14px;">Welcome back, {{ request.user.first_name }}!</p>
@@ -14,7 +14,7 @@
   </div>
 
   <!-- STATS -->
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+  <div class="grid-3" style="margin-bottom:2rem;">
     <div class="stat-card">
       <div class="stat-label">Active Orders</div>
       <div class="stat-value" style="color:var(--primary);">{{ stats.active_count }}</div>
@@ -32,7 +32,7 @@
   <!-- ACTIVE ORDER TRACKER -->
   {% if active_order %}
   <div class="card" style="padding:1.75rem;margin-bottom:2rem;border-left:4px solid var(--primary);">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div class="flex-between" style="align-items:flex-start;margin-bottom:1.5rem;">
       <div>
         <span class="badge badge-primary" style="margin-bottom:.5rem;">Active Order</span>
         <h3 style="font-size:1.1rem;">{{ active_order.order_number }}</h3>

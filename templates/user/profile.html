@@ -3,7 +3,7 @@
 
 {% block content %}
 <div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+  <div class="flex-between" style="margin-bottom:2rem;">
     <div>
       <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back to Dashboard</a>
       <h1 style="font-size:1.6rem;margin-bottom:.2rem;">My Profile</h1>
@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 2fr;gap:2rem;">
+  <div class="grid-1-2">
     <!-- SIDEBAR -->
     <div>
       <div class="card" style="padding:1.5rem;text-align:center;margin-bottom:1.5rem;">
@@ -41,7 +41,7 @@
         {% csrf_token %}
         <h3 style="font-size:1.1rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">General Information</h3>
         
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div class="grid-2">
           <div class="form-group">
             <label class="form-label">First Name</label>
             <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}" required>
@@ -57,7 +57,7 @@
           <input type="email" class="form-control" value="{{ request.user.email }}" disabled style="opacity:0.6;">
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div class="grid-2">
           <div class="form-group">
             <label class="form-label">Phone Number</label>
             <input type="tel" name="phone" class="form-control" value="{{ request.user.phone|default:'' }}">
@@ -76,7 +76,7 @@
       <!-- Account Stats -->
       <div class="card" style="padding:2rem;margin-top:2rem;">
         <h3 style="font-size:1.1rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">Account Statistics</h3>
-        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:1rem;">
+        <div class="grid-3">
           <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:8px;">
             <div style="font-size:1.5rem;font-weight:800;color:var(--primary);">{{ request.user.total_orders }}</div>
             <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Total Orders</div>

@@ -1,2 +1,98 @@
-"{% extends \"base.html\" %}\n{% block title %}My Profile — Print-Edge{% endblock %}\n\n{% block content %}\n<div class=\"container py-4\">\n  <h1 class=\"fw-800 mb-4\">My Profile</h1>\n  <div class=\"row g-4\">\n    <!-- Profile Card -->\n    <div class=
-<truncated 4423 bytes>
+{% extends "base.html" %}
+{% block title %}My Profile — Print-Edge{% endblock %}
+
+{% block content %}
+<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back to Dashboard</a>
+      <h1 style="font-size:1.6rem;margin-bottom:.2rem;">My Profile</h1>
+      <p class="text-muted" style="font-size:14px;">Manage your account settings, address, and preferences.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 2fr;gap:2rem;">
+    <!-- SIDEBAR -->
+    <div>
+      <div class="card" style="padding:1.5rem;text-align:center;margin-bottom:1.5rem;">
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-size:2rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+          {{ request.user.first_name|first|upper }}
+        </div>
+        <h3 style="font-size:1.2rem;margin-bottom:.25rem;">{{ request.user.get_full_name }}</h3>
+        <p class="text-muted" style="font-size:13px;margin-bottom:1rem;">{{ request.user.email }}</p>
+        <span class="badge badge-{% if request.user.tier == 'platinum' %}primary{% elif request.user.tier == 'gold' %}warning{% elif request.user.tier == 'silver' %}secondary{% else %}info{% endif %}">
+          {{ request.user.get_tier_display }} Tier
+        </span>
+      </div>
+
+      <div class="card" style="padding:1rem;">
+        <a href="#general" class="btn btn-ghost" style="width:100%;text-align:left;justify-content:flex-start;margin-bottom:.5rem;color:var(--text);"><i class="bi bi-person"></i> General Info</a>
+        <a href="{% url 'user_orders' %}" class="btn btn-ghost" style="width:100%;text-align:left;justify-content:flex-start;margin-bottom:.5rem;color:var(--text);"><i class="bi bi-receipt"></i> Order History</a>
+        <form method="post" action="{% url 'auth_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost" style="width:100%;text-align:left;justify-content:flex-start;color:var(--danger);"><i class="bi bi-box-arrow-right"></i> Sign Out</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MAIN SETTINGS -->
+    <div>
+      <form method="post" class="card" style="padding:2rem;" id="general">
+        {% csrf_token %}
+        <h3 style="font-size:1.1rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">General Information</h3>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address (Cannot be changed)</label>
+          <input type="email" class="form-control" value="{{ request.user.email }}" disabled style="opacity:0.6;">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" value="{{ request.user.phone|default:'' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department / Faculty (Optional)</label>
+            <input type="text" name="department" class="form-control" value="{{ request.user.department|default:'' }}">
+          </div>
+        </div>
+
+        <div style="margin-top:2rem;text-align:right;">
+          <button type="submit" class="btn btn-primary btn-pill"><i class="bi bi-save"></i> Save Changes</button>
+        </div>
+      </form>
+      
+      <!-- Account Stats -->
+      <div class="card" style="padding:2rem;margin-top:2rem;">
+        <h3 style="font-size:1.1rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">Account Statistics</h3>
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:1rem;">
+          <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:8px;">
+            <div style="font-size:1.5rem;font-weight:800;color:var(--primary);">{{ request.user.total_orders }}</div>
+            <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Total Orders</div>
+          </div>
+          <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:8px;">
+            <div style="font-size:1.5rem;font-weight:800;color:var(--success);">৳{{ request.user.total_spent|floatformat:0 }}</div>
+            <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Total Spent</div>
+          </div>
+          <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:8px;">
+            <div style="font-size:1.5rem;font-weight:800;color:var(--warning);">{{ request.user.tier_discount }}%</div>
+            <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Current Discount</div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}

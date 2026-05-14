@@ -1,107 +1,147 @@
 {% extends "base.html" %}
-{% block title %}Order {{ order.order_number|default:"PE-ON-0027" }} — Print-Edge{% endblock %}
+{% block title %}Order {{ order.order_number }} — Print-Edge{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-left me-2"></i>Back to Dashboard</a>
+<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <a href="{% url 'user_orders' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back to Orders</a>
+      <h1 style="font-size:1.6rem;margin-bottom:.2rem;">Order {{ order.order_number }}</h1>
+      <p class="text-muted" style="font-size:14px;">Placed on {{ order.created_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+    <div>
+      <span class="badge badge-{% if order.status == 'delivered' %}success{% elif order.status == 'ready' %}success{% elif order.status == 'printing' %}info{% elif order.status == 'cancelled' %}danger{% else %}warning{% endif %}" style="font-size:14px;padding:.5rem 1rem;">
+        <span class="status-dot status-{{ order.status }}"></span>
+        {{ order.get_status_display }}
+      </span>
+    </div>
   </div>
-  
-  <div class="row g-4">
-    <div class="col-lg-8">
-      <div class="card border-0 shadow-sm mb-4" style="background:var(--bg-card)">
-        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
-          <h5 class="mb-0 fw-bold">Order Details</h5>
-          <span class="badge badge-ready">Ready for Pickup</span>
-        </div>
-        <div class="card-body">
-          <h6 class="text-muted small fw-bold text-uppercase mb-3">Files & Specifications</h6>
-          <div class="d-flex align-items-start gap-3 p-3 rounded mb-3" style="border:1px solid var(--border)">
-            <i class="bi bi-file-earmark-pdf text-danger fs-3"></i>
-            <div>
-              <div class="fw-semibold">assignment_final.pdf</div>
-              <div class="text-muted small">12 Pages &bull; 2.4 MB</div>
-            </div>
-          </div>
-          
-          <div class="row g-3">
-            <div class="col-sm-6">
-              <div class="text-muted small mb-1">Print Type</div>
-              <div class="fw-semibold">Black & White</div>
-            </div>
-            <div class="col-sm-6">
-              <div class="text-muted small mb-1">Sides</div>
-              <div class="fw-semibold">Double Sided</div>
-            </div>
-            <div class="col-sm-6">
-              <div class="text-muted small mb-1">Copies</div>
-              <div class="fw-semibold">2</div>
-            </div>
-            <div class="col-sm-6">
-              <div class="text-muted small mb-1">Binding</div>
-              <div class="fw-semibold">Stapled</div>
-            </div>
+
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:2rem;">
+    <!-- LEFT: Details -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+      <div class="card" style="padding:1.5rem;">
+        <h3 style="font-size:1.1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">Document Specifications</h3>
+        
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem;background:rgba(99,102,241,.05);border-radius:8px;border:1px solid rgba(99,102,241,.1);margin-bottom:1.5rem;">
+          <div style="font-size:2rem;color:var(--primary);"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+          <div>
+            <div style="font-weight:700;font-size:14px;">{{ order.file_name|default:"Physical Document / No File" }}</div>
+            {% if order.file %}
+            <a href="{{ order.file.url }}" target="_blank" class="btn btn-ghost btn-sm" style="padding:0;margin-top:.25rem;font-size:12px;"><i class="bi bi-download"></i> Download</a>
+            {% endif %}
           </div>
         </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <div>
+            <div class="text-muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem;">Print Type</div>
+            <div style="font-weight:600;">{{ order.get_print_type_display }}</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem;">Sides</div>
+            <div style="font-weight:600;">{{ order.get_sides_display }}</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem;">Paper Size</div>
+            <div style="font-weight:600;">{{ order.paper_size }}</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem;">Quantity</div>
+            <div style="font-weight:600;">{{ order.pages }} pages × {{ order.copies }} copies</div>
+          </div>
+        </div>
+
+        {% if order.addons.exists %}
+        <div style="margin-top:1.5rem;">
+          <div class="text-muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">Add-ons Selected</div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            {% for addon in order.addons.all %}
+            <span class="badge badge-secondary" style="font-weight:500;">{{ addon.name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if order.special_instructions %}
+        <div style="margin-top:1.5rem;">
+          <div class="text-muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">Special Instructions</div>
+          <p style="font-size:13px;background:var(--bg);padding:.75rem;border-radius:8px;border:1px solid var(--border);">{{ order.special_instructions }}</p>
+        </div>
+        {% endif %}
       </div>
-      
-      <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
-        <div class="card-body">
-          <h6 class="text-muted small fw-bold text-uppercase mb-3">Order Timeline</h6>
-          <div class="timeline">
-            <div class="timeline-item active">
-              <div class="fw-bold">Ready for Pickup</div>
-              <div class="text-muted small">Today, 2:15 PM</div>
+
+      <div class="card" style="padding:1.5rem;">
+        <h3 style="font-size:1.1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">Status Timeline</h3>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          {% for log in order.status_logs.all|dictsortreversed:"created_at" %}
+          <div style="display:flex;gap:1rem;">
+            <div style="display:flex;flex-direction:column;align-items:center;">
+              <div style="width:12px;height:12px;border-radius:50%;background:var(--primary);margin-top:4px;"></div>
+              {% if not forloop.last %}<div style="width:2px;flex:1;background:var(--border);margin:4px 0;"></div>{% endif %}
             </div>
-            <div class="timeline-item">
-              <div class="fw-bold">Printing</div>
-              <div class="text-muted small">Today, 1:45 PM</div>
-            </div>
-            <div class="timeline-item">
-              <div class="fw-bold">Confirmed</div>
-              <div class="text-muted small">Today, 1:30 PM</div>
-            </div>
-            <div class="timeline-item">
-              <div class="fw-bold">Order Placed</div>
-              <div class="text-muted small">Today, 1:25 PM</div>
+            <div style="padding-bottom:1rem;">
+              <div style="font-weight:600;font-size:14px;text-transform:capitalize;">{{ log.new_status|replace:"_":" " }}</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:.2rem;">{{ log.created_at|date:"M j, g:i A" }}</div>
+              {% if log.note %}<div style="font-size:13px;color:var(--text-muted);">{{ log.note }}</div>{% endif %}
             </div>
           </div>
+          {% endfor %}
         </div>
       </div>
     </div>
-    
-    <div class="col-lg-4">
-      <div class="card border-0 shadow-sm mb-4" style="background:var(--bg-card)">
-        <div class="card-header bg-transparent py-3">
-          <h6 class="mb-0 fw-bold">Payment Summary</h6>
+
+    <!-- RIGHT: Summary -->
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+      <div class="card" style="padding:1.5rem;position:sticky;top:80px;">
+        <h3 style="font-size:1.1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">Payment Summary</h3>
+        
+        <div style="font-size:14px;margin-bottom:1.5rem;">
+          <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px dashed var(--border);">
+            <span class="text-muted">Base Print Cost</span>
+            <span style="font-weight:600;">৳{{ order.base_price|floatformat:0 }}</span>
+          </div>
+          {% if order.addons_price > 0 %}
+          <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px dashed var(--border);">
+            <span class="text-muted">Add-ons</span>
+            <span>৳{{ order.addons_price|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          {% if order.is_urgent %}
+          <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px dashed var(--border);">
+            <span class="text-muted">Urgent Surcharge</span>
+            <span>৳{{ order.urgent_surcharge|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          {% if order.discount_amount > 0 %}
+          <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px dashed var(--border);color:var(--success);">
+            <span>Discount</span>
+            <span>-৳{{ order.discount_amount|floatformat:0 }}</span>
+          </div>
+          {% endif %}
+          <div style="display:flex;justify-content:space-between;padding:.85rem 0;font-size:1.3rem;font-weight:900;">
+            <span>Total</span>
+            <span style="color:var(--primary);">৳{{ order.total_amount|floatformat:0 }}</span>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="d-flex justify-content-between mb-2 text-muted">
-            <span>Printing (12p × 2)</span>
-            <span>৳72</span>
-          </div>
-          <div class="d-flex justify-content-between mb-3 text-muted">
-            <span>Stapling</span>
-            <span>৳5</span>
-          </div>
-          <hr style="border-color:var(--border)">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="fw-bold">Total Amount</span>
-            <span class="fw-bold fs-4 text-primary">৳77</span>
-          </div>
-          <div class="alert alert-success d-flex align-items-center mb-0" style="background:rgba(16,185,129,0.1);border-color:transparent;color:var(--success)">
-            <i class="bi bi-check-circle-fill me-2"></i>Paid via bKash
-          </div>
+
+        <div style="background:var(--bg);padding:1rem;border-radius:8px;text-align:center;">
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.25rem;">Payment Status</div>
+          <span class="badge badge-{% if order.payment_status == 'paid' %}success{% elif order.payment_status == 'partial' %}warning{% else %}danger{% endif %}" style="font-size:13px;padding:.4rem .8rem;">
+            {{ order.get_payment_status_display }}
+          </span>
+          {% if order.payment_status != 'paid' %}
+          <div style="margin-top:.75rem;font-size:12px;color:var(--text-muted);">Please pay at the counter when picking up your order.</div>
+          {% endif %}
         </div>
       </div>
       
-      <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
-        <div class="card-body text-center">
-          <i class="bi bi-qr-code text-muted" style="font-size:4rem"></i>
-          <h6 class="fw-bold mt-2">Pickup Code</h6>
-          <div class="display-6 fw-bold text-gradient letter-spacing-2">9A4X</div>
-          <p class="text-muted small mt-2 mb-0">Show this code at the counter to collect your prints.</p>
-        </div>
+      <!-- Pickup Code -->
+      <div class="card" style="padding:2rem;text-align:center;background:linear-gradient(135deg, rgba(99,102,241,.1), rgba(6,182,212,.1));border:1px solid rgba(99,102,241,.2);">
+        <i class="bi bi-qr-code" style="font-size:3.5rem;color:var(--primary);display:block;margin-bottom:1rem;"></i>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.25rem;">Your Pickup Code</div>
+        <div style="font-size:2.5rem;font-weight:900;letter-spacing:4px;color:var(--text);">{{ order.order_number|slice:"-4:" }}</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:1rem;">Show this code at the counter.</p>
       </div>
     </div>
   </div>

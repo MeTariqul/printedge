@@ -47,7 +47,7 @@ class User(AbstractUser):
 
     @property
     def is_admin_user(self):
-        return self.role in ('admin', 'super_admin', 'manager')
+        return self.role in ('admin', 'super_admin', 'manager', 'operator')
 
     def update_tier(self):
         """Auto-calculate tier based on total_spent."""

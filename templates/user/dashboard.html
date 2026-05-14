@@ -50,25 +50,61 @@
     </div>
 
     <!-- STATUS PIPELINE -->
-    {% with statuses="pending,confirmed,printing,quality_check,ready,delivered" %}
     <div style="display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:.5rem;">
-      {% for s in statuses|split:"," %}
-      {% with active=active_order.status %}
+      <!-- Pending -->
       <div style="flex:1;min-width:80px;text-align:center;">
         <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:{% if active == s %}var(--primary){% elif active_order.status == 'delivered' or s < active %}var(--success){% else %}var(--border){% endif %};
-          color:{% if active == s or active_order.status == 'delivered' or s < active %}white{% else %}var(--text-muted){% endif %};">
-          <i class="bi bi-{% if s == 'pending' %}hourglass{% elif s == 'confirmed' %}check{% elif s == 'printing' %}printer{% elif s == 'quality_check' %}eye{% elif s == 'ready' %}bag-check{% else %}house-check{% endif %}"></i>
+          background:{% if active_order.status == 'pending' %}var(--primary){% else %}var(--success){% endif %};
+          color:white;">
+          <i class="bi bi-hourglass"></i>
         </div>
-        <div style="font-size:10px;font-weight:{% if active == s %}700{% else %}500{% endif %};color:{% if active == s %}var(--primary){% else %}var(--text-muted){% endif %};">
-          {{ s|capfirst|replace:"_":" " }}
-        </div>
+        <div style="font-size:10px;font-weight:{% if active_order.status == 'pending' %}700{% else %}500{% endif %};color:{% if active_order.status == 'pending' %}var(--primary){% else %}var(--text-muted){% endif %};">Pending</div>
       </div>
-      {% if not forloop.last %}<div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>{% endif %}
-      {% endwith %}
-      {% endfor %}
+      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
+
+      <!-- Confirmed -->
+      <div style="flex:1;min-width:80px;text-align:center;">
+        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+          background:{% if active_order.status == 'confirmed' %}var(--primary){% elif active_order.status in 'printing,quality_check,ready,delivered' %}var(--success){% else %}var(--border){% endif %};
+          color:{% if active_order.status in 'confirmed,printing,quality_check,ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
+          <i class="bi bi-check"></i>
+        </div>
+        <div style="font-size:10px;font-weight:{% if active_order.status == 'confirmed' %}700{% else %}500{% endif %};color:{% if active_order.status == 'confirmed' %}var(--primary){% else %}var(--text-muted){% endif %};">Confirmed</div>
+      </div>
+      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
+
+      <!-- Printing -->
+      <div style="flex:1;min-width:80px;text-align:center;">
+        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+          background:{% if active_order.status == 'printing' %}var(--primary){% elif active_order.status in 'quality_check,ready,delivered' %}var(--success){% else %}var(--border){% endif %};
+          color:{% if active_order.status in 'printing,quality_check,ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
+          <i class="bi bi-printer"></i>
+        </div>
+        <div style="font-size:10px;font-weight:{% if active_order.status == 'printing' %}700{% else %}500{% endif %};color:{% if active_order.status == 'printing' %}var(--primary){% else %}var(--text-muted){% endif %};">Printing</div>
+      </div>
+      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
+
+      <!-- Quality Check -->
+      <div style="flex:1;min-width:80px;text-align:center;">
+        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+          background:{% if active_order.status == 'quality_check' %}var(--primary){% elif active_order.status in 'ready,delivered' %}var(--success){% else %}var(--border){% endif %};
+          color:{% if active_order.status in 'quality_check,ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
+          <i class="bi bi-eye"></i>
+        </div>
+        <div style="font-size:10px;font-weight:{% if active_order.status == 'quality_check' %}700{% else %}500{% endif %};color:{% if active_order.status == 'quality_check' %}var(--primary){% else %}var(--text-muted){% endif %};">Quality Check</div>
+      </div>
+      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
+
+      <!-- Ready -->
+      <div style="flex:1;min-width:80px;text-align:center;">
+        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+          background:{% if active_order.status == 'ready' %}var(--primary){% elif active_order.status == 'delivered' %}var(--success){% else %}var(--border){% endif %};
+          color:{% if active_order.status in 'ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
+          <i class="bi bi-bag-check"></i>
+        </div>
+        <div style="font-size:10px;font-weight:{% if active_order.status == 'ready' %}700{% else %}500{% endif %};color:{% if active_order.status == 'ready' %}var(--primary){% else %}var(--text-muted){% endif %};">Ready</div>
+      </div>
     </div>
-    {% endwith %}
   </div>
   {% endif %}
 

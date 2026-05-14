@@ -1,2 +1,68 @@
-"{% extends \"base.html\" %}\n{% block title %}My Orders — Print-Edge{% endblock %}\n\n{% block content %}\n<div class=\"container py-4\">\n  <div class=\"d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3\">\n    <div>\n      <h1 clas
-<truncated 3538 bytes>
+{% extends "base.html" %}
+{% block title %}My Orders — Print-Edge{% endblock %}
+
+{% block content %}
+<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back to Dashboard</a>
+      <h1 style="font-size:1.6rem;margin-bottom:.2rem;">Order History</h1>
+      <p class="text-muted" style="font-size:14px;">Track your active orders and view past receipts.</p>
+    </div>
+    <a href="{% url 'user_new_order' %}" class="btn btn-primary btn-pill">
+      <i class="bi bi-plus-circle-fill"></i> New Order
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Document</th>
+            <th>Print Options</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td style="font-weight:600;font-size:13px;white-space:nowrap;">{{ o.order_number }}</td>
+            <td style="font-size:13px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <i class="bi bi-file-earmark text-muted"></i> {{ o.file_name|default:"Physical Doc" }}
+            </td>
+            <td style="font-size:12px;color:var(--text-muted);">
+              {{ o.get_print_type_display }} · {{ o.get_sides_display }}<br>
+              {{ o.pages }}p × {{ o.copies }}
+            </td>
+            <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
+            <td>
+              <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                {{ o.get_status_display }}
+              </span>
+            </td>
+            <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ o.created_at|date:"M j, Y" }}</td>
+            <td>
+              <a href="{% url 'user_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon" title="View Details">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">
+              <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
+              You haven't placed any orders yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

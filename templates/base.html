@@ -1,132 +1,90 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Print-Edge — Smart campus printing service at Gono Bishwabidyalay. Upload documents, get instant quotes, and print hassle-free.">
-  <title>{% block title %}Print-Edge — Campus Printing{% endblock %}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <style>
-    .navbar-public {
-      background: var(--navbar-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0.875rem 0;
-      position: sticky; top: 0; z-index: 1030;
-      transition: var(--transition);
-    }
-    .navbar-brand-text { font-weight: 800; font-size: 1.2rem; color: var(--text); letter-spacing: -0.5px; }
-    .navbar-brand-text span { color: var(--primary); }
-    .nav-brand-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border-radius: 9px; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(99,102,241,0.35);
-    }
-    .public-nav-link {
-      color: var(--text-muted); font-weight: 500; font-size: 0.875rem;
-      padding: 0.4rem 0.75rem; border-radius: var(--radius-sm);
-      transition: var(--transition); text-decoration: none;
-    }
-    .public-nav-link:hover, .public-nav-link.active { color: var(--text); background: var(--primary-light); }
-    .theme-btn {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--bg-card2); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-muted); font-size: 0.9rem;
-      transition: var(--transition);
-    }
-    .theme-btn:hover { color: var(--primary); border-color: var(--primary); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Print-Edge{% endblock %}</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% block extra_css %}{% endblock %}
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar-public">
-    <div class="container">
-      <div class="d-flex align-items-center justify-content-between w-100">
-        <!-- Brand -->
-        <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'public_index' %}">
-          <div class="nav-brand-icon">
-            <i class="bi bi-printer-fill text-white" style="font-size:.85rem"></i>
-          </div>
-          <span class="navbar-brand-text">Print<span>-Edge</span></span>
-        </a>
 
-        <!-- Nav Links -->
-        <div class="d-none d-md-flex align-items-center gap-1">
-          <a href="{% url 'public_index' %}" class="public-nav-link">Home</a>
-          <a href="{% url 'public_pricing_page' %}" class="public-nav-link">Pricing</a>
-        </div>
-
-        <!-- Actions -->
-        <div class="d-flex align-items-center gap-2">
-          {% if request.user.is_authenticated %}
-            {% if request.user.is_staff %}
-              <a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-ghost rounded-pill px-3">
-                <i class="bi bi-speedometer2 me-1"></i>Admin
-              </a>
-            {% else %}
-              <a href="{% url 'user_dashboard' %}" class="btn btn-sm btn-ghost rounded-pill px-3">
-                <i class="bi bi-person me-1"></i>Dashboard
-              </a>
-            {% endif %}
-            <a href="{% url 'auth_logout' %}" class="btn btn-sm btn-danger rounded-pill px-3">Logout</a>
-          {% else %}
-            <a href="{% url 'auth_login_page' %}" class="public-nav-link d-none d-sm-block">Login</a>
-            <a href="{% url 'auth_register_page' %}" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold">Get Started</a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  {% if messages %}
-  <div class="container pt-3">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded shadow-sm" role="alert">
-      {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
+<!-- PUBLIC NAVBAR -->
+<nav class="navbar">
+  <a href="{% url 'public_index' %}" class="navbar-brand">
+    <div class="navbar-logo"><i class="bi bi-printer-fill"></i></div>
+    <span class="text-gradient">Print-Edge</span>
+  </a>
+  <div class="navbar-nav" id="navLinks">
+    <a href="{% url 'public_index' %}" class="nav-link {% if request.resolver_match.url_name == 'public_index' %}active{% endif %}">Home</a>
+    <a href="{% url 'public_pricing_page' %}" class="nav-link {% if request.resolver_match.url_name == 'public_pricing_page' %}active{% endif %}">Pricing</a>
+    {% if user.is_authenticated %}
+      {% if user.is_admin_user %}
+        <a href="{% url 'admin_dashboard' %}" class="nav-link">Admin Panel</a>
+      {% else %}
+        <a href="{% url 'user_dashboard' %}" class="nav-link">Dashboard</a>
+      {% endif %}
+      <a href="{% url 'auth_logout' %}" class="nav-link text-danger">Logout</a>
+    {% else %}
+      <a href="{% url 'auth_login_page' %}" class="nav-link">Login</a>
+    {% endif %}
   </div>
-  {% endif %}
+  <div class="navbar-actions">
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode"></button>
+  </div>
+</nav>
 
-  <main>{% block content %}{% endblock %}</main>
+<!-- MESSAGES -->
+<div class="toast-container" id="toastContainer">
+{% for msg in messages %}
+  <div class="toast {{ msg.tags }}">
+    <i class="bi bi-{% if msg.tags == 'error' %}x-circle-fill text-danger{% elif msg.tags == 'success' %}check-circle-fill text-success{% elif msg.tags == 'warning' %}exclamation-triangle-fill text-warning{% else %}info-circle-fill text-primary{% endif %}"></i>
+    <span>{{ msg }}</span>
+    <button onclick="this.closest('.toast').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">&times;</button>
+  </div>
+{% endfor %}
+</div>
 
-  <!-- Footer -->
-  <footer class="py-5 mt-5" style="background:#0f172a;color:rgba(255,255,255,0.5)">
-    <div class="container">
-      <div class="row g-4 align-items-center">
-        <div class="col-md-6">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <div class="nav-brand-icon" style="width:28px;height:28px;">
-              <i class="bi bi-printer-fill text-white" style="font-size:.7rem"></i>
-            </div>
-            <span style="color:#fff;font-weight:700;font-size:1rem">Print<span style="color:#6366f1">-Edge</span></span>
-          </div>
-          <p class="mb-0 small">Smart campus printing for Gono Bishwabidyalay students &amp; faculty.</p>
-        </div>
-        <div class="col-md-6 text-md-end">
-          <p class="mb-0 small">&copy; 2026 Print-Edge. All rights reserved.</p>
-        </div>
-      </div>
+<main style="margin-top:64px;">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer style="background:var(--bg-card);border-top:1px solid var(--border);padding:2rem;text-align:center;margin-top:4rem;">
+  <div style="max-width:900px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.5rem;">
+      <div class="navbar-logo"><i class="bi bi-printer-fill"></i></div>
+      <span class="text-gradient" style="font-weight:800;font-size:1rem;">Print-Edge</span>
     </div>
-  </footer>
+    <p class="text-muted" style="font-size:13px;">Campus Print Shop · Gono Bishwabidyalay, Savar, Dhaka</p>
+    <p class="text-muted" style="font-size:12px;margin-top:.5rem;">© 2026 Print-Edge. All rights reserved.</p>
+  </div>
+</footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const ThemeManager = {
-      init() {
-        document.documentElement.setAttribute('data-theme', 'light');
-      },
-      apply(theme) {},
-      toggle() {}
-    };
-    ThemeManager.init();
-  </script>
-  {% block scripts %}{% endblock %}
+<script>
+// Theme toggle
+const root = document.documentElement;
+const btn = document.getElementById('themeToggle');
+const saved = localStorage.getItem('theme') || 'dark';
+root.setAttribute('data-theme', saved);
+if (saved === 'dark') btn.classList.add('dark');
+btn.addEventListener('click', () => {
+  const cur = root.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  btn.classList.toggle('dark', next === 'dark');
+});
+// Auto-dismiss toasts
+setTimeout(() => {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+}, 5000);
+</script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

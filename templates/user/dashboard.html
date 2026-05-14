@@ -1,164 +1,113 @@
 {% extends "base.html" %}
 {% block title %}My Dashboard — Print-Edge{% endblock %}
-
 {% block content %}
-<div class="container py-5">
-  <!-- Header -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
     <div>
-      <h1 class="fw-bolder mb-1" style="font-size:1.8rem">
-        Welcome back, {{ request.user.get_short_name|default:request.user.username }} 👋
-      </h1>
-      <p class="text-muted mb-0">Track your prints and manage your account below.</p>
+      <h1 style="font-size:1.6rem;margin-bottom:.2rem;">My Dashboard</h1>
+      <p class="text-muted" style="font-size:14px;">Welcome back, {{ request.user.first_name }}!</p>
     </div>
-    <a href="#" class="btn btn-primary rounded-pill px-4 fw-semibold d-flex align-items-center gap-2">
-      <i class="bi bi-cloud-upload-fill"></i>New Order
+    <a href="{% url 'user_new_order' %}" class="btn btn-primary btn-pill">
+      <i class="bi bi-plus-circle-fill"></i> New Print Order
     </a>
   </div>
 
-  <!-- Stats Row -->
-  <div class="row g-4 mb-5">
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
-        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(99,102,241,0.12);color:var(--primary)">
-          <i class="bi bi-clock-history"></i>
-        </div>
-        <h2 class="fw-bolder mb-1">1</h2>
-        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Active Orders</p>
-      </div>
+  <!-- STATS -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+    <div class="stat-card">
+      <div class="stat-label">Active Orders</div>
+      <div class="stat-value" style="color:var(--primary);">{{ stats.active_count }}</div>
     </div>
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
-        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(16,185,129,0.12);color:var(--success)">
-          <i class="bi bi-check-all"></i>
-        </div>
-        <h2 class="fw-bolder mb-1">12</h2>
-        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Completed</p>
-      </div>
+    <div class="stat-card">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value" style="color:var(--success);">{{ stats.completed_count }}</div>
     </div>
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
-        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(245,158,11,0.12);color:var(--warning)">
-          <i class="bi bi-wallet2"></i>
-        </div>
-        <h2 class="fw-bolder mb-1">৳450</h2>
-        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Total Spent</p>
-      </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Spent</div>
+      <div class="stat-value">৳{{ stats.total_spent|floatformat:0 }}</div>
     </div>
   </div>
 
-  <!-- Active Order Tracker -->
-  <div class="card border-0 shadow-sm mb-5 overflow-hidden" style="background:var(--bg-card)">
-    <div class="card-body p-4 p-md-5" style="background:linear-gradient(135deg,var(--bg-card),rgba(99,102,241,0.04))">
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <div>
-          <span class="badge rounded-pill px-3 mb-2" style="background:var(--primary-light);color:var(--primary)">
-            <i class="bi bi-circle-fill me-1" style="font-size:.5rem;animation:pulse 2s infinite"></i>Active Order
-          </span>
-          <h4 class="fw-bold mb-1">#ORD-992</h4>
-          <p class="text-muted mb-0 small">
-            <i class="bi bi-file-pdf text-danger me-1"></i>assignment.pdf &bull; Color, Double Sided &bull; 15 pages
-          </p>
-        </div>
-        <div class="text-md-end">
-          <h3 class="fw-bolder mb-0">৳120</h3>
-          <span class="text-muted small">Pay at pickup</span>
-        </div>
+  <!-- ACTIVE ORDER TRACKER -->
+  {% if active_order %}
+  <div class="card" style="padding:1.75rem;margin-bottom:2rem;border-left:4px solid var(--primary);">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <span class="badge badge-primary" style="margin-bottom:.5rem;">Active Order</span>
+        <h3 style="font-size:1.1rem;">{{ active_order.order_number }}</h3>
+        <p class="text-muted" style="font-size:13px;">
+          <i class="bi bi-file-earmark"></i> {{ active_order.file_name|default:"Physical Document" }} &nbsp;·&nbsp;
+          {{ active_order.get_print_type_display }} · {{ active_order.get_sides_display }} · {{ active_order.pages }} pages
+        </p>
       </div>
-
-      <!-- Progress Steps -->
-      <div class="row g-0 mt-4">
-        {% for step_label, done, active in progress_steps %}
-        <div class="col text-center">
-          <div class="d-flex flex-column align-items-center">
-            <div class="rounded-circle d-flex align-items-center justify-content-center mb-2 fw-bold"
-                 style="width:36px;height:36px;font-size:.8rem;
-                 {% if done %}background:var(--success);color:#fff;
-                 {% elif active %}background:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(99,102,241,0.2);
-                 {% else %}background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);{% endif %}">
-              {% if done %}<i class="bi bi-check-lg"></i>
-              {% elif active %}<i class="bi bi-hourglass-split" style="animation:spin 2s linear infinite"></i>
-              {% else %}{{ forloop.counter }}{% endif %}
-            </div>
-            <small class="fw-semibold {% if done %}text-success{% elif active %}text-primary{% else %}text-muted{% endif %}" style="font-size:.7rem;white-space:nowrap">
-              {{ step_label }}
-            </small>
-          </div>
-        </div>
-        {% empty %}
-        {% for s in "Placed,Confirmed,Printing,Ready"|make_list %}{% endfor %}
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--success);color:#fff;font-size:.8rem"><i class="bi bi-check-lg"></i></div>
-          <small class="fw-semibold text-success" style="font-size:.7rem">Placed</small>
-        </div>
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--primary);color:#fff;font-size:.8rem;box-shadow:0 0 0 4px rgba(99,102,241,0.2)"><i class="bi bi-hourglass-split"></i></div>
-          <small class="fw-semibold text-primary" style="font-size:.7rem">Confirmed</small>
-        </div>
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);font-size:.8rem">3</div>
-          <small class="text-muted" style="font-size:.7rem">Printing</small>
-        </div>
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);font-size:.8rem">4</div>
-          <small class="text-muted" style="font-size:.7rem">Ready</small>
-        </div>
-        {% endfor %}
+      <div style="text-align:right;">
+        <div style="font-size:1.75rem;font-weight:800;">৳{{ active_order.total_amount|floatformat:0 }}</div>
+        <span class="badge badge-{% if active_order.payment_status == 'paid' %}success{% elif active_order.payment_status == 'partial' %}warning{% else %}danger{% endif %}">
+          {{ active_order.get_payment_status_display }}
+        </span>
       </div>
     </div>
+
+    <!-- STATUS PIPELINE -->
+    {% with statuses="pending,confirmed,printing,quality_check,ready,delivered" %}
+    <div style="display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:.5rem;">
+      {% for s in statuses|split:"," %}
+      {% with active=active_order.status %}
+      <div style="flex:1;min-width:80px;text-align:center;">
+        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+          background:{% if active == s %}var(--primary){% elif active_order.status == 'delivered' or s < active %}var(--success){% else %}var(--border){% endif %};
+          color:{% if active == s or active_order.status == 'delivered' or s < active %}white{% else %}var(--text-muted){% endif %};">
+          <i class="bi bi-{% if s == 'pending' %}hourglass{% elif s == 'confirmed' %}check{% elif s == 'printing' %}printer{% elif s == 'quality_check' %}eye{% elif s == 'ready' %}bag-check{% else %}house-check{% endif %}"></i>
+        </div>
+        <div style="font-size:10px;font-weight:{% if active == s %}700{% else %}500{% endif %};color:{% if active == s %}var(--primary){% else %}var(--text-muted){% endif %};">
+          {{ s|capfirst|replace:"_":" " }}
+        </div>
+      </div>
+      {% if not forloop.last %}<div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>{% endif %}
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% endwith %}
   </div>
+  {% endif %}
 
-  <!-- Order History -->
-  <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
-    <div class="card-header bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
-      <h5 class="fw-bold mb-0">Order History</h5>
-      <button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-download me-1"></i>Export</button>
+  <!-- RECENT ORDERS -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
+      <h3 style="font-size:1rem;">Order History</h3>
+      <a href="{% url 'user_orders' %}" class="btn btn-ghost btn-sm">View All</a>
     </div>
-    <div class="table-container" style="border:none;border-radius:0">
-      <table class="table mb-0">
-        <thead><tr>
-          <th class="ps-4">Order ID</th>
-          <th>Date</th>
-          <th>Document</th>
-          <th>Amount</th>
-          <th>Status</th>
-          <th class="pe-4 text-end">Action</th>
-        </tr></thead>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Order #</th><th>Document</th><th>Specs</th><th>Amount</th><th>Status</th><th></th></tr>
+        </thead>
         <tbody>
+          {% for o in orders %}
           <tr>
-            <td class="ps-4 fw-semibold">#ORD-992</td>
-            <td class="text-muted small">Today, 10:45 AM</td>
-            <td><i class="bi bi-file-pdf text-danger me-1"></i>assignment.pdf</td>
-            <td class="fw-bold">৳120</td>
-            <td><span class="badge badge-pending">Pending</span></td>
-            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill">View</button></td>
+            <td style="font-weight:600;font-size:13px;white-space:nowrap;">{{ o.order_number }}</td>
+            <td style="font-size:13px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              <i class="bi bi-file-earmark text-muted"></i> {{ o.file_name|default:"Physical Doc" }}
+            </td>
+            <td style="font-size:12px;color:var(--text-muted);">{{ o.get_print_type_display }} · {{ o.get_sides_display }} · {{ o.pages }}p × {{ o.copies }}</td>
+            <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
+            <td>
+              <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% else %}warning{% endif %}">
+                {{ o.get_status_display }}
+              </span>
+            </td>
+            <td><a href="{% url 'user_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon"><i class="bi bi-eye"></i></a></td>
           </tr>
-          <tr>
-            <td class="ps-4 fw-semibold">#ORD-845</td>
-            <td class="text-muted small">Oct 12, 2025</td>
-            <td><i class="bi bi-file-word text-primary me-1"></i>project_proposal.docx</td>
-            <td class="fw-bold">৳45</td>
-            <td><span class="badge badge-ready">Delivered</span></td>
-            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-repeat me-1"></i>Reorder</button></td>
-          </tr>
-          <tr>
-            <td class="ps-4 fw-semibold">#ORD-721</td>
-            <td class="text-muted small">Sep 5, 2025</td>
-            <td><i class="bi bi-file-pdf text-danger me-1"></i>lecture_notes_ch1.pdf</td>
-            <td class="fw-bold">৳210</td>
-            <td><span class="badge badge-ready">Delivered</span></td>
-            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-repeat me-1"></i>Reorder</button></td>
-          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">
+            <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
+            No orders yet. <a href="{% url 'user_new_order' %}">Place your first order →</a>
+          </td></tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
-
-{% block scripts %}
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
-</style>
-{% endblock %}
 {% endblock %}

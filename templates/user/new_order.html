@@ -1,32 +1,196 @@
 {% extends "base.html" %}
-{% block title %}New Order — Print-Edge{% endblock %}
+{% block title %}New Print Order — Print-Edge{% endblock %}
 {% block content %}
-<div class="container py-5">
-  <h2 class="fw-bold text-gradient mb-4 text-center">Place New Order</h2>
-  <form id="orderForm" class="col-md-6 mx-auto card p-4 shadow-sm">
-    <div class="mb-3">
-      <label class="form-label">Upload File</label>
-      <input type="file" class="form-control" name="file" required>
+<div style="max-width:860px;margin:0 auto;padding:2rem 1rem;">
+  <div style="margin-bottom:2rem;">
+    <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back</a>
+    <h1 style="font-size:1.6rem;">New Print Order</h1>
+    <p class="text-muted" style="font-size:14px;">Configure your document and get an instant price quote.</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="orderForm">
+    {% csrf_token %}
+    <div style="display:grid;grid-template-columns:3fr 2fr;gap:1.5rem;">
+
+      <!-- LEFT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+        <!-- File Upload -->
+        <div class="card" style="padding:1.5rem;">
+          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-cloud-upload text-primary"></i> Upload Document</h3>
+          <div id="dropZone" style="border:2px dashed var(--border);border-radius:10px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(99,102,241,.02);">
+            <i class="bi bi-cloud-arrow-up" style="font-size:2.5rem;color:var(--primary);display:block;margin-bottom:.75rem;"></i>
+            <p style="font-weight:600;margin-bottom:.25rem;">Drop file here or click to browse</p>
+            <p class="text-muted" style="font-size:13px;">PDF, DOC, DOCX, PPT, PPTX, JPG, PNG · Max 50MB</p>
+            <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="display:none;">
+          </div>
+          <div id="fileInfo" style="display:none;margin-top:.75rem;padding:.75rem;background:rgba(99,102,241,.06);border-radius:8px;font-size:13px;font-weight:500;"></div>
+        </div>
+
+        <!-- Print Options -->
+        <div class="card" style="padding:1.5rem;">
+          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-sliders text-primary"></i> Print Options</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Print Type</label>
+              <select name="print_type" class="form-select" id="printType">
+                <option value="bw">⬛ Black & White</option>
+                <option value="color">🎨 Color</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Sides</label>
+              <select name="sides" class="form-select" id="sides">
+                <option value="single">Single Sided</option>
+                <option value="double">Double Sided</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Paper Size</label>
+              <select name="paper_size" class="form-select" id="paperSize">
+                <option value="A4">A4 (default)</option>
+                <option value="A3">A3</option>
+                <option value="Letter">Letter</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Copies</label>
+              <input type="number" name="copies" id="copies" class="form-control" value="1" min="1" max="999">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Page Count</label>
+            <input type="number" name="pages" id="pages" class="form-control" value="1" min="1" max="9999">
+            <div style="font-size:12px;color:var(--text-muted);margin-top:.4rem;">
+              <i class="bi bi-info-circle"></i> The system will auto-count pages for PDFs after upload.
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:rgba(245,158,11,.06);border-radius:8px;border:1px solid rgba(245,158,11,.2);">
+            <input type="checkbox" name="is_urgent" id="isUrgent" style="width:16px;height:16px;accent-color:var(--warning);">
+            <label for="isUrgent" style="cursor:pointer;font-weight:600;font-size:14px;">
+              <i class="bi bi-lightning-fill" style="color:var(--warning);"></i> Urgent Processing (+50% surcharge)
+            </label>
+          </div>
+        </div>
+
+        <!-- Add-ons -->
+        {% if addons %}
+        <div class="card" style="padding:1.5rem;">
+          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-stars text-primary"></i> Finishing Add-ons</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+            {% for addon in addons %}
+            <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;" id="addonLabel{{ addon.id }}">
+              <input type="checkbox" name="addons" value="{{ addon.id }}" onchange="updatePrice()" style="accent-color:var(--primary);">
+              <div>
+                <div style="font-weight:600;font-size:13px;">{{ addon.name }}</div>
+                <div style="font-size:12px;color:var(--text-muted);">+৳{{ addon.price|floatformat:0 }}</div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Special Instructions -->
+        <div class="card" style="padding:1.5rem;">
+          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-chat-left-text text-primary"></i> Special Instructions</h3>
+          <textarea name="special_instructions" class="form-control" rows="3" placeholder="e.g. Print double-sided, staple top-left corner, use glossy paper..."></textarea>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Price Card -->
+      <div>
+        <div class="card" style="padding:1.5rem;position:sticky;top:80px;">
+          <h3 style="font-size:1rem;margin-bottom:1.25rem;"><i class="bi bi-receipt text-primary"></i> Price Summary</h3>
+
+          <div id="priceBreakdown" style="font-size:14px;">
+            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
+              <span class="text-muted">Base Price</span>
+              <span id="basePrice" style="font-weight:600;">৳0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
+              <span class="text-muted">Add-ons</span>
+              <span id="addonsPrice">৳0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
+              <span class="text-muted">Urgent Surcharge</span>
+              <span id="urgentPrice">৳0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);color:var(--success);">
+              <span>Discount</span>
+              <span id="discountAmount">-৳0</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.85rem 0;font-size:1.3rem;font-weight:900;">
+              <span>Total</span>
+              <span id="totalPrice" style="color:var(--primary);">৳0</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label class="form-label">Promo Code</label>
+            <div style="display:flex;gap:.5rem;">
+              <input type="text" name="promo_code" class="form-control" placeholder="Enter code">
+              <button type="button" class="btn btn-outline btn-sm" onclick="updatePrice()">Apply</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-pill" style="width:100%;padding:.85rem;font-size:15px;font-weight:700;">
+            <i class="bi bi-check-circle-fill"></i> Place Order
+          </button>
+          <p class="text-muted" style="font-size:12px;text-align:center;margin-top:.75rem;">Pay at pickup · Files auto-deleted after 7 days</p>
+        </div>
+      </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Color Mode</label>
-      <select class="form-select" name="color">
-        <option value="bw">Black & White</option>
-        <option value="color">Color</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Sided</label>
-      <select class="form-select" name="side">
-        <option value="single">Single Sided</option>
-        <option value="double">Double Sided</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Copies</label>
-      <input type="number" class="form-control" name="copies" value="1" min="1" required>
-    </div>
-    <button type="submit" class="btn btn-primary w-100 fw-bold">Place Order</button>
   </form>
 </div>
+
+{% block extra_js %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; });
+dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border)');
+dropZone.addEventListener('drop', e => { e.preventDefault(); fileInput.files = e.dataTransfer.files; handleFile(); });
+fileInput.addEventListener('change', handleFile);
+
+function handleFile() {
+  const file = fileInput.files[0];
+  if (!file) return;
+  fileInfo.style.display = 'block';
+  fileInfo.innerHTML = `<i class="bi bi-file-earmark-check" style="color:var(--success);"></i> <strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
+  dropZone.style.borderColor = 'var(--success)';
+  updatePrice();
+}
+
+function updatePrice() {
+  const params = new URLSearchParams({
+    print_type: document.getElementById('printType').value,
+    sides: document.getElementById('sides').value,
+    paper_size: document.getElementById('paperSize').value,
+    pages: document.getElementById('pages').value || 1,
+    copies: document.getElementById('copies').value || 1,
+    is_urgent: document.getElementById('isUrgent').checked ? '1' : '0',
+  });
+  document.querySelectorAll('input[name="addons"]:checked').forEach(cb => params.append('addons', cb.value));
+
+  fetch('/api/price/?' + params.toString())
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('basePrice').textContent = '৳' + d.base_price.toFixed(0);
+      document.getElementById('addonsPrice').textContent = '৳' + d.addons_price.toFixed(0);
+      document.getElementById('urgentPrice').textContent = '৳' + d.urgent_surcharge.toFixed(0);
+      document.getElementById('discountAmount').textContent = '-৳' + d.total_discount.toFixed(0);
+      document.getElementById('totalPrice').textContent = '৳' + d.total.toFixed(0);
+    });
+}
+
+['printType','sides','paperSize','pages','copies','isUrgent'].forEach(id =>
+  document.getElementById(id)?.addEventListener('change', updatePrice));
+
+updatePrice();
+</script>
+{% endblock %}
 {% endblock %}

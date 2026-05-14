@@ -1,215 +1,98 @@
 {% extends "admin_base.html" %}
-{% block title %}Orders — PrintEase Admin{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Orders</li>{% endblock %}
+{% block title %}All Orders — Print-Edge{% endblock %}
+{% block breadcrumb %}All Orders{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2 class="fw-bold mb-0">Order Management</h2>
-    <p class="text-muted small mb-0">28 orders · 5 urgent · Auto-refreshes every 15s</p>
-  </div>
-  <div class="d-flex gap-2">
-    <div class="btn-group" role="group">
-      <button type="button" class="btn btn-primary btn-sm active" id="btnTable" onclick="switchView('table')"><i class="bi bi-table me-1"></i>Table</button>
-      <button type="button" class="btn btn-ghost btn-sm" id="btnKanban" onclick="switchView('kanban')"><i class="bi bi-kanban me-1"></i>Kanban</button>
+<div class="page-header">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="page-title">Order Management</h1>
+      <p class="text-muted" style="font-size:13px;">{{ total_count }} total orders</p>
     </div>
-    <a href="{% url 'admin_walkin_order' %}" class="btn btn-gradient btn-sm">
-      <i class="bi bi-shop me-1"></i>Walk-in Order
+    <a href="{% url 'admin_walkin_order' %}" class="btn btn-primary btn-pill">
+      <i class="bi bi-plus-circle-fill"></i> New Walk-in Order
     </a>
   </div>
 </div>
 
-<!-- Filters -->
-<div class="card border-0 shadow-sm mb-3 p-3">
-  <div class="row g-2 align-items-center">
-    <div class="col-md-4">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input type="text" class="form-control" placeholder="Search order ID, customer, phone...">
-      </div>
+<!-- FILTERS -->
+<div class="card" style="padding:1rem;margin-bottom:1.25rem;">
+  <form method="get" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
+    <div class="input-group-icon" style="flex:1;min-width:200px;">
+      <i class="bi bi-search icon"></i>
+      <input type="text" name="q" class="form-control" placeholder="Search order#, name, email, phone…" value="{{ search_query }}">
     </div>
-    <div class="col-md-2">
-      <select class="form-select form-select-sm">
-        <option>All Status</option>
-        <option>Pending</option><option>Confirmed</option><option>Printing</option>
-        <option>Quality Check</option><option>Ready</option><option>Delivered</option><option>Cancelled</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select class="form-select form-select-sm">
-        <option>All Sources</option>
-        <option value="online">🌐 Online</option>
-        <option value="offline">🏪 Offline</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <input type="date" class="form-control form-control-sm">
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-primary btn-sm w-100">Apply</button>
-    </div>
-  </div>
+    <select name="status" class="form-select" style="width:160px;">
+      <option value="">All Statuses</option>
+      {% for val, label in status_choices %}<option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <select name="source" class="form-select" style="width:140px;">
+      <option value="">All Sources</option>
+      <option value="online" {% if current_source == 'online' %}selected{% endif %}>🌐 Online</option>
+      <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>🏪 Walk-in</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'admin_orders' %}" class="btn btn-outline">Clear</a>
+  </form>
 </div>
 
-<!-- Bulk Actions -->
-<div class="card border-0 mb-3 p-2 d-none" id="bulkActionBar" style="background:var(--primary-light);border:1px solid rgba(99,102,241,.2)!important">
-  <div class="d-flex align-items-center gap-3 flex-wrap">
-    <span class="fw-semibold" style="font-size:.85rem" id="selectedCount">0 Selected</span>
-    <button class="btn btn-sm btn-ghost"><i class="bi bi-check-circle me-1 text-success"></i>Mark Ready</button>
-    <button class="btn btn-sm btn-ghost"><i class="bi bi-printer me-1"></i>Print Job Sheets</button>
-    <button class="btn btn-sm btn-ghost"><i class="bi bi-person me-1"></i>Assign Staff</button>
-    <button class="btn btn-sm btn-ghost"><i class="bi bi-download me-1"></i>Export</button>
-    <button class="btn btn-sm" style="color:var(--danger)"><i class="bi bi-trash me-1"></i>Delete</button>
-  </div>
-</div>
-
-<!-- TABLE VIEW -->
-<div id="tableView">
-  <div class="table-container card border-0 shadow-sm">
-    <table class="table mb-0">
-      <thead><tr>
-        <th class="ps-4" style="width:40px"><input type="checkbox" class="form-check-input" id="selectAll" onchange="BulkSelect.updateCount()"></th>
-        <th>Order ID</th>
-        <th>Customer</th>
-        <th>Print Specs</th>
-        <th>File</th>
-        <th>Amount</th>
-        <th>Source</th>
-        <th>Status</th>
-        <th class="pe-4">Actions</th>
-      </tr></thead>
+<!-- ORDERS TABLE -->
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Order</th><th>Customer</th><th>Specs</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th>
+        </tr>
+      </thead>
       <tbody>
         {% for o in orders %}
         <tr>
-          <td class="ps-4"><input type="checkbox" class="form-check-input row-checkbox" value="{{ o.id }}"></td>
           <td>
-            <div class="fw-semibold" style="font-size:.85rem">{{ o.id }}</div>
-            <div class="text-muted" style="font-size:.7rem">Today · 10:45 AM</div>
-            {% if o.urgent %}<span class="badge badge-cancelled" style="font-size:.6rem">URGENT</span>{% endif %}
+            <div style="font-weight:700;font-size:13px;">{{ o.order_number }}</div>
+            <span style="font-size:11px;">{% if o.source == 'offline' %}🏪 Walk-in{% else %}🌐 Online{% endif %}</span>
+            {% if o.is_urgent %}<span class="badge badge-danger" style="font-size:10px;">URGENT</span>{% endif %}
           </td>
           <td>
-            <div class="fw-semibold" style="font-size:.85rem">{{ o.customer }}</div>
-            <div class="text-muted" style="font-size:.72rem">{{ o.phone }}</div>
+            <div style="font-weight:600;font-size:13px;">{{ o.customer_name }}</div>
+            <div style="font-size:11px;color:var(--text-muted);">{{ o.customer_phone }}</div>
           </td>
-          <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border);font-weight:500">{{ o.specs }}</span></td>
+          <td style="font-size:12px;">
+            <div>{{ o.get_print_type_display }} · {{ o.get_sides_display }}</div>
+            <div class="text-muted">{{ o.pages }}p × {{ o.copies }} = {{ o.total_sheets }} sheets</div>
+          </td>
+          <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
           <td>
-            <span class="d-flex align-items-center gap-1" style="font-size:.8rem">
-              {% if '(Physical)' in o.file %}<i class="bi bi-file-earmark text-muted"></i>{% elif '.pdf' in o.file %}<i class="bi bi-file-earmark-pdf text-danger"></i>{% else %}<i class="bi bi-file-earmark-word text-primary"></i>{% endif %}
-              {{ o.file }}
+            <span class="badge badge-{% if o.payment_status == 'paid' %}success{% elif o.payment_status == 'partial' %}warning{% else %}secondary{% endif %}">
+              {{ o.get_payment_status_display }}
             </span>
           </td>
           <td>
-            <div class="fw-bold">{{ o.amount }}</div>
-            <div class="text-muted" style="font-size:.7rem">{{ o.paid }}</div>
+            <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% elif o.status == 'pending' %}warning{% else %}secondary{% endif %}">
+              <span class="status-dot status-{{ o.status }}"></span>
+              {{ o.get_status_display }}
+            </span>
           </td>
+          <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ o.created_at|date:"M j, H:i" }}</td>
           <td>
-            {% if o.source == 'offline' %}<span class="badge badge-offline"><i class="bi bi-shop me-1"></i>Offline</span>
-            {% else %}<span class="badge badge-online"><i class="bi bi-globe2 me-1"></i>Online</span>{% endif %}
-          </td>
-          <td>
-            <span class="status-pill badge-{{ o.status }}">{{ o.status|title }}</span>
-          </td>
-          <td class="pe-4">
-            <div class="dropdown">
-              <button class="btn btn-icon btn-ghost btn-sm" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
-              <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="background:var(--bg-card);border:1px solid var(--border)!important;border-radius:var(--radius-sm)">
-                <li><a class="dropdown-item" href="#" style="color:var(--text);font-size:.85rem"><i class="bi bi-eye me-2 text-muted"></i>View Details</a></li>
-                <li><a class="dropdown-item" href="#" style="color:var(--text);font-size:.85rem"><i class="bi bi-printer me-2 text-muted"></i>Print Job Sheet</a></li>
-                {% if o.source == 'offline' %}
-                <li><a class="dropdown-item" href="#" style="color:var(--text);font-size:.85rem"><i class="bi bi-receipt me-2 text-muted"></i>Print Receipt</a></li>
-                {% endif %}
-                <li><hr class="dropdown-divider" style="border-color:var(--border)"></li>
-                <li><a class="dropdown-item" href="#" style="color:var(--success);font-size:.85rem"><i class="bi bi-check-circle me-2"></i>Mark Ready</a></li>
-                <li><a class="dropdown-item" href="#" style="color:var(--info);font-size:.85rem"><i class="bi bi-gear me-2"></i>Mark Printing</a></li>
-                <li><a class="dropdown-item" href="#" style="color:var(--danger);font-size:.85rem"><i class="bi bi-x-circle me-2"></i>Cancel</a></li>
-              </ul>
+            <div style="display:flex;gap:.35rem;">
+              <a href="{% url 'admin_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon" title="View Details">
+                <i class="bi bi-eye"></i>
+              </a>
+              <button class="btn btn-ghost btn-sm btn-icon" onclick="quickStatus({{ o.pk }})" title="Update Status">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
             </div>
           </td>
         </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text-muted);">
+          <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:1rem;"></i>
+          No orders match your filters.
+        </td></tr>
         {% endfor %}
       </tbody>
     </table>
-    <div class="p-3 d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border)">
-      <small class="text-muted">Showing 4 of 28 orders</small>
-      <nav><ul class="pagination pagination-sm mb-0">
-        <li class="page-item disabled"><a class="page-link" href="#">‹</a></li>
-        <li class="page-item active"><a class="page-link" href="#" style="background:var(--primary);border-color:var(--primary)">1</a></li>
-        <li class="page-item"><a class="page-link" href="#" style="color:var(--text);background:var(--bg-card)">2</a></li>
-        <li class="page-item"><a class="page-link" href="#" style="color:var(--text);background:var(--bg-card)">3</a></li>
-        <li class="page-item"><a class="page-link" href="#" style="color:var(--text);background:var(--bg-card)">›</a></li>
-      </ul></nav>
-    </div>
   </div>
 </div>
-
-<!-- KANBAN VIEW -->
-<div id="kanbanView" class="d-none">
-  <div class="kanban-board">
-    {% for status, label, color in kanban_cols %}
-    <div class="kanban-col" data-status="{{ status }}">
-        <div class="kanban-col-header">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge badge-{{ status }}" style="width:8px;height:8px;border-radius:50%;padding:0"></span>
-          <span class="fw-semibold" style="font-size:.85rem">{{ label }}</span>
-        </div>
-        <span class="badge" style="background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border)">{{ forloop.counter }}</span>
-      </div>
-      <div class="kanban-col-body">
-        {% if forloop.counter0 == 0 %}
-        <div class="kanban-card" draggable="true" data-order-id="PE-OFF-0028">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="fw-semibold" style="font-size:.8rem">PE-OFF-0028</span>
-            <span class="badge badge-offline" style="font-size:.6rem"><i class="bi bi-shop"></i></span>
-          </div>
-          <div style="font-size:.82rem;font-weight:600" class="mb-1">Tariqul Islam</div>
-          <div class="text-muted" style="font-size:.72rem">B&W · 24p · 3x · ৳504</div>
-          <div class="d-flex justify-content-between mt-2 pt-2" style="border-top:1px solid var(--border)">
-            <span class="badge badge-cancelled" style="font-size:.6rem">URGENT</span>
-            <span class="text-muted" style="font-size:.65rem">Just now</span>
-          </div>
-        </div>
-        {% elif forloop.counter0 == 1 %}
-        <div class="kanban-card" draggable="true" data-order-id="PE-ON-0027">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="fw-semibold" style="font-size:.8rem">PE-ON-0027</span>
-            <span class="badge badge-online" style="font-size:.6rem"><i class="bi bi-globe2"></i></span>
-          </div>
-          <div style="font-size:.82rem;font-weight:600" class="mb-1">Arif Ahmed</div>
-          <div class="text-muted" style="font-size:.72rem">Color · 15p · 1x · ৳150</div>
-          <div class="d-flex justify-content-between mt-2 pt-2" style="border-top:1px solid var(--border)">
-            <span class="text-muted" style="font-size:.65rem">bKash paid</span>
-            <span class="text-muted" style="font-size:.65rem">5 min</span>
-          </div>
-        </div>
-        {% elif forloop.counter0 == 2 %}
-        <div class="kanban-card" draggable="true" data-order-id="PE-ON-0026">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="fw-semibold" style="font-size:.8rem">PE-ON-0026</span>
-            <span class="badge badge-online" style="font-size:.6rem"><i class="bi bi-globe2"></i></span>
-          </div>
-          <div style="font-size:.82rem;font-weight:600" class="mb-1">Sadia Rahman</div>
-          <div class="text-muted" style="font-size:.72rem">B&W · 8p · 2x · ৳32</div>
-          <div class="d-flex justify-content-between mt-2 pt-2" style="border-top:1px solid var(--border)">
-            <span class="badge badge-ready" style="font-size:.6rem">Ready</span>
-            <span class="text-muted" style="font-size:.65rem">22 min</span>
-          </div>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-{% endblock %}
-{% block scripts %}
-<script>
-function switchView(v) {
-  document.getElementById('tableView').classList.toggle('d-none', v !== 'table');
-  document.getElementById('kanbanView').classList.toggle('d-none', v !== 'kanban');
-  document.getElementById('btnTable').className = v === 'table' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
-  document.getElementById('btnKanban').className = v === 'kanban' ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
-  if (v === 'kanban') Kanban.init();
-}
-BulkSelect.init();
-</script>
 {% endblock %}

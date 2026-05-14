@@ -1,80 +1,66 @@
 {% extends "base.html" %}
-{% block title %}Print-Edge — Smart Campus Printing at Gono Bishwabidyalay{% endblock %}
-
+{% block title %}Print-Edge — Smart Campus Printing{% endblock %}
 {% block content %}
-<!-- HERO -->
-<section class="hero-section position-relative overflow-hidden" style="min-height:88vh;display:flex;align-items:center;">
-  <!-- Decorative blobs -->
-  <div style="position:absolute;top:-15%;left:-10%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(99,102,241,0.18) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:0"></div>
-  <div style="position:absolute;bottom:-20%;right:-8%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(6,182,212,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:0"></div>
 
-  <div class="container position-relative z-1 text-center py-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-9">
-        <!-- Badge -->
-        <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-4"
-             style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);">
-          <span class="badge rounded-pill" style="background:var(--primary);font-size:.65rem">✨ NEW</span>
-          <span class="small fw-semibold" style="color:var(--primary)">Instant online price estimation is live!</span>
+<!-- HERO -->
+<section class="hero" style="background:var(--bg);">
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div class="hero-bg-blob" style="width:600px;height:600px;background:var(--primary);top:-200px;right:-100px;"></div>
+    <div class="hero-bg-blob" style="width:400px;height:400px;background:var(--secondary);bottom:-100px;left:-100px;"></div>
+  </div>
+
+  <div style="max-width:1100px;margin:0 auto;width:100%;position:relative;z-index:1;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:999px;padding:.35rem .85rem;margin-bottom:1.5rem;">
+          <span style="width:6px;height:6px;background:var(--success);border-radius:50%;animation:pulse-dot 2s infinite;"></span>
+          <span style="font-size:13px;font-weight:600;color:var(--primary);">Print shop now open · Gono Bishwabidyalay</span>
         </div>
 
-        <h1 class="display-3 fw-bolder mb-4" style="letter-spacing:-1.5px;line-height:1.1">
-          Smart Campus Printing<br>
-          <span class="text-gradient">for Gono Bishwabidyalay</span>
+        <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:900;line-height:1.15;margin-bottom:1.25rem;">
+          Campus Printing<br><span class="text-gradient">Made Effortless</span>
         </h1>
-
-        <p class="lead mb-5 mx-auto" style="max-width:600px;color:var(--text-muted)">
-          Upload your documents, configure print options, get an instant price quote,
-          and pick up your high-quality prints — all without waiting in line.
+        <p style="font-size:1.05rem;color:var(--text-muted);margin-bottom:2rem;max-width:480px;line-height:1.7;">
+          Upload your documents, configure print options, get an instant price quote, and have your prints ready in minutes — all without leaving your seat.
         </p>
 
-        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mb-5">
-          <a href="{% url 'auth_register_page' %}" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-lg" style="box-shadow:0 8px 24px rgba(99,102,241,0.4)!important">
-            <i class="bi bi-cloud-upload-fill me-2"></i>Start Printing Free
+        <div style="display:flex;gap:.85rem;flex-wrap:wrap;">
+          <a href="{% url 'user_new_order' %}" class="btn btn-primary btn-lg btn-pill">
+            <i class="bi bi-cloud-upload-fill"></i> Print Now — It's Free
           </a>
-          <a href="{% url 'public_pricing_page' %}" class="btn btn-ghost btn-lg rounded-pill px-5 fw-bold">
-            <i class="bi bi-tag-fill me-2"></i>View Pricing
+          <a href="{% url 'public_pricing_page' %}" class="btn btn-outline btn-lg btn-pill">
+            <i class="bi bi-tag"></i> View Pricing
           </a>
         </div>
 
-        <!-- Mini stats row -->
-        <div class="row g-3 justify-content-center">
-          {% for icon, title, sub in hero_stats %}
-          <div class="col-auto">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill" style="background:var(--bg-card);border:1px solid var(--border);">
-              <i class="bi {{ icon }}" style="color:var(--primary)"></i>
-              <div class="text-start">
-                <div class="fw-bold" style="font-size:.85rem;color:var(--text)">{{ title }}</div>
-                <div style="font-size:.72rem;color:var(--text-muted)">{{ sub }}</div>
-              </div>
-            </div>
-          </div>
-          {% empty %}
-          <div class="col-auto">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill" style="background:var(--bg-card);border:1px solid var(--border);">
-              <i class="bi bi-lightning-charge-fill" style="color:var(--primary)"></i>
-              <div class="text-start"><div class="fw-bold" style="font-size:.85rem">Instant</div><div style="font-size:.72rem;color:var(--text-muted)">Live Quotes</div></div>
-            </div>
-          </div>
-          <div class="col-auto">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill" style="background:var(--bg-card);border:1px solid var(--border);">
-              <i class="bi bi-file-earmark-pdf-fill" style="color:var(--danger)"></i>
-              <div class="text-start"><div class="fw-bold" style="font-size:.85rem">Any Format</div><div style="font-size:.72rem;color:var(--text-muted)">PDF, DOCX, PPT</div></div>
-            </div>
-          </div>
-          <div class="col-auto">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill" style="background:var(--bg-card);border:1px solid var(--border);">
-              <i class="bi bi-shield-check-fill" style="color:var(--success)"></i>
-              <div class="text-start"><div class="fw-bold" style="font-size:.85rem">Secure</div><div style="font-size:.72rem;color:var(--text-muted)">Private Storage</div></div>
-            </div>
-          </div>
-          <div class="col-auto">
-            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill" style="background:var(--bg-card);border:1px solid var(--border);">
-              <i class="bi bi-people-fill" style="color:var(--secondary)"></i>
-              <div class="text-start"><div class="fw-bold" style="font-size:.85rem">500+ Students</div><div style="font-size:.72rem;color:var(--text-muted)">Trust Print-Edge</div></div>
-            </div>
-          </div>
-          {% endfor %}
+        <div style="display:flex;gap:2rem;margin-top:2.5rem;">
+          <div><div style="font-size:1.5rem;font-weight:800;">৳2</div><div style="font-size:12px;color:var(--text-muted);">per B&W page</div></div>
+          <div><div style="font-size:1.5rem;font-weight:800;">৳5</div><div style="font-size:12px;color:var(--text-muted);">per Color page</div></div>
+          <div><div style="font-size:1.5rem;font-weight:800;">50MB</div><div style="font-size:12px;color:var(--text-muted);">max upload</div></div>
+        </div>
+      </div>
+
+      <!-- Feature Card Preview -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="feature-card">
+          <div class="feature-icon avatar-primary"><i class="bi bi-cloud-arrow-up-fill" style="font-size:24px;color:var(--primary);"></i></div>
+          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Upload Instantly</h3>
+          <p class="text-muted" style="font-size:13px;">PDF, DOCX, PPT, JPG, PNG — up to 50MB</p>
+        </div>
+        <div class="feature-card" style="margin-top:1.5rem;">
+          <div class="feature-icon avatar-success"><i class="bi bi-calculator-fill" style="font-size:24px;color:var(--success);"></i></div>
+          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Live Price Quote</h3>
+          <p class="text-muted" style="font-size:13px;">Know the exact cost before you submit</p>
+        </div>
+        <div class="feature-card" style="margin-top:-1.5rem;">
+          <div class="feature-icon avatar-warning"><i class="bi bi-bell-fill" style="font-size:24px;color:var(--warning);"></i></div>
+          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Real-time Tracking</h3>
+          <p class="text-muted" style="font-size:13px;">Get notified when your prints are ready</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon avatar-info"><i class="bi bi-shield-fill-check" style="font-size:24px;color:var(--info);"></i></div>
+          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Secure Files</h3>
+          <p class="text-muted" style="font-size:13px;">Auto-deleted 7 days after delivery</p>
         </div>
       </div>
     </div>
@@ -82,125 +68,24 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="py-5" style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
-  <div class="container py-4">
-    <div class="text-center mb-5">
-      <h2 class="fw-bolder section-title mb-3" style="font-size:2rem">How It Works</h2>
-      <p class="text-muted mx-auto" style="max-width:500px">Four simple steps to get your documents printed perfectly.</p>
-    </div>
-    <div class="row g-4">
-      {% for num, icon, title, desc in how_steps %}
-      <div class="col-lg-3 col-md-6">
-        <div class="card h-100 border-0 text-center p-4 hover-lift" style="background:var(--bg)">
-          <div class="avatar avatar-lg bg-gradient-primary mx-auto mb-3 shadow">
-            <i class="bi {{ icon }}"></i>
-          </div>
-          <div class="badge rounded-pill mb-2" style="background:var(--primary-light);color:var(--primary);font-size:.7rem">Step {{ num }}</div>
-          <h5 class="fw-bold mb-2">{{ title }}</h5>
-          <p class="text-muted small mb-0">{{ desc }}</p>
-        </div>
-      </div>
-      {% empty %}
+<section style="padding:5rem 2rem;background:var(--bg-card);border-top:1px solid var(--border);">
+  <div style="max-width:900px;margin:0 auto;text-align:center;">
+    <h2 style="font-size:2rem;margin-bottom:.5rem;">How It Works</h2>
+    <p class="text-muted" style="margin-bottom:3rem;">Place your order in 4 simple steps</p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;position:relative;">
+      <div style="position:absolute;top:24px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--primary),var(--secondary));z-index:0;"></div>
       {% for step in "1234" %}
-      <div class="col-lg-3 col-md-6">
-        <div class="card h-100 border-0 text-center p-4 hover-lift" style="background:var(--bg)">
-          {% if forloop.counter == 1 %}
-          <div class="avatar avatar-lg bg-gradient-primary mx-auto mb-3 shadow"><i class="bi bi-cloud-arrow-up"></i></div>
-          <div class="badge rounded-pill mb-2" style="background:var(--primary-light);color:var(--primary);font-size:.7rem">Step 1</div>
-          <h5 class="fw-bold mb-2">Upload File</h5>
-          <p class="text-muted small mb-0">Upload your PDF, DOCX, or PPT up to 50 MB directly from your device.</p>
-          {% elif forloop.counter == 2 %}
-          <div class="avatar avatar-lg bg-gradient-primary mx-auto mb-3 shadow"><i class="bi bi-sliders"></i></div>
-          <div class="badge rounded-pill mb-2" style="background:var(--primary-light);color:var(--primary);font-size:.7rem">Step 2</div>
-          <h5 class="fw-bold mb-2">Configure</h5>
-          <p class="text-muted small mb-0">Choose B&amp;W or Color, Single/Double sided, copies, and binding options.</p>
-          {% elif forloop.counter == 3 %}
-          <div class="avatar avatar-lg bg-gradient-primary mx-auto mb-3 shadow"><i class="bi bi-receipt"></i></div>
-          <div class="badge rounded-pill mb-2" style="background:var(--primary-light);color:var(--primary);font-size:.7rem">Step 3</div>
-          <h5 class="fw-bold mb-2">Get Quote</h5>
-          <p class="text-muted small mb-0">Review your instant price quote and confirm your printing order online.</p>
-          {% else %}
-          <div class="avatar avatar-lg bg-gradient-primary mx-auto mb-3 shadow"><i class="bi bi-bag-check-fill"></i></div>
-          <div class="badge rounded-pill mb-2" style="background:var(--primary-light);color:var(--primary);font-size:.7rem">Step 4</div>
-          <h5 class="fw-bold mb-2">Pickup</h5>
-          <p class="text-muted small mb-0">Track your order status live and pick up at the campus print shop.</p>
-          {% endif %}
-        </div>
+      <div style="text-align:center;position:relative;z-index:1;">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;color:white;font-weight:800;font-size:1.1rem;">{{ step }}</div>
+        <h4 style="font-size:.9rem;margin-bottom:.35rem;">{% if step == '1' %}Upload File{% elif step == '2' %}Configure{% elif step == '3' %}Get Quote{% else %}Pickup{% endif %}</h4>
+        <p class="text-muted" style="font-size:13px;">{% if step == '1' %}Choose your document{% elif step == '2' %}Set pages, copies, type{% elif step == '3' %}Instant live price{% else %}Track & collect{% endif %}</p>
       </div>
       {% endfor %}
-      {% endfor %}
     </div>
-  </div>
-</section>
 
-<!-- PRICING TEASER -->
-<section class="py-5">
-  <div class="container py-4">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="badge rounded-pill mb-3 px-3 py-2" style="background:rgba(16,185,129,0.1);color:var(--success);font-size:.75rem">
-          <i class="bi bi-check-circle-fill me-1"></i>No Hidden Fees
-        </div>
-        <h2 class="fw-bolder mb-3" style="font-size:2rem">Transparent, Student-Friendly Pricing</h2>
-        <p class="text-muted mb-4">You see the full price before you confirm. Our live calculator shows the exact cost based on your pages, copies, and settings.</p>
-        <ul class="list-unstyled mb-4">
-          <li class="d-flex align-items-center gap-3 mb-3 p-3 rounded" style="background:var(--bg-card);border:1px solid var(--border)">
-            <div class="avatar" style="background:rgba(16,185,129,0.1);color:var(--success)"><i class="bi bi-file-earmark"></i></div>
-            <div><div class="fw-semibold">B&amp;W Single Side</div><div class="text-muted small">Just ২ ৳ per page</div></div>
-            <span class="ms-auto fw-bold" style="color:var(--success)">৳2</span>
-          </li>
-          <li class="d-flex align-items-center gap-3 mb-3 p-3 rounded" style="background:var(--bg-card);border:1px solid var(--border)">
-            <div class="avatar" style="background:rgba(99,102,241,0.1);color:var(--primary)"><i class="bi bi-palette-fill"></i></div>
-            <div><div class="fw-semibold">Full Color Single Side</div><div class="text-muted small">Vibrant CMYK printing</div></div>
-            <span class="ms-auto fw-bold" style="color:var(--primary)">৳5</span>
-          </li>
-          <li class="d-flex align-items-center gap-3 p-3 rounded" style="background:var(--bg-card);border:1px solid var(--border)">
-            <div class="avatar" style="background:rgba(245,158,11,0.1);color:var(--warning)"><i class="bi bi-star-fill"></i></div>
-            <div><div class="fw-semibold">Bulk Discounts</div><div class="text-muted small">Auto-applied for 50+ pages</div></div>
-            <span class="ms-auto fw-bold" style="color:var(--warning)">-15%</span>
-          </li>
-        </ul>
-        <a href="{% url 'public_pricing_page' %}" class="btn btn-primary rounded-pill px-4 fw-semibold">
-          <i class="bi bi-arrow-right-circle me-2"></i>View Full Pricing
-        </a>
-      </div>
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-lg overflow-hidden" style="background:linear-gradient(135deg,var(--bg-card),var(--bg-card2))">
-          <div class="card-body p-5 text-center">
-            <div class="avatar avatar-xl bg-gradient-primary mx-auto mb-4 shadow"><i class="bi bi-calculator-fill"></i></div>
-            <h4 class="fw-bold mb-2">Live Price Calculator</h4>
-            <p class="text-muted mb-4 small">Upload a document and our system automatically counts pages and calculates the exact cost based on your settings.</p>
-            <div class="row g-2 mb-4">
-              <div class="col-6">
-                <div class="p-3 rounded text-center" style="background:var(--bg);border:1px solid var(--border)">
-                  <div class="fw-bold" style="color:var(--text);font-size:1.4rem">50MB</div>
-                  <div class="text-muted" style="font-size:.72rem">Max file size</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="p-3 rounded text-center" style="background:var(--bg);border:1px solid var(--border)">
-                  <div class="fw-bold" style="color:var(--text);font-size:1.4rem">24/7</div>
-                  <div class="text-muted" style="font-size:.72rem">Online ordering</div>
-                </div>
-              </div>
-            </div>
-            <a href="{% url 'auth_register_page' %}" class="btn btn-outline-primary rounded-pill px-4 w-100 fw-semibold">
-              <i class="bi bi-person-plus-fill me-2"></i>Create Free Account
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA BANNER -->
-<section class="py-5" style="background:linear-gradient(135deg,var(--primary),var(--secondary))">
-  <div class="container text-center text-white py-3">
-    <h2 class="fw-bolder mb-3" style="font-size:1.8rem">Ready to print smarter?</h2>
-    <p class="mb-4 opacity-75">Join hundreds of Gono Bishwabidyalay students who save time with Print-Edge.</p>
-    <a href="{% url 'auth_register_page' %}" class="btn btn-light btn-lg rounded-pill px-5 fw-bold shadow-lg" style="color:var(--primary)">
-      <i class="bi bi-rocket-takeoff-fill me-2"></i>Get Started Free
+    <a href="{% url 'auth_register_page' %}" class="btn btn-primary btn-lg btn-pill" style="margin-top:3rem;">
+      <i class="bi bi-person-plus-fill"></i> Create Free Account
     </a>
   </div>
 </section>

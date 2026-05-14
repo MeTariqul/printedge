@@ -1,0 +1,278 @@
+{% extends "admin_base.html" %}
+{% block title %}Dashboard — PrintEase Admin{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-0">Good morning, {{ request.user.first_name|default:request.user.username|default:"Admin" }}! 👋</h2>
+    <p class="text-muted small mb-0" id="liveClock"></p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'admin_walkin_order' %}" class="btn btn-gradient shadow-sm">
+      <i class="bi bi-shop me-1"></i>New Walk-in Order
+    </a>
+    <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()"><i class="bi bi-arrow-clockwise"></i></button>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-2 col-sm-4 col-6">
+    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--primary)!important">
+      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Orders Today</div>
+      <div class="fw-bold" style="font-size:1.75rem">47</div>
+      <div class="d-flex gap-1 align-items-center mt-1">
+        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>12.5%</span>
+        <span class="text-muted" style="font-size:.7rem">vs yesterday</span>
+      </div>
+      <div class="d-flex gap-2 mt-1" style="font-size:.7rem">
+        <span class="badge badge-online"><i class="bi bi-globe2"></i>28 online</span>
+        <span class="badge badge-offline"><i class="bi bi-shop"></i>19 offline</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-sm-4 col-6">
+    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--success)!important">
+      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Revenue Today</div>
+      <div class="fw-bold" style="font-size:1.75rem">৳8,450</div>
+      <div class="d-flex gap-1 align-items-center mt-1">
+        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>8.2%</span>
+        <span class="text-muted" style="font-size:.7rem">vs yesterday</span>
+      </div>
+      <div style="font-size:.7rem;color:var(--text-muted)">৳5,200 cash · ৳3,250 digital</div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-sm-4 col-6">
+    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--warning)!important">
+      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Pending</div>
+      <div class="fw-bold" style="font-size:1.75rem">28</div>
+      <div class="d-flex gap-1 align-items-center mt-1">
+        <span class="badge badge-cancelled">5 urgent</span>
+      </div>
+      <div style="font-size:.7rem;color:var(--text-muted)">Needs attention</div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-sm-4 col-6">
+    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--secondary)!important">
+      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Active Customers</div>
+      <div class="fw-bold" style="font-size:1.75rem">1,204</div>
+      <div class="d-flex gap-1 align-items-center mt-1">
+        <span class="badge badge-online">+12 today</span>
+      </div>
+      <div style="font-size:.7rem;color:var(--text-muted)">341 walk-in</div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-sm-4 col-6">
+    <div class="card border-0 stat-card p-3" style="border-left:3px solid #8b5cf6!important">
+      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Pages Printed</div>
+      <div class="fw-bold" style="font-size:1.75rem">3,842</div>
+      <div class="d-flex gap-1 align-items-center mt-1">
+        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>5.1%</span>
+      </div>
+      <div style="font-size:.7rem;color:var(--text-muted)">Today total</div>
+    </div>
+  </div>
+  <div class="col-xl-2 col-sm-4 col-6">
+    <div class="card border-0 stat-card p-3" style="border-left:3px solid #ec4899!important">
+      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Avg Order Value</div>
+      <div class="fw-bold" style="font-size:1.75rem">৳179</div>
+      <div class="d-flex gap-1 align-items-center mt-1">
+        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>3.4%</span>
+      </div>
+      <div style="font-size:.7rem;color:var(--text-muted)">Per order</div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+  <!-- Revenue Trend -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center px-4 pt-4 pb-2">
+        <div><h6 class="fw-bold mb-0">Revenue Trend</h6><small class="text-muted">Online vs Offline</small></div>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-ghost active" onclick="updateRevChart('7d',this)">7D</button>
+          <button class="btn btn-sm btn-ghost" onclick="updateRevChart('30d',this)">30D</button>
+          <button class="btn btn-sm btn-ghost" onclick="updateRevChart('90d',this)">90D</button>
+        </div>
+      </div>
+      <div class="card-body px-4 pb-4"><div id="revenueChart" style="height:260px"></div></div>
+    </div>
+  </div>
+  <!-- Order Distribution -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0">Order Distribution</h6><small class="text-muted">By status</small></div>
+      <div class="card-body px-4 pb-4"><div id="donutChart" style="height:260px"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Feed + Recent Orders -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
+        <h6 class="fw-bold mb-0">Recent Orders</h6>
+        <a href="{% url 'admin_orders' %}" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr>
+            <th class="ps-4">Order</th><th>Customer</th><th>Amount</th><th>Source</th><th>Status</th><th class="pe-4">Action</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="ps-4"><div class="fw-semibold" style="font-size:.85rem">PE-OFF-20260513-0028</div><div class="text-muted" style="font-size:.72rem">Just now</div></td>
+              <td><div style="font-size:.85rem;font-weight:600">Tariqul Islam</div><div class="text-muted" style="font-size:.72rem">+8801700000001</div></td>
+              <td class="fw-bold">৳504</td>
+              <td><span class="badge badge-offline"><i class="bi bi-shop me-1"></i>Offline</span></td>
+              <td><span class="status-pill badge-pending">Pending</span></td>
+              <td class="pe-4"><a href="#" class="btn btn-sm btn-ghost">Process</a></td>
+            </tr>
+            <tr>
+              <td class="ps-4"><div class="fw-semibold" style="font-size:.85rem">PE-ON-20260513-0027</div><div class="text-muted" style="font-size:.72rem">5 min ago</div></td>
+              <td><div style="font-size:.85rem;font-weight:600">Arif Ahmed</div><div class="text-muted" style="font-size:.72rem">arif@example.com</div></td>
+              <td class="fw-bold">৳120</td>
+              <td><span class="badge badge-online"><i class="bi bi-globe2 me-1"></i>Online</span></td>
+              <td><span class="status-pill badge-printing">Printing</span></td>
+              <td class="pe-4"><a href="#" class="btn btn-sm btn-ghost">View</a></td>
+            </tr>
+            <tr>
+              <td class="ps-4"><div class="fw-semibold" style="font-size:.85rem">PE-ON-20260513-0026</div><div class="text-muted" style="font-size:.72rem">22 min ago</div></td>
+              <td><div style="font-size:.85rem;font-weight:600">Sadia Rahman</div><div class="text-muted" style="font-size:.72rem">sadia@univ.edu.bd</div></td>
+              <td class="fw-bold">৳320</td>
+              <td><span class="badge badge-online"><i class="bi bi-globe2 me-1"></i>Online</span></td>
+              <td><span class="status-pill badge-ready">Ready</span></td>
+              <td class="pe-4"><a href="#" class="btn btn-sm btn-ghost">View</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Activity Feed -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
+        <h6 class="fw-bold mb-0">Live Activity</h6>
+        <span class="badge badge-cancelled" style="animation:pulse 2s infinite">● Live</span>
+      </div>
+      <div class="card-body px-4 pb-3" id="activityFeed" style="overflow-y:auto;max-height:280px">
+        <div class="activity-item">
+          <div class="activity-icon" style="background:var(--primary-light);color:var(--primary)"><i class="bi bi-cart-check"></i></div>
+          <div><div style="font-size:.8rem;font-weight:600">New Walk-in Order</div><div class="text-muted" style="font-size:.72rem">Tariqul · PE-OFF-0028</div><div style="font-size:.65rem;color:var(--text-muted)">Just now</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:rgba(16,185,129,.12);color:var(--success)"><i class="bi bi-check-circle"></i></div>
+          <div><div style="font-size:.8rem;font-weight:600">Order Ready</div><div class="text-muted" style="font-size:.72rem">PE-ON-0027 ready for pickup</div><div style="font-size:.65rem;color:var(--text-muted)">5 min ago</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:rgba(6,182,212,.12);color:var(--secondary)"><i class="bi bi-person-plus"></i></div>
+          <div><div style="font-size:.8rem;font-weight:600">New Registration</div><div class="text-muted" style="font-size:.72rem">sadia@univ.edu.bd joined</div><div style="font-size:.65rem;color:var(--text-muted)">1 hr ago</div></div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon" style="background:rgba(245,158,11,.12);color:var(--warning)"><i class="bi bi-exclamation-triangle"></i></div>
+          <div><div style="font-size:.8rem;font-weight:600">Low Stock Alert</div><div class="text-muted" style="font-size:.72rem">A4 Paper — 50 reams left</div><div style="font-size:.65rem;color:var(--text-muted)">2 hr ago</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header px-4 pt-3 pb-2"><h6 class="fw-bold mb-0">Top Customers</h6></div>
+      <div class="card-body px-4 pb-3"><div id="topCustChart" style="height:200px"></div></div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header px-4 pt-3 pb-2"><h6 class="fw-bold mb-0">Quick Stats</h6></div>
+      <div class="card-body px-4 pb-3">
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Online Orders</span><span class="fw-semibold">28 (59%)</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Offline Orders</span><span class="fw-semibold">19 (41%)</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Cash Revenue</span><span class="fw-semibold">৳5,200</span></div>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Digital Revenue</span><span class="fw-semibold">৳3,250</span></div>
+        <div class="d-flex justify-content-between py-2"><span class="text-muted">Files Auto-deleted</span><span class="fw-semibold">12 today</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
+<script>
+// Live clock
+setInterval(() => {
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = new Date().toLocaleString('en-BD', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}, 1000);
+
+const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+const fg = isDark ? '#f1f5f9' : '#1e293b';
+const muted = isDark ? '#94a3b8' : '#64748b';
+const grid = isDark ? '#1e2d45' : '#e2e8f0';
+
+// Revenue Chart
+const revOptions = {
+  chart: { type:'area', height:260, toolbar:{show:false}, background:'transparent', fontFamily:'Inter, sans-serif' },
+  theme: { mode: isDark ? 'dark' : 'light' },
+  series: [
+    { name:'Online', data:[3200,2800,4100,3600,5200,4800,5800] },
+    { name:'Offline', data:[1800,2100,2400,1900,2600,2200,2650] }
+  ],
+  xaxis: { categories:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{colors:muted}} },
+  yaxis: { labels:{ formatter:v=>'৳'+v, style:{colors:muted} } },
+  colors:['#6366f1','#f59e0b'],
+  stroke:{ curve:'smooth', width:2 },
+  fill:{ type:'gradient', gradient:{shadeIntensity:.1, opacityFrom:.4, opacityTo:0} },
+  dataLabels:{enabled:false},
+  legend:{position:'top', horizontalAlign:'right'},
+  grid:{ borderColor:grid, strokeDashArray:4 },
+  tooltip:{ theme: isDark?'dark':'light' }
+};
+new ApexCharts(document.getElementById('revenueChart'), revOptions).render();
+
+// Donut
+new ApexCharts(document.getElementById('donutChart'), {
+  chart:{type:'donut',height:260,background:'transparent'},
+  theme:{mode:isDark?'dark':'light'},
+  series:[28,12,15,8,5],
+  labels:['Pending','Printing','Ready','Delivered','Cancelled'],
+  colors:['#f59e0b','#3b82f6','#10b981','#64748b','#ef4444'],
+  dataLabels:{enabled:false},
+  legend:{position:'bottom',labels:{colors:muted}},
+  plotOptions:{pie:{donut:{size:'70%'}}},
+  tooltip:{theme:isDark?'dark':'light'}
+}).render();
+
+// Top Customers
+new ApexCharts(document.getElementById('topCustChart'), {
+  chart:{type:'bar',height:200,toolbar:{show:false},background:'transparent'},
+  theme:{mode:isDark?'dark':'light'},
+  series:[{name:'Orders',data:[42,38,31,28,24,20,18,15,12,10]}],
+  xaxis:{categories:['Tariqul','Arif','Sadia','Karim','Rina','Hasan','Mitu','Faruk','Laila','Rony'],labels:{style:{colors:muted}}},
+  colors:['#6366f1'],
+  dataLabels:{enabled:false},
+  plotOptions:{bar:{borderRadius:4,horizontal:true}},
+  grid:{borderColor:grid},
+  tooltip:{theme:isDark?'dark':'light'}
+}).render();
+
+function updateRevChart(period, btn) {
+  document.querySelectorAll('[onclick*=updateRevChart]').forEach(b => b.classList.remove('active','btn-primary'));
+  btn.classList.add('active');
+}
+function refreshDashboard() { Toast.show('Dashboard refreshed!','success',2000); }
+</script>
+{% endblock %}

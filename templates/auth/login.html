@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Login — Print-Edge{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper" style="background:var(--bg)">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5 col-lg-4">
+        <!-- Logo -->
+        <div class="text-center mb-4">
+          <div class="avatar avatar-xl bg-gradient-primary mx-auto mb-3 shadow-lg">
+            <i class="bi bi-printer-fill" style="font-size:1.8rem"></i>
+          </div>
+          <h1 class="fw-bolder mb-1" style="font-size:1.6rem">Welcome back!</h1>
+          <p class="text-muted small">Sign in to your Print-Edge account</p>
+        </div>
+
+        <div class="auth-card p-4 p-md-5">
+          <form id="loginForm" method="post" action="{% url 'auth_login_page' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" name="email" class="form-control" required placeholder="you@example.com" autofocus>
+              </div>
+            </div>
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label mb-0">Password</label>
+                <a href="#" class="small" style="color:var(--primary)">Forgot password?</a>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="password" id="loginPwd" class="form-control" required placeholder="••••••••">
+                <button class="btn btn-ghost" type="button" onclick="togglePwd('loginPwd',this)" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold mb-3" id="loginBtn">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+          </form>
+          <div id="loginAlert" class="alert alert-danger rounded d-none mt-2 py-2 small"></div>
+          <p class="text-center text-muted small mb-0">
+            Don't have an account?
+            <a href="{% url 'auth_register_page' %}" style="color:var(--primary);font-weight:600">Create one free</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+function togglePwd(id, btn) {
+  const el = document.getElementById(id);
+  const isText = el.type === 'text';
+  el.type = isText ? 'password' : 'text';
+  btn.querySelector('i').className = isText ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+  const data = { email: e.target.email.value, password: e.target.password.value };
+  try {
+    const res = await fetch('/auth/login/', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}, body: JSON.stringify(data) });
+    const result = await res.json();
+    if (result.success) { window.location.href = result.redirect || '/admin/dashboard/'; }
+    else {
+      const al = document.getElementById('loginAlert');
+      al.textContent = result.message || 'Invalid email or password.';
+      al.classList.remove('d-none');
+    }
+  } catch {
+    document.getElementById('loginAlert').textContent = 'Connection error. Please try again.';
+    document.getElementById('loginAlert').classList.remove('d-none');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Sign In';
+});
+</script>
+{% endblock %}
+{% endblock %}

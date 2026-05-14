@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.order_number|default:"PE-ON-0027" }} — Print-Edge{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-left me-2"></i>Back to Dashboard</a>
+  </div>
+  
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4" style="background:var(--bg-card)">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+          <h5 class="mb-0 fw-bold">Order Details</h5>
+          <span class="badge badge-ready">Ready for Pickup</span>
+        </div>
+        <div class="card-body">
+          <h6 class="text-muted small fw-bold text-uppercase mb-3">Files & Specifications</h6>
+          <div class="d-flex align-items-start gap-3 p-3 rounded mb-3" style="border:1px solid var(--border)">
+            <i class="bi bi-file-earmark-pdf text-danger fs-3"></i>
+            <div>
+              <div class="fw-semibold">assignment_final.pdf</div>
+              <div class="text-muted small">12 Pages &bull; 2.4 MB</div>
+            </div>
+          </div>
+          
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="text-muted small mb-1">Print Type</div>
+              <div class="fw-semibold">Black & White</div>
+            </div>
+            <div class="col-sm-6">
+              <div class="text-muted small mb-1">Sides</div>
+              <div class="fw-semibold">Double Sided</div>
+            </div>
+            <div class="col-sm-6">
+              <div class="text-muted small mb-1">Copies</div>
+              <div class="fw-semibold">2</div>
+            </div>
+            <div class="col-sm-6">
+              <div class="text-muted small mb-1">Binding</div>
+              <div class="fw-semibold">Stapled</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
+        <div class="card-body">
+          <h6 class="text-muted small fw-bold text-uppercase mb-3">Order Timeline</h6>
+          <div class="timeline">
+            <div class="timeline-item active">
+              <div class="fw-bold">Ready for Pickup</div>
+              <div class="text-muted small">Today, 2:15 PM</div>
+            </div>
+            <div class="timeline-item">
+              <div class="fw-bold">Printing</div>
+              <div class="text-muted small">Today, 1:45 PM</div>
+            </div>
+            <div class="timeline-item">
+              <div class="fw-bold">Confirmed</div>
+              <div class="text-muted small">Today, 1:30 PM</div>
+            </div>
+            <div class="timeline-item">
+              <div class="fw-bold">Order Placed</div>
+              <div class="text-muted small">Today, 1:25 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4" style="background:var(--bg-card)">
+        <div class="card-header bg-transparent py-3">
+          <h6 class="mb-0 fw-bold">Payment Summary</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2 text-muted">
+            <span>Printing (12p × 2)</span>
+            <span>৳72</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3 text-muted">
+            <span>Stapling</span>
+            <span>৳5</span>
+          </div>
+          <hr style="border-color:var(--border)">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-bold">Total Amount</span>
+            <span class="fw-bold fs-4 text-primary">৳77</span>
+          </div>
+          <div class="alert alert-success d-flex align-items-center mb-0" style="background:rgba(16,185,129,0.1);border-color:transparent;color:var(--success)">
+            <i class="bi bi-check-circle-fill me-2"></i>Paid via bKash
+          </div>
+        </div>
+      </div>
+      
+      <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
+        <div class="card-body text-center">
+          <i class="bi bi-qr-code text-muted" style="font-size:4rem"></i>
+          <h6 class="fw-bold mt-2">Pickup Code</h6>
+          <div class="display-6 fw-bold text-gradient letter-spacing-2">9A4X</div>
+          <p class="text-muted small mt-2 mb-0">Show this code at the counter to collect your prints.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

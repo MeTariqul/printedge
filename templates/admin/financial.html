@@ -1,0 +1,125 @@
+{% extends "admin_base.html" %}
+{% block title %}Financial — PrintEase Admin{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Financial Management</li>{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h2 class="fw-bold mb-0">Financial Overview</h2><p class="text-muted small mb-0">Track revenue, expenses, and digital payments.</p></div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-ghost btn-sm" data-bs-toggle="modal" data-bs-target="#expenseModal"><i class="bi bi-dash-circle me-1 text-danger"></i>Add Expense</button>
+    <button class="btn btn-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#closeDrawerModal"><i class="bi bi-safe me-1"></i>Close Drawer</button>
+  </div>
+</div>
+
+<!-- Financial KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-3">
+    <div class="card border-0 p-3 stat-card">
+      <div class="text-muted small fw-bold mb-1 text-uppercase">Net Revenue (Today)</div>
+      <div class="fw-bold" style="font-size:1.6rem;color:var(--success)">৳8,450</div>
+      <div class="d-flex justify-content-between mt-2" style="font-size:.7rem;color:var(--text-muted)">
+        <span>Gross: ৳8,600</span><span>Discounts: ৳150</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-3">
+    <div class="card border-0 p-3 stat-card">
+      <div class="text-muted small fw-bold mb-1 text-uppercase">Cash in Drawer</div>
+      <div class="fw-bold" style="font-size:1.6rem">৳5,600</div>
+      <div class="d-flex justify-content-between mt-2" style="font-size:.7rem;color:var(--text-muted)">
+        <span>Opening: ৳400</span><span>Cash Sales: ৳5,200</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-3">
+    <div class="card border-0 p-3 stat-card">
+      <div class="text-muted small fw-bold mb-1 text-uppercase">Digital Payments</div>
+      <div class="fw-bold" style="font-size:1.6rem;color:var(--primary)">৳3,250</div>
+      <div class="d-flex justify-content-between mt-2" style="font-size:.7rem;color:var(--text-muted)">
+        <span>bKash: ৳2,100</span><span>Nagad: ৳1,150</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-3">
+    <div class="card border-0 p-3 stat-card">
+      <div class="text-muted small fw-bold mb-1 text-uppercase">Expenses (Today)</div>
+      <div class="fw-bold" style="font-size:1.6rem;color:var(--danger)">৳420</div>
+      <div class="d-flex justify-content-between mt-2" style="font-size:.7rem;color:var(--text-muted)">
+        <span>Tea/Snacks: ৳120</span><span>Delivery: ৳300</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Transactions Table -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header px-4 pt-3 pb-2 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">Recent Transactions</h6>
+        <div class="d-flex gap-2">
+          <select class="form-select form-select-sm" style="width:120px"><option>All Methods</option><option>Cash</option><option>bKash</option></select>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th class="ps-4">Time</th><th>Order/Ref</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="ps-4 text-muted" style="font-size:.8rem">10:45 AM</td>
+              <td class="fw-semibold" style="font-size:.85rem">PE-OFF-0028</td>
+              <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)"><i class="bi bi-cash me-1 text-success"></i>Cash</span></td>
+              <td class="fw-bold text-success">+৳504</td>
+              <td><i class="bi bi-check-circle-fill text-success" style="font-size:.8rem"></i></td>
+            </tr>
+            <tr>
+              <td class="ps-4 text-muted" style="font-size:.8rem">10:15 AM</td>
+              <td class="fw-semibold" style="font-size:.85rem">PE-ON-0027</td>
+              <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)"><i class="bi bi-phone me-1 text-primary"></i>bKash</span><div class="text-muted mt-1" style="font-size:.65rem">Txn: 9A8B7C6D5E</div></td>
+              <td class="fw-bold text-success">+৳150</td>
+              <td><i class="bi bi-check-circle-fill text-success" style="font-size:.8rem"></i></td>
+            </tr>
+            <tr>
+              <td class="ps-4 text-muted" style="font-size:.8rem">09:30 AM</td>
+              <td class="fw-semibold" style="font-size:.85rem">Expense: Delivery</td>
+              <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)"><i class="bi bi-cash me-1 text-success"></i>Cash</span></td>
+              <td class="fw-bold text-danger">-৳300</td>
+              <td><i class="bi bi-check-circle-fill text-success" style="font-size:.8rem"></i></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Financial Reports Quick Links -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header px-4 pt-3 pb-2"><h6 class="fw-bold mb-0">Daily Closing Status</h6></div>
+      <div class="card-body px-4 pb-4">
+        <div class="d-flex align-items-center gap-3 p-3 rounded mb-3" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)">
+          <i class="bi bi-unlock-fill text-warning fs-4"></i>
+          <div><div class="fw-bold text-warning" style="font-size:.9rem">Drawer is OPEN</div><div class="text-muted" style="font-size:.75rem">Last closed: Yesterday, 10:00 PM</div></div>
+        </div>
+        <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#closeDrawerModal">Perform Daily Closing</button>
+        <button class="btn btn-ghost w-100 text-muted"><i class="bi bi-clock-history me-1"></i>View Previous Closings</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="expenseModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-dash-circle me-2 text-danger"></i>Add Expense</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Category</label><select class="form-select"><option>Office Supplies</option><option>Delivery</option><option>Food & Snacks</option><option>Maintenance</option><option>Other</option></select></div>
+        <div class="mb-3"><label class="form-label">Amount (৳)</label><input type="number" class="form-control" placeholder="0"></div>
+        <div class="mb-3"><label class="form-label">Paid From</label><select class="form-select"><option>Cash Drawer</option><option>Owner's Pocket</option><option>Bank Account</option></select></div>
+        <div class="mb-3"><label class="form-label">Notes</label><textarea class="form-control" rows="2" placeholder="Description..."></textarea></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button><button class="btn btn-danger">Add Expense</button></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

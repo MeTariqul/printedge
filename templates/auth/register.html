@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Create Account — Print-Edge{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper" style="background:var(--bg)">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <!-- Logo -->
+        <div class="text-center mb-4">
+          <div class="avatar avatar-xl bg-gradient-primary mx-auto mb-3 shadow-lg">
+            <i class="bi bi-person-plus-fill" style="font-size:1.8rem"></i>
+          </div>
+          <h1 class="fw-bolder mb-1" style="font-size:1.6rem">Create your account</h1>
+          <p class="text-muted small">Join hundreds of students on Print-Edge</p>
+        </div>
+
+        <div class="auth-card p-4 p-md-5">
+          <form id="regForm" method="post" action="{% url 'auth_register_page' %}">
+            {% csrf_token %}
+            <div class="row g-3 mb-3">
+              <div class="col-12">
+                <label class="form-label">Full Name</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input type="text" name="full_name" class="form-control" required placeholder="Tariqul Islam" autofocus>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Email Address</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                  <input type="email" name="email" class="form-control" required placeholder="you@example.com">
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Phone Number</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                  <input type="tel" name="phone" class="form-control" required placeholder="+8801XXXXXXXXX">
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                  <input type="password" name="password" id="regPwd" class="form-control" required placeholder="Min 8 characters">
+                  <button class="btn btn-ghost" type="button" onclick="togglePwd('regPwd',this)" tabindex="-1">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+              <label class="form-check-label small text-muted" for="agreeTerms">
+                I agree to Print-Edge's <a href="#" style="color:var(--primary)">Terms of Service</a>
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold mb-3" id="regBtn">
+              <i class="bi bi-person-check-fill me-2"></i>Create Account
+            </button>
+          </form>
+          <div id="regAlert" class="alert d-none mt-2 py-2 small rounded"></div>
+          <p class="text-center text-muted small mb-0">
+            Already have an account?
+            <a href="{% url 'auth_login_page' %}" style="color:var(--primary);font-weight:600">Sign in</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+function togglePwd(id, btn) {
+  const el = document.getElementById(id);
+  const isText = el.type === 'text';
+  el.type = isText ? 'password' : 'text';
+  btn.querySelector('i').className = isText ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+document.getElementById('regForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('regBtn');
+  const al = document.getElementById('regAlert');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
+  const data = Object.fromEntries(new FormData(e.target));
+  try {
+    const res = await fetch('/auth/register/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (res.ok && result.success) {
+      al.className = 'alert alert-success rounded mt-2 py-2 small';
+      al.textContent = '✓ Account created! Redirecting to login...';
+      al.classList.remove('d-none');
+      setTimeout(() => window.location.href = "{% url 'auth_login_page' %}", 1500);
+    } else {
+      al.className = 'alert alert-danger rounded mt-2 py-2 small';
+      al.textContent = result.message || 'Registration failed. Please try again.';
+      al.classList.remove('d-none');
+    }
+  } catch {
+    al.className = 'alert alert-danger rounded mt-2 py-2 small';
+    al.textContent = 'Connection error. Please try again.';
+    al.classList.remove('d-none');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-person-check-fill me-2"></i>Create Account';
+});
+</script>
+{% endblock %}
+{% endblock %}

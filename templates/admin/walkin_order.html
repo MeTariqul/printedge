@@ -1,0 +1,404 @@
+{% extends "admin_base.html" %}
+{% block title %}New Walk-in Order — PrintEase{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Walk-in Order</li>{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-shop me-2" style="color:var(--primary)"></i>New Walk-in Order</h2>
+    <p class="text-muted mb-0 small">Serve walk-in customers quickly — 6 simple steps.</p>
+  </div>
+  <span class="badge" style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:.8rem;padding:.5rem 1rem">
+    <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Offline Order
+  </span>
+</div>
+
+<!-- Wizard Steps -->
+<div class="wizard-steps mb-4">
+  <div class="wizard-step active" id="ws1"><div class="step-circle">1</div><span class="step-label">Customer</span></div>
+  <div class="wizard-step" id="ws2"><div class="step-circle">2</div><span class="step-label">File</span></div>
+  <div class="wizard-step" id="ws3"><div class="step-circle">3</div><span class="step-label">Print Options</span></div>
+  <div class="wizard-step" id="ws4"><div class="step-circle">4</div><span class="step-label">Pricing</span></div>
+  <div class="wizard-step" id="ws5"><div class="step-circle">5</div><span class="step-label">Payment</span></div>
+  <div class="wizard-step" id="ws6"><div class="step-circle">6</div><span class="step-label">Receipt</span></div>
+</div>
+
+<form id="walkinForm">
+<!-- Step 1: Customer -->
+<div class="wizard-panel card border-0 shadow-sm p-4" id="panel1">
+  <h5 class="fw-bold mb-3">Step 1: Select Customer</h5>
+  <div class="mb-3">
+    <div class="input-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="text" class="form-control" id="custSearch" placeholder="Search by name or phone..." oninput="searchCustomer(this.value)">
+    </div>
+  </div>
+  <div id="custResults" class="mb-3"></div>
+  <hr class="divider">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+    <span class="text-muted small">OR ADD NEW</span>
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-md-6"><label class="form-label">Full Name *</label><input type="text" class="form-control" id="newCustName" placeholder="Customer name"></div>
+    <div class="col-md-6"><label class="form-label">Phone *</label><input type="text" class="form-control" id="newCustPhone" placeholder="01XXXXXXXXX"></div>
+  </div>
+  <div class="mt-3 p-3 rounded" id="selectedCustomerCard" style="display:none;background:var(--primary-light);border:1px solid rgba(99,102,241,.2)">
+    <div class="d-flex align-items-center gap-3">
+      <div style="width:40px;height:40px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700" id="custInitial">?</div>
+      <div><div class="fw-bold" id="custName">—</div><div class="text-muted small" id="custPhone">—</div></div>
+      <span class="badge ms-auto" id="custTier"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Step 2: File -->
+<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel2">
+  <h5 class="fw-bold mb-3">Step 2: File / Document</h5>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <div class="p-4 rounded text-center cursor-pointer" id="fileUploadArea" style="border:2px dashed var(--border);transition:var(--transition)" onclick="document.getElementById('fileInput').click()">
+        <i class="bi bi-cloud-upload" style="font-size:2rem;color:var(--primary)"></i>
+        <div class="fw-semibold mt-2">Upload File</div>
+        <div class="text-muted small">PDF, DOCX, PPTX, JPG, PNG</div>
+        <input type="file" id="fileInput" class="d-none" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" onchange="handleFile(this)">
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="p-4 rounded text-center cursor-pointer" id="physicalDocBtn" onclick="selectPhysical()" style="border:2px dashed var(--border);transition:var(--transition)">
+        <i class="bi bi-file-earmark-text" style="font-size:2rem;color:var(--warning)"></i>
+        <div class="fw-semibold mt-2">Physical Document</div>
+        <div class="text-muted small">No file — manual page count</div>
+      </div>
+    </div>
+  </div>
+  <div id="physicalPageCount" class="d-none">
+    <label class="form-label fw-semibold">Number of Pages (manual count)</label>
+    <input type="number" class="form-control" id="manualPages" placeholder="Enter page count" min="1">
+  </div>
+  <div id="fileInfo" class="d-none p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+    <div class="d-flex align-items-center gap-3">
+      <i class="bi bi-file-earmark-pdf-fill text-danger" style="font-size:1.5rem"></i>
+      <div><div class="fw-semibold" id="fileName">—</div><div class="text-muted small" id="filePages">Detecting pages...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 3: Print Options -->
+<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel3">
+  <h5 class="fw-bold mb-3">Step 3: Print Options</h5>
+  <div class="mb-4">
+    <label class="form-label fw-semibold">Quick Presets</label>
+    <div class="d-flex flex-wrap gap-2">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('thesis')"><i class="bi bi-book me-1"></i>Thesis Print</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('assignment')"><i class="bi bi-file-text me-1"></i>Assignment</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('photo')"><i class="bi bi-image me-1"></i>Photo Print</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('handout')"><i class="bi bi-journals me-1"></i>Handout Bundle</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('poster')"><i class="bi bi-aspect-ratio me-1"></i>Poster</button>
+    </div>
+  </div>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Print Type</label>
+      <select class="form-select" id="printType" onchange="updatePrice()">
+        <option value="bw">Black & White</option>
+        <option value="color">Color</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Sides</label>
+      <select class="form-select" id="sides" onchange="updatePrice()">
+        <option value="single">Single Sided</option>
+        <option value="double">Double Sided</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Paper Size</label>
+      <select class="form-select" id="paperSize">
+        <option value="a4">A4</option>
+        <option value="a3">A3</option>
+        <option value="letter">Letter</option>
+        <option value="legal">Legal</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Copies</label>
+      <input type="number" class="form-control" id="copies" value="1" min="1" oninput="updatePrice()">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Pages</label>
+      <input type="number" class="form-control" id="pages" value="1" min="1" oninput="updatePrice()">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Priority</label>
+      <select class="form-select" id="priority" onchange="updatePrice()">
+        <option value="normal">Normal</option>
+        <option value="urgent">Urgent (+50%)</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Add-ons</label>
+      <div class="d-flex flex-wrap gap-2">
+        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addSpiral" value="spiral_bind" onchange="updatePrice()"><label class="form-check-label" for="addSpiral">Spiral Bind +৳20</label></div>
+        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addComb" value="comb_bind" onchange="updatePrice()"><label class="form-check-label" for="addComb">Comb Bind +৳15</label></div>
+        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addStaple" value="stapled" onchange="updatePrice()"><label class="form-check-label" for="addStaple">Stapled +৳5</label></div>
+        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addLam" value="lamination" onchange="updatePrice()"><label class="form-check-label" for="addLam">Lamination +৳15</label></div>
+      </div>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Special Instructions</label>
+      <textarea class="form-control" id="notes" rows="2" placeholder="Any special notes..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Step 4: Pricing -->
+<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel4">
+  <h5 class="fw-bold mb-3">Step 4: Pricing & Discount</h5>
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+        <div class="text-muted small mb-2">Price Breakdown</div>
+        <div class="d-flex justify-content-between mb-1"><span>Base price</span><span id="basePrice" class="fw-semibold">৳0</span></div>
+        <div class="d-flex justify-content-between mb-1"><span>Add-ons</span><span id="addonPrice">৳0</span></div>
+        <div class="d-flex justify-content-between mb-1 text-danger"><span>Discount</span><span id="discountAmt">-৳0</span></div>
+        <hr class="divider my-2">
+        <div class="d-flex justify-content-between"><span class="fw-bold">Total</span><span class="fw-bold fs-4" style="color:var(--primary)" id="totalPrice">৳0</span></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Manual Discount (%)</label>
+      <input type="number" class="form-control mb-2" id="manualDiscount" value="0" min="0" max="100" oninput="updatePrice()">
+      <label class="form-label">Discount Reason</label>
+      <input type="text" class="form-control" id="discountReason" placeholder="e.g. Student, Loyalty, Manager approval">
+    </div>
+  </div>
+</div>
+
+<!-- Step 5: Payment -->
+<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel5">
+  <h5 class="fw-bold mb-3">Step 5: Payment</h5>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Payment Method</label>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('cash')" id="pm_cash"><i class="bi bi-cash me-1"></i>Cash</button>
+        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('bkash')" id="pm_bkash"><i class="bi bi-phone me-1"></i>bKash</button>
+        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('nagad')" id="pm_nagad">Nagad</button>
+        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('rocket')" id="pm_rocket">Rocket</button>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Amount Received (৳)</label>
+      <input type="number" class="form-control" id="amtReceived" placeholder="0" oninput="calcChange()">
+    </div>
+    <div class="col-md-6 d-none" id="txnIdRow">
+      <label class="form-label">Transaction ID</label>
+      <input type="text" class="form-control" id="txnId" placeholder="bKash/Nagad TxnID">
+    </div>
+    <div class="col-12">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="partialPay" onchange="togglePartial()">
+        <label class="form-check-label" for="partialPay">Partial Payment (customer will pay remaining later)</label>
+      </div>
+    </div>
+    <div class="col-md-6 d-none" id="partialAmtRow">
+      <label class="form-label">Amount Paying Now (৳)</label>
+      <input type="number" class="form-control" id="partialAmt" placeholder="0" oninput="calcChange()">
+    </div>
+  </div>
+  <div class="mt-3 p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
+    <div class="d-flex justify-content-between mb-1"><span>Order Total</span><span id="payTotal" class="fw-semibold">৳0</span></div>
+    <div class="d-flex justify-content-between mb-1"><span>Amount Received</span><span id="payReceived">৳0</span></div>
+    <div class="d-flex justify-content-between fw-bold" style="color:var(--success)"><span>Change</span><span id="payChange">৳0</span></div>
+  </div>
+</div>
+
+<!-- Step 6: Receipt -->
+<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel6">
+  <h5 class="fw-bold mb-3">Step 6: Order Confirmed!</h5>
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="p-3 rounded mb-3" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)">
+        <i class="bi bi-check-circle-fill text-success me-2"></i>
+        <span class="fw-semibold" style="color:var(--success)">Order Created Successfully</span>
+        <div class="mt-2"><span class="fw-bold fs-5" id="orderNumber">PE-OFF-...</span></div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="bi bi-printer me-1"></i>Print Receipt</button>
+        <button type="button" class="btn btn-ghost" onclick="printJobSheet()"><i class="bi bi-file-earmark-text me-1"></i>Job Sheet</button>
+        <a href="{% url 'admin_orders' %}" class="btn btn-ghost"><i class="bi bi-list me-1"></i>View Orders</a>
+        <button type="button" class="btn btn-gradient" onclick="resetWizard()"><i class="bi bi-plus me-1"></i>New Order</button>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <!-- Thermal Receipt Preview -->
+      <div class="receipt" id="receiptPreview">
+        <div class="text-center fw-bold" style="font-size:14px">PrintEase</div>
+        <div class="text-center" style="font-size:10px">Gono Bishwabidyalay Campus</div>
+        <div class="receipt-divider"></div>
+        <div class="d-flex justify-content-between"><span>Order:</span><span id="rcOrderNum">PE-OFF-...</span></div>
+        <div class="d-flex justify-content-between"><span>Customer:</span><span id="rcCust">—</span></div>
+        <div class="d-flex justify-content-between"><span>Phone:</span><span id="rcPhone">—</span></div>
+        <div class="receipt-divider"></div>
+        <div class="d-flex justify-content-between"><span>Print Type:</span><span id="rcType">—</span></div>
+        <div class="d-flex justify-content-between"><span>Pages:</span><span id="rcPages">—</span></div>
+        <div class="d-flex justify-content-between"><span>Copies:</span><span id="rcCopies">—</span></div>
+        <div class="receipt-divider"></div>
+        <div class="d-flex justify-content-between fw-bold"><span>Total:</span><span id="rcTotal">৳0</span></div>
+        <div class="d-flex justify-content-between"><span>Payment:</span><span id="rcPayment">—</span></div>
+        <div class="d-flex justify-content-between"><span>Change:</span><span id="rcChange">৳0</span></div>
+        <div class="receipt-divider"></div>
+        <div class="text-center" style="font-size:10px">Thank you! Come again.</div>
+        <div class="text-center" id="rcDate" style="font-size:9px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="d-flex justify-content-between mt-4">
+  <button type="button" class="btn btn-ghost" id="wizardPrev" onclick="Wizard.prev()" disabled>
+    <i class="bi bi-arrow-left me-1"></i>Previous
+  </button>
+  <button type="button" class="btn btn-primary" id="wizardNext" onclick="handleNext()">
+    Next <i class="bi bi-arrow-right ms-1"></i>
+  </button>
+</div>
+</form>
+
+<script>
+let orderData = { customer: null, fileType: 'upload', pages: 1, copies: 1, printType: 'bw', sides: 'single', addons: [], discount: 0, paymentMethod: 'cash', amtReceived: 0, total: 0 };
+
+Wizard.init(6);
+
+function handleNext() {
+  if (Wizard.current === 6) { submitOrder(); return; }
+  Wizard.next();
+  if (Wizard.current === 4) updatePrice();
+  if (Wizard.current === 5) document.getElementById('payTotal').textContent = formatCurrency(orderData.total);
+}
+
+function searchCustomer(q) {
+  if (q.length < 2) { document.getElementById('custResults').innerHTML = ''; return; }
+  // Simulated results for demo
+  const results = [{ name: 'Tariqul Islam', phone: '01700000001', tier: 'Gold', orders: 32 }].filter(c => c.name.toLowerCase().includes(q.toLowerCase()) || c.phone.includes(q));
+  document.getElementById('custResults').innerHTML = results.map(c => `
+    <div class="p-3 rounded mb-1 cursor-pointer" style="background:var(--bg-card2);border:1px solid var(--border)" onclick='selectCustomer(${JSON.stringify(c)})'>
+      <div class="d-flex align-items-center gap-3">
+        <div style="width:36px;height:36px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700">${c.name[0]}</div>
+        <div><div class="fw-semibold">${c.name}</div><div class="text-muted small">${c.phone} · ${c.orders} orders</div></div>
+        <span class="badge tier-gold ms-auto">${c.tier}</span>
+      </div>
+    </div>`).join('') || '<div class="text-muted small p-2">No matching customers found</div>';
+}
+
+function selectCustomer(c) {
+  orderData.customer = c;
+  document.getElementById('custName').textContent = c.name;
+  document.getElementById('custPhone').textContent = c.phone;
+  document.getElementById('custInitial').textContent = c.name[0];
+  document.getElementById('custTier').textContent = c.tier || '';
+  document.getElementById('selectedCustomerCard').style.display = '';
+  document.getElementById('custResults').innerHTML = '';
+  document.getElementById('custSearch').value = c.name;
+}
+
+function handleFile(input) {
+  const f = input.files[0];
+  if (!f) return;
+  orderData.fileType = 'upload';
+  document.getElementById('fileName').textContent = f.name;
+  document.getElementById('filePages').textContent = 'Counting pages...';
+  document.getElementById('fileInfo').classList.remove('d-none');
+  document.getElementById('pages').value = 10; // placeholder
+  orderData.pages = 10;
+  updatePrice();
+}
+
+function selectPhysical() {
+  orderData.fileType = 'physical';
+  document.getElementById('physicalDocBtn').style.borderColor = 'var(--warning)';
+  document.getElementById('physicalPageCount').classList.remove('d-none');
+}
+
+function applyPreset(preset) {
+  const presets = {
+    thesis: { printType: 'bw', sides: 'double', copies: 1 },
+    assignment: { printType: 'bw', sides: 'single', copies: 1 },
+    photo: { printType: 'color', sides: 'single', copies: 1 },
+    handout: { printType: 'bw', sides: 'double', copies: 30 },
+    poster: { printType: 'color', sides: 'single', copies: 1 }
+  };
+  const p = presets[preset];
+  if (!p) return;
+  document.getElementById('printType').value = p.printType;
+  document.getElementById('sides').value = p.sides;
+  document.getElementById('copies').value = p.copies;
+  updatePrice();
+  Toast.show(`Preset "${preset}" applied!`, 'success', 2000);
+}
+
+function updatePrice() {
+  const pages = parseInt(document.getElementById('pages')?.value) || 1;
+  const copies = parseInt(document.getElementById('copies')?.value) || 1;
+  const pt = document.getElementById('printType')?.value || 'bw';
+  const sides = document.getElementById('sides')?.value || 'single';
+  const urgent = document.getElementById('priority')?.value === 'urgent';
+  const discount = parseFloat(document.getElementById('manualDiscount')?.value) || 0;
+  const addons = Array.from(document.querySelectorAll('.form-check-input[value]:checked')).map(el => el.value);
+  const result = PriceCalc.calculate(pages, copies, pt, sides, addons, discount, urgent);
+  orderData.total = result.total;
+  orderData.pages = pages; orderData.copies = copies; orderData.printType = pt; orderData.sides = sides;
+  document.getElementById('basePrice').textContent = formatCurrency(result.base);
+  document.getElementById('addonPrice').textContent = formatCurrency(result.addons);
+  document.getElementById('discountAmt').textContent = '-' + formatCurrency(result.discount);
+  document.getElementById('totalPrice').textContent = formatCurrency(result.total);
+}
+
+function selectPM(method) {
+  orderData.paymentMethod = method;
+  document.querySelectorAll('.pmBtn').forEach(b => b.classList.remove('btn-primary'));
+  document.getElementById('pm_' + method)?.classList.add('btn-primary');
+  document.getElementById('txnIdRow').classList.toggle('d-none', method === 'cash');
+}
+
+function togglePartial() {
+  document.getElementById('partialAmtRow').classList.toggle('d-none', !document.getElementById('partialPay').checked);
+}
+
+function calcChange() {
+  const total = orderData.total;
+  const received = parseFloat(document.getElementById('amtReceived').value) || 0;
+  const change = Math.max(0, received - total);
+  document.getElementById('payReceived').textContent = formatCurrency(received);
+  document.getElementById('payChange').textContent = formatCurrency(change);
+}
+
+function submitOrder() {
+  const num = 'PE-OFF-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Math.floor(Math.random()*9000)+1000);
+  orderData.orderNumber = num;
+  document.getElementById('orderNumber').textContent = num;
+  document.getElementById('rcOrderNum').textContent = num;
+  document.getElementById('rcCust').textContent = orderData.customer?.name || document.getElementById('newCustName').value || '—';
+  document.getElementById('rcPhone').textContent = orderData.customer?.phone || document.getElementById('newCustPhone').value || '—';
+  document.getElementById('rcType').textContent = orderData.printType.toUpperCase() + ' ' + orderData.sides;
+  document.getElementById('rcPages').textContent = orderData.pages;
+  document.getElementById('rcCopies').textContent = orderData.copies;
+  document.getElementById('rcTotal').textContent = formatCurrency(orderData.total);
+  document.getElementById('rcPayment').textContent = orderData.paymentMethod;
+  document.getElementById('rcChange').textContent = formatCurrency(parseFloat(document.getElementById('amtReceived')?.value||0) - orderData.total);
+  document.getElementById('rcDate').textContent = new Date().toLocaleString();
+  Wizard.next();
+  Toast.show('Walk-in order created! ' + num, 'success');
+}
+
+function printReceipt() { window.print(); }
+function printJobSheet() { alert('Job sheet printing...'); }
+function resetWizard() { location.reload(); }
+
+// Init
+selectPM('cash');
+updatePrice();
+</script>
+{% endblock %}

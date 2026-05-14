@@ -1,0 +1,18 @@
+{% extends "admin_base.html" %}
+{% block title %}Audit Log — PrintEase Admin{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Audit Log</li>{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h2 class="fw-bold mb-0">Audit Log</h2><p class="text-muted small mb-0">Complete history of system changes.</p></div>
+  <button class="btn btn-ghost btn-sm"><i class="bi bi-download me-1"></i>Export Logs</button>
+</div>
+<div class="table-container card border-0 shadow-sm">
+  <table class="table mb-0">
+    <thead><tr><th class="ps-4">Timestamp</th><th>User</th><th>Action</th><th>Resource</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td class="ps-4 text-muted" style="font-size:.8rem">2026-05-13 10:45:12</td><td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)">Tariqul</span></td><td><span class="badge badge-ready">CREATE</span></td><td>Order</td><td class="text-muted" style="font-size:.8rem">Created walk-in order PE-OFF-0028</td></tr>
+      <tr><td class="ps-4 text-muted" style="font-size:.8rem">2026-05-13 09:30:00</td><td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)">System</span></td><td><span class="badge badge-cancelled">DELETE</span></td><td>File</td><td class="text-muted" style="font-size:.8rem">Auto-deleted files for PE-ON-0010 (7 days)</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

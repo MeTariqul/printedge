@@ -1,0 +1,125 @@
+{% extends "admin_base.html" %}
+{% block title %}Order Detail — PrintEase Admin{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'admin_orders' %}">Orders</a></li>
+<li class="breadcrumb-item active">Order Detail</li>
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Order #PE-OFF-20260513-0028</h2>
+    <p class="text-muted small mb-0"><i class="bi bi-clock me-1"></i>Placed: Today, 10:45 AM &bull; <span class="badge badge-offline">Offline</span></p>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-ghost btn-sm"><i class="bi bi-printer me-1"></i>Print Job Sheet</button>
+    <button class="btn btn-gradient btn-sm"><i class="bi bi-check-circle me-1"></i>Mark Ready</button>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Order Info -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header" style="background:var(--bg-card2)">
+        <h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Print Specifications</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="text-muted small fw-semibold mb-1">Print Type</div>
+            <div class="fw-semibold">Black &amp; White</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small fw-semibold mb-1">Sides</div>
+            <div class="fw-semibold">Double Sided</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small fw-semibold mb-1">Pages</div>
+            <div class="fw-semibold">24 pages</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small fw-semibold mb-1">Copies</div>
+            <div class="fw-semibold">3 copies</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small fw-semibold mb-1">File</div>
+            <div class="fw-semibold"><i class="bi bi-file-earmark-pdf text-danger me-1"></i>thesis.pdf</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small fw-semibold mb-1">Binding</div>
+            <div class="fw-semibold">Spiral Binding (+৳20)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header" style="background:var(--bg-card2)">
+        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Order Timeline</h6>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="timeline-item active">
+            <div class="fw-semibold" style="font-size:.875rem">Order Placed</div>
+            <div class="text-muted small">Today, 10:45 AM — Customer dropped file at counter</div>
+          </div>
+          <div class="timeline-item">
+            <div class="fw-semibold" style="font-size:.875rem">Confirmed</div>
+            <div class="text-muted small">Awaiting staff confirmation</div>
+          </div>
+          <div class="timeline-item">
+            <div class="fw-semibold" style="font-size:.875rem">Printing</div>
+            <div class="text-muted small">—</div>
+          </div>
+          <div class="timeline-item">
+            <div class="fw-semibold" style="font-size:.875rem">Ready for Pickup</div>
+            <div class="text-muted small">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer & Payment -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header" style="background:var(--bg-card2)">
+        <h6 class="fw-bold mb-0"><i class="bi bi-person me-2 text-primary"></i>Customer</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="width:44px;height:44px;background:var(--primary-light);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700">T</div>
+          <div>
+            <div class="fw-bold">Tariqul Islam</div>
+            <div class="text-muted small">+8801700000001</div>
+          </div>
+        </div>
+        <div class="badge tier-gold">Gold Customer</div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header" style="background:var(--bg-card2)">
+        <h6 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Payment</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Print cost (24×3×৳3)</span>
+          <span class="fw-semibold">৳216</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Spiral binding</span>
+          <span class="fw-semibold">৳20</span>
+        </div>
+        <hr style="border-color:var(--border)">
+        <div class="d-flex justify-content-between">
+          <span class="fw-bold">Total</span>
+          <span class="fw-bolder text-primary" style="font-size:1.1rem">৳504</span>
+        </div>
+        <div class="mt-2"><span class="badge badge-cancelled">Unpaid — Pay at pickup</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

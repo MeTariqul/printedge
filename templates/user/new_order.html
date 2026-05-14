@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}New Order — Print-Edge{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold text-gradient mb-4 text-center">Place New Order</h2>
+  <form id="orderForm" class="col-md-6 mx-auto card p-4 shadow-sm">
+    <div class="mb-3">
+      <label class="form-label">Upload File</label>
+      <input type="file" class="form-control" name="file" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Color Mode</label>
+      <select class="form-select" name="color">
+        <option value="bw">Black & White</option>
+        <option value="color">Color</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Sided</label>
+      <select class="form-select" name="side">
+        <option value="single">Single Sided</option>
+        <option value="double">Double Sided</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Copies</label>
+      <input type="number" class="form-control" name="copies" value="1" min="1" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 fw-bold">Place Order</button>
+  </form>
+</div>
+{% endblock %}

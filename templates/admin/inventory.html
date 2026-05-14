@@ -1,0 +1,119 @@
+{% extends "admin_base.html" %}
+{% block title %}Inventory — PrintEase Admin{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Inventory</li>{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h2 class="fw-bold mb-0">Inventory Management</h2><p class="text-muted small mb-0">Track stock levels and receive low-stock alerts.</p></div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-ghost btn-sm" data-bs-toggle="modal" data-bs-target="#stockInModal"><i class="bi bi-box-arrow-in-down me-1"></i>Stock In</button>
+    <button class="btn btn-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#addItemModal"><i class="bi bi-plus me-1"></i>Add Item</button>
+  </div>
+</div>
+
+<!-- Alert Banner -->
+<div class="p-3 rounded mb-4 d-flex align-items-center gap-3" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)">
+  <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+  <div>
+    <div class="fw-semibold" style="font-size:.875rem">2 items are running low</div>
+    <div class="text-muted" style="font-size:.78rem">A4 Paper (50 reams left) · Black Toner (1 cartridge left)</div>
+  </div>
+  <button class="btn btn-sm btn-ghost ms-auto" style="border-color:var(--warning);color:var(--warning)">Order Supplies</button>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold" style="font-size:1.6rem">18</div><div class="text-muted small">Total Items</div></div></div>
+  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold text-danger" style="font-size:1.6rem">2</div><div class="text-muted small">Low Stock</div></div></div>
+  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold text-success" style="font-size:1.6rem">14</div><div class="text-muted small">Well Stocked</div></div></div>
+  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold" style="font-size:1.6rem">৳24k</div><div class="text-muted small">Inventory Value</div></div></div>
+</div>
+
+<!-- Inventory Table -->
+<div class="table-container card border-0 shadow-sm">
+  <div class="p-3 d-flex justify-content-between align-items-center" style="border-bottom:1px solid var(--border)">
+    <div class="input-group input-group-sm" style="max-width:280px">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="text" class="form-control" placeholder="Search items...">
+    </div>
+    <select class="form-select form-select-sm" style="width:auto">
+      <option>All Categories</option><option>Paper</option><option>Toner</option><option>Binding</option><option>Other</option>
+    </select>
+  </div>
+  <table class="table mb-0">
+    <thead><tr>
+      <th class="ps-4">Item</th><th>Category</th><th>Current Stock</th><th>Min. Level</th><th>Unit</th><th>Stock Level</th><th>Last Updated</th><th class="pe-4">Actions</th>
+    </tr></thead>
+      <tbody>
+        {% for i in items %}
+        <tr>
+          <td class="ps-4">
+            <div class="fw-semibold" style="font-size:.875rem">{{ i.name }}</div>
+            <div class="text-muted" style="font-size:.7rem">{{ i.id }}</div>
+          </td>
+          <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)">{{ i.category }}</span></td>
+          <td class="fw-bold">{{ i.stock }} {{ i.unit }}</td>
+          <td class="text-muted">{{ i.min }} {{ i.unit }}</td>
+          <td>{{ i.unit }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="status-pill badge-{{ i.color }}" style="width:8px;height:8px;border-radius:50%;padding:0"></span>
+              <span style="font-size:.85rem;color:var(--{{ i.color }})">{{ i.status }}</span>
+            </div>
+          </td>
+          <td class="text-muted" style="font-size:.78rem">Today</td>
+          <td class="pe-4">
+            <div class="dropdown">
+              <button class="btn btn-icon btn-ghost btn-sm" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+              <ul class="dropdown-menu dropdown-menu-end border-0 shadow" style="background:var(--bg-card);border:1px solid var(--border)!important">
+                <li><a class="dropdown-item" href="#"><i class="bi bi-plus-circle me-2 text-muted"></i>Restock</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2 text-muted"></i>Edit Details</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-bar-chart me-2 text-muted"></i>Usage History</a></li>
+                <li><hr class="dropdown-divider" style="border-color:var(--border)"></li>
+                <li><a class="dropdown-item" href="#" style="color:var(--danger)"><i class="bi bi-trash me-2"></i>Delete</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+</div>
+
+<!-- Stock In Modal -->
+<div class="modal fade" id="stockInModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-box-arrow-in-down me-2"></i>Record Stock In</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Item</label><select class="form-select"><option>A4 Paper (80gsm)</option><option>Black Toner Cartridge</option></select></div>
+        <div class="mb-3"><label class="form-label">Quantity Received</label><input type="number" class="form-control" placeholder="0" min="1"></div>
+        <div class="mb-3"><label class="form-label">Supplier</label><input type="text" class="form-control" placeholder="Supplier name or PO#"></div>
+        <div class="mb-3"><label class="form-label">Cost (৳)</label><input type="number" class="form-control" placeholder="0.00"></div>
+        <div class="mb-3"><label class="form-label">Notes</label><textarea class="form-control" rows="2" placeholder="Optional notes..."></textarea></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button><button class="btn btn-gradient">Save Stock Entry</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Item Modal -->
+<div class="modal fade" id="addItemModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-plus me-2"></i>Add New Item</h6><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Item Name</label><input type="text" class="form-control" placeholder="e.g. A4 Paper 75gsm"></div>
+        <div class="row g-3 mb-3">
+          <div class="col-6"><label class="form-label">Category</label><select class="form-select"><option>Paper</option><option>Toner</option><option>Binding</option><option>Lamination</option><option>Other</option></select></div>
+          <div class="col-6"><label class="form-label">Unit</label><select class="form-select"><option>Reams</option><option>Sheets</option><option>Units</option><option>Boxes</option></select></div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6"><label class="form-label">Initial Stock</label><input type="number" class="form-control" placeholder="0" min="0"></div>
+          <div class="col-6"><label class="form-label">Min. Alert Level</label><input type="number" class="form-control" placeholder="0" min="0"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button><button class="btn btn-gradient">Add Item</button></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

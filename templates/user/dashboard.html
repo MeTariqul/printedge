@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — Print-Edge{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+    <div>
+      <h1 class="fw-bolder mb-1" style="font-size:1.8rem">
+        Welcome back, {{ request.user.get_short_name|default:request.user.username }} 👋
+      </h1>
+      <p class="text-muted mb-0">Track your prints and manage your account below.</p>
+    </div>
+    <a href="#" class="btn btn-primary rounded-pill px-4 fw-semibold d-flex align-items-center gap-2">
+      <i class="bi bi-cloud-upload-fill"></i>New Order
+    </a>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
+        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(99,102,241,0.12);color:var(--primary)">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <h2 class="fw-bolder mb-1">1</h2>
+        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Active Orders</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
+        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(16,185,129,0.12);color:var(--success)">
+          <i class="bi bi-check-all"></i>
+        </div>
+        <h2 class="fw-bolder mb-1">12</h2>
+        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Completed</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
+        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(245,158,11,0.12);color:var(--warning)">
+          <i class="bi bi-wallet2"></i>
+        </div>
+        <h2 class="fw-bolder mb-1">৳450</h2>
+        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Total Spent</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Order Tracker -->
+  <div class="card border-0 shadow-sm mb-5 overflow-hidden" style="background:var(--bg-card)">
+    <div class="card-body p-4 p-md-5" style="background:linear-gradient(135deg,var(--bg-card),rgba(99,102,241,0.04))">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+          <span class="badge rounded-pill px-3 mb-2" style="background:var(--primary-light);color:var(--primary)">
+            <i class="bi bi-circle-fill me-1" style="font-size:.5rem;animation:pulse 2s infinite"></i>Active Order
+          </span>
+          <h4 class="fw-bold mb-1">#ORD-992</h4>
+          <p class="text-muted mb-0 small">
+            <i class="bi bi-file-pdf text-danger me-1"></i>assignment.pdf &bull; Color, Double Sided &bull; 15 pages
+          </p>
+        </div>
+        <div class="text-md-end">
+          <h3 class="fw-bolder mb-0">৳120</h3>
+          <span class="text-muted small">Pay at pickup</span>
+        </div>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="row g-0 mt-4">
+        {% for step_label, done, active in progress_steps %}
+        <div class="col text-center">
+          <div class="d-flex flex-column align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center mb-2 fw-bold"
+                 style="width:36px;height:36px;font-size:.8rem;
+                 {% if done %}background:var(--success);color:#fff;
+                 {% elif active %}background:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(99,102,241,0.2);
+                 {% else %}background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);{% endif %}">
+              {% if done %}<i class="bi bi-check-lg"></i>
+              {% elif active %}<i class="bi bi-hourglass-split" style="animation:spin 2s linear infinite"></i>
+              {% else %}{{ forloop.counter }}{% endif %}
+            </div>
+            <small class="fw-semibold {% if done %}text-success{% elif active %}text-primary{% else %}text-muted{% endif %}" style="font-size:.7rem;white-space:nowrap">
+              {{ step_label }}
+            </small>
+          </div>
+        </div>
+        {% empty %}
+        {% for s in "Placed,Confirmed,Printing,Ready"|make_list %}{% endfor %}
+        <div class="col text-center">
+          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--success);color:#fff;font-size:.8rem"><i class="bi bi-check-lg"></i></div>
+          <small class="fw-semibold text-success" style="font-size:.7rem">Placed</small>
+        </div>
+        <div class="col text-center">
+          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--primary);color:#fff;font-size:.8rem;box-shadow:0 0 0 4px rgba(99,102,241,0.2)"><i class="bi bi-hourglass-split"></i></div>
+          <small class="fw-semibold text-primary" style="font-size:.7rem">Confirmed</small>
+        </div>
+        <div class="col text-center">
+          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);font-size:.8rem">3</div>
+          <small class="text-muted" style="font-size:.7rem">Printing</small>
+        </div>
+        <div class="col text-center">
+          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);font-size:.8rem">4</div>
+          <small class="text-muted" style="font-size:.7rem">Ready</small>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Order History -->
+  <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
+    <div class="card-header bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0">Order History</h5>
+      <button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-download me-1"></i>Export</button>
+    </div>
+    <div class="table-container" style="border:none;border-radius:0">
+      <table class="table mb-0">
+        <thead><tr>
+          <th class="ps-4">Order ID</th>
+          <th>Date</th>
+          <th>Document</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th class="pe-4 text-end">Action</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="ps-4 fw-semibold">#ORD-992</td>
+            <td class="text-muted small">Today, 10:45 AM</td>
+            <td><i class="bi bi-file-pdf text-danger me-1"></i>assignment.pdf</td>
+            <td class="fw-bold">৳120</td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill">View</button></td>
+          </tr>
+          <tr>
+            <td class="ps-4 fw-semibold">#ORD-845</td>
+            <td class="text-muted small">Oct 12, 2025</td>
+            <td><i class="bi bi-file-word text-primary me-1"></i>project_proposal.docx</td>
+            <td class="fw-bold">৳45</td>
+            <td><span class="badge badge-ready">Delivered</span></td>
+            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-repeat me-1"></i>Reorder</button></td>
+          </tr>
+          <tr>
+            <td class="ps-4 fw-semibold">#ORD-721</td>
+            <td class="text-muted small">Sep 5, 2025</td>
+            <td><i class="bi bi-file-pdf text-danger me-1"></i>lecture_notes_ch1.pdf</td>
+            <td class="fw-bold">৳210</td>
+            <td><span class="badge badge-ready">Delivered</span></td>
+            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-repeat me-1"></i>Reorder</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "admin_base.html" %}
+{% block title %}Staff Management — PrintEase Admin{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Staff</li>{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h2 class="fw-bold mb-0">Staff & Roles</h2><p class="text-muted small mb-0">Manage team members, roles, and shifts.</p></div>
+  <button class="btn btn-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#addStaffModal"><i class="bi bi-person-plus me-1"></i>Add Staff Member</button>
+</div>
+
+<!-- Staff List -->
+<div class="table-container card border-0 shadow-sm mb-4">
+  <table class="table mb-0">
+    <thead><tr><th class="ps-4">Staff Member</th><th>Role</th><th>Phone</th><th>Status</th><th>Last Active</th><th class="pe-4">Actions</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="ps-4">
+          <div class="d-flex align-items-center gap-2">
+            <div style="width:32px;height:32px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700">T</div>
+            <div class="fw-semibold" style="font-size:.85rem">Tariqul Islam</div>
+          </div>
+        </td>
+        <td><span class="badge" style="background:rgba(99,102,241,.15);color:var(--primary)">Super Admin</span></td>
+        <td class="text-muted" style="font-size:.85rem">+8801700000000</td>
+        <td><span class="badge badge-ready">Active</span></td>
+        <td class="text-muted" style="font-size:.8rem">Online</td>
+        <td class="pe-4"><button class="btn btn-icon btn-ghost btn-sm text-muted"><i class="bi bi-three-dots-vertical"></i></button></td>
+      </tr>
+      <tr>
+        <td class="ps-4">
+          <div class="d-flex align-items-center gap-2">
+            <div style="width:32px;height:32px;background:var(--bg-card2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-weight:700;border:1px solid var(--border)">A</div>
+            <div class="fw-semibold" style="font-size:.85rem">Arif Ahmed</div>
+          </div>
+        </td>
+        <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)">Operator</span></td>
+        <td class="text-muted" style="font-size:.85rem">+8801900000001</td>
+        <td><span class="badge badge-cancelled">Offline</span></td>
+        <td class="text-muted" style="font-size:.8rem">Yesterday, 5:00 PM</td>
+        <td class="pe-4"><button class="btn btn-icon btn-ghost btn-sm text-muted"><i class="bi bi-three-dots-vertical"></i></button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

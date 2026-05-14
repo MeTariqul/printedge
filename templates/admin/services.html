@@ -1,0 +1,145 @@
+{% extends "admin_base.html" %}
+{% block title %}Manage Services & Pricing — Print-Edge{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Services & Pricing</h2>
+    <p class="text-muted mb-0 small">Configure print options, finishing services, and pricing rules.</p>
+  </div>
+  <button class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+    <i class="bi bi-plus-lg me-2"></i>Add Service
+  </button>
+</div>
+
+<div class="row g-4">
+  <!-- Core Print Pricing -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Core Print Pricing</h5>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small text-uppercase">
+              <tr>
+                <th class="border-0">Service Name</th>
+                <th class="border-0">Type</th>
+                <th class="border-0">Sides</th>
+                <th class="border-0">Base Price (৳)</th>
+                <th class="border-0 text-end">Status</th>
+                <th class="border-0 text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-bold">Standard B&W</td>
+                <td>Black & White</td>
+                <td>Single</td>
+                <td class="fw-semibold">2.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="text-end"><button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-pencil"></i></button></td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Standard B&W Double</td>
+                <td>Black & White</td>
+                <td>Double</td>
+                <td class="fw-semibold">3.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="text-end"><button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-pencil"></i></button></td>
+              </tr>
+              <tr>
+                <td class="fw-bold text-primary">Premium Color</td>
+                <td>Color</td>
+                <td>Single</td>
+                <td class="fw-semibold">5.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="text-end"><button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-pencil"></i></button></td>
+              </tr>
+              <tr>
+                <td class="fw-bold text-primary">Premium Color Double</td>
+                <td>Color</td>
+                <td>Double</td>
+                <td class="fw-semibold">7.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" checked></div></td>
+                <td class="text-end"><button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-pencil"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Finishing & Add-ons -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Binding & Finishing</h5>
+        <button class="btn btn-sm btn-outline-primary rounded-pill">Add Finishing</button>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead class="text-muted small text-uppercase">
+              <tr>
+                <th class="border-0">Finishing Type</th>
+                <th class="border-0">Price (৳)</th>
+                <th class="border-0 text-end">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-bold"><i class="bi bi-book me-2 text-muted"></i>Spiral Binding</td>
+                <td class="fw-semibold">30.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" checked></div></td>
+              </tr>
+              <tr>
+                <td class="fw-bold"><i class="bi bi-layers me-2 text-muted"></i>Tape Binding</td>
+                <td class="fw-semibold">25.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" checked></div></td>
+              </tr>
+              <tr>
+                <td class="fw-bold"><i class="bi bi-shield me-2 text-muted"></i>Lamination (Cover)</td>
+                <td class="fw-semibold">15.00</td>
+                <td class="text-end"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox"></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Discount Rules -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, var(--bg-card), rgba(99,102,241,0.02));">
+      <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Dynamic Rules</h5>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <!-- Rule 1 -->
+        <div class="border rounded p-3 mb-3" style="border-color: var(--border) !important;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-2">Active</span>
+            <button class="btn btn-sm text-muted p-0"><i class="bi bi-three-dots"></i></button>
+          </div>
+          <h6 class="fw-bold">Bulk Discount (50+ Pages)</h6>
+          <p class="text-muted small mb-0">Automatically apply a 5% discount on the total when pages exceed 50.</p>
+        </div>
+        
+        <!-- Rule 2 -->
+        <div class="border rounded p-3 mb-3" style="border-color: var(--border) !important;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill px-2">Inactive</span>
+            <button class="btn btn-sm text-muted p-0"><i class="bi bi-three-dots"></i></button>
+          </div>
+          <h6 class="fw-bold">Exam Season Promo</h6>
+          <p class="text-muted small mb-0">10% off on all Color Prints for verified student accounts.</p>
+        </div>
+
+        <button class="btn btn-outline-primary w-100 rounded-pill mt-3 border-dashed" style="border-style: dashed;"><i class="bi bi-plus me-1"></i> Create Rule</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

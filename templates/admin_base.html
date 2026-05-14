@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="">
+  <title>{% block title %}Admin — PrintEase{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="admin-sidebar" id="adminSidebar">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">
+      <i class="bi bi-printer-fill text-white" style="font-size:1rem"></i>
+    </div>
+    <div class="sidebar-logo-text">
+      <span class="fw-bold fs-6 text-gradient">PrintEase</span>
+      <div style="font-size:0.65rem;color:var(--text-muted);margin-top:-2px">Admin Panel</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sidebar-nav">
+    <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" title="Dashboard">
+      <i class="bi bi-grid-fill"></i><span class="nav-label">Dashboard</span>
+    </a>
+
+    <div class="nav-section-label">Orders</div>
+    <a href="{% url 'admin_orders' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %}" title="Orders">
+      <i class="bi bi-cart-check-fill"></i><span class="nav-label">All Orders</span>
+      <span class="sidebar-badge">28</span>
+    </a>
+    <a href="{% url 'admin_walkin_order' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_walkin_order' %}active{% endif %}" title="Walk-in Order" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);">
+      <i class="bi bi-shop"></i><span class="nav-label">New Walk-in</span>
+    </a>
+
+    <div class="nav-section-label">Customers</div>
+    <a href="{% url 'admin_users' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}" title="Online Customers">
+      <i class="bi bi-people-fill"></i><span class="nav-label">Online Customers</span>
+    </a>
+    <a href="{% url 'admin_offline_customers' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_offline_customers' %}active{% endif %}" title="Walk-in Customers">
+      <i class="bi bi-person-badge-fill"></i><span class="nav-label">Walk-in Customers</span>
+    </a>
+
+    <div class="nav-section-label">Operations</div>
+    <a href="{% url 'admin_services' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_services' %}active{% endif %}" title="Services">
+      <i class="bi bi-tags-fill"></i><span class="nav-label">Services & Pricing</span>
+    </a>
+    <a href="{% url 'admin_inventory' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_inventory' %}active{% endif %}" title="Inventory">
+      <i class="bi bi-box-seam-fill"></i><span class="nav-label">Inventory</span>
+    </a>
+    <a href="{% url 'admin_financial' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_financial' %}active{% endif %}" title="Financial">
+      <i class="bi bi-cash-stack"></i><span class="nav-label">Financial</span>
+    </a>
+    <a href="{% url 'admin_staff' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_staff' %}active{% endif %}" title="Staff">
+      <i class="bi bi-person-workspace"></i><span class="nav-label">Staff & Roles</span>
+    </a>
+
+    <div class="nav-section-label">Analytics</div>
+    <a href="{% url 'admin_reports' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}" title="Reports">
+      <i class="bi bi-bar-chart-fill"></i><span class="nav-label">Reports</span>
+    </a>
+    <a href="{% url 'admin_audit_log' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_audit_log' %}active{% endif %}" title="Audit Log">
+      <i class="bi bi-shield-check"></i><span class="nav-label">Audit Log</span>
+    </a>
+
+    <div class="nav-section-label">System</div>
+    <a href="{% url 'admin_display_mode' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_display_mode' %}active{% endif %}" title="Shop Display" target="_blank">
+      <i class="bi bi-display-fill"></i><span class="nav-label">Shop Display</span>
+    </a>
+    <a href="{% url 'admin_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}" title="Settings">
+      <i class="bi bi-gear-fill"></i><span class="nav-label">Settings</span>
+    </a>
+  </nav>
+
+  <!-- User Footer -->
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2 p-2 rounded cursor-pointer" style="background:var(--bg-card2);border-radius:var(--radius-sm);">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="bi bi-person-fill text-white" style="font-size:.85rem"></i>
+      </div>
+      <div class="sidebar-logo-text flex-grow-1" style="overflow:hidden">
+        <div style="font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ request.user.username|default:"Admin" }}</div>
+        <div style="font-size:.65rem;color:var(--text-muted)">Super Admin</div>
+      </div>
+      <a href="{% url 'auth_logout' %}" class="btn btn-icon btn-sm" style="color:var(--text-muted)" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── TOP NAVBAR ── -->
+<header class="admin-navbar" id="adminNavbar">
+  <button class="btn btn-icon btn-ghost" onclick="Sidebar.toggle()" title="Toggle Sidebar">
+    <i class="bi bi-list" style="font-size:1.2rem"></i>
+  </button>
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="d-none d-md-block">
+    <ol class="breadcrumb mb-0" style="font-size:.8rem">
+      <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" style="color:var(--text-muted);text-decoration:none">Admin</a></li>
+      {% block breadcrumb %}<li class="breadcrumb-item active" style="color:var(--text)">Dashboard</li>{% endblock %}
+    </ol>
+  </nav>
+
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <!-- Search trigger -->
+    <button class="btn btn-ghost btn-sm d-flex align-items-center gap-2" onclick="GlobalSearch.open()" title="Search (Ctrl+K)">
+      <i class="bi bi-search"></i>
+      <span class="d-none d-lg-inline text-muted" style="font-size:.75rem">Ctrl+K</span>
+    </button>
+
+    <!-- Notifications -->
+    <div class="dropdown">
+      <button class="btn btn-icon btn-ghost position-relative" data-bs-toggle="dropdown" title="Notifications">
+        <i class="bi bi-bell"></i>
+        <span class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger" style="font-size:.55rem;padding:3px 5px">3</span>
+      </button>
+      <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-0" style="width:320px;background:var(--bg-card);border:1px solid var(--border)!important;border-radius:var(--radius)">
+        <div class="p-3 border-bottom" style="border-color:var(--border)!important">
+          <h6 class="mb-0 fw-bold">Notifications</h6>
+        </div>
+        <div style="max-height:300px;overflow-y:auto">
+          <a class="dropdown-item px-3 py-2 d-flex gap-3 align-items-start" href="#" style="border-bottom:1px solid var(--border)">
+            <div class="activity-icon" style="background:rgba(99,102,241,.15);color:var(--primary);width:32px;height:32px;flex-shrink:0"><i class="bi bi-cart-check"></i></div>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text)">New order placed</div><div style="font-size:.72rem;color:var(--text-muted)">#PE-OFF-2026-0028 — Just now</div></div>
+          </a>
+          <a class="dropdown-item px-3 py-2 d-flex gap-3 align-items-start" href="#" style="border-bottom:1px solid var(--border)">
+            <div class="activity-icon" style="background:rgba(245,158,11,.15);color:var(--warning);width:32px;height:32px;flex-shrink:0"><i class="bi bi-exclamation-triangle"></i></div>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text)">Low stock alert</div><div style="font-size:.72rem;color:var(--text-muted)">A4 Paper — Only 50 reams left</div></div>
+          </a>
+          <a class="dropdown-item px-3 py-2 d-flex gap-3 align-items-start" href="#">
+            <div class="activity-icon" style="background:rgba(16,185,129,.15);color:var(--success);width:32px;height:32px;flex-shrink:0"><i class="bi bi-check-circle"></i></div>
+            <div><div style="font-size:.8rem;font-weight:600;color:var(--text)">Order ready</div><div style="font-size:.72rem;color:var(--text-muted)">#PE-ON-2026-0027 — 5m ago</div></div>
+          </a>
+        </div>
+        <div class="p-2 text-center border-top" style="border-color:var(--border)!important">
+          <a href="#" style="font-size:.75rem;color:var(--primary)">View all notifications</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Toggle Removed -->
+  </div>
+</header>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="admin-content" id="adminContent">
+  <div class="page-body">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded shadow-sm mb-3" role="alert">
+          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- ── FAB ── -->
+<div class="fab-container" id="fabContainer">
+  <div class="fab-menu" id="fabMenu">
+    <div class="fab-item">
+      <span class="fab-item-label">New Walk-in Order</span>
+      <a href="{% url 'admin_walkin_order' %}" class="fab-item-btn"><i class="bi bi-shop"></i></a>
+    </div>
+    <div class="fab-item">
+      <span class="fab-item-label">Quick Calculator</span>
+      <button class="fab-item-btn" onclick="FAB.close();document.getElementById('calcModal')?.showModal?.() || bootstrap.Modal.getOrCreateInstance(document.getElementById('calcModal')).show()"><i class="bi bi-calculator"></i></button>
+    </div>
+    <div class="fab-item">
+      <span class="fab-item-label">Global Search</span>
+      <button class="fab-item-btn" onclick="FAB.close();GlobalSearch.open()"><i class="bi bi-search"></i></button>
+    </div>
+  </div>
+  <button class="fab-main" id="fabMain" title="Quick Actions">
+    <i class="bi bi-plus"></i>
+  </button>
+</div>
+
+<!-- ── GLOBAL SEARCH OVERLAY ── -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-box">
+    <div class="d-flex align-items-center px-3" style="border-bottom:1px solid var(--border)">
+      <i class="bi bi-search me-3" style="color:var(--text-muted)"></i>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search orders, customers, invoices... (Ctrl+K)">
+      <kbd style="background:var(--bg-card2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.7rem;color:var(--text-muted);cursor:pointer" onclick="GlobalSearch.close()">Esc</kbd>
+    </div>
+    <div id="searchResults" class="search-results">
+      <div class="px-4 py-3 text-muted" style="font-size:.8rem">
+        Try: <code>source:offline</code> &nbsp; <code>status:pending</code> &nbsp; <code>phone:017</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Calculator Modal -->
+<div class="modal fade" id="calcModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title fw-bold"><i class="bi bi-calculator me-2"></i>Quick Price Calculator</h6>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">Print Type</label>
+            <select class="form-select form-select-sm" id="calcType" onchange="calcUpdate()">
+              <option value="bw_single">B&W Single</option>
+              <option value="bw_double">B&W Double</option>
+              <option value="color_single">Color Single</option>
+              <option value="color_double">Color Double</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Pages</label>
+            <input type="number" class="form-control form-control-sm" id="calcPages" value="10" min="1" oninput="calcUpdate()">
+          </div>
+          <div class="col-6">
+            <label class="form-label">Copies</label>
+            <input type="number" class="form-control form-control-sm" id="calcCopies" value="1" min="1" oninput="calcUpdate()">
+          </div>
+          <div class="col-6">
+            <label class="form-label">Discount %</label>
+            <input type="number" class="form-control form-control-sm" id="calcDiscount" value="0" min="0" max="100" oninput="calcUpdate()">
+          </div>
+        </div>
+        <div class="mt-3 p-3 rounded" style="background:var(--primary-light)">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold">Total</span>
+            <span class="fw-bold fs-4" id="calcTotal" style="color:var(--primary)">৳ 20</span>
+          </div>
+          <div class="d-flex justify-content-between mt-1" style="font-size:.75rem;color:var(--text-muted)">
+            <span id="calcBreakdown">10 pages × ৳2 × 1 copy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+  // Theme logic removed
+
+  // Quick calculator
+  function calcUpdate() {
+    const type = document.getElementById('calcType').value;
+    const pages = parseInt(document.getElementById('calcPages').value)||1;
+    const copies = parseInt(document.getElementById('calcCopies').value)||1;
+    const disc = parseFloat(document.getElementById('calcDiscount').value)||0;
+    const r = PriceCalc.calculate(pages, copies, type.split('_')[0], type.split('_')[1], [], disc);
+    document.getElementById('calcTotal').textContent = formatCurrency(r.total);
+    document.getElementById('calcBreakdown').textContent = `${pages}p × ৳${PriceCalc.rates[type]} × ${copies} copy — discount ৳${r.discount.toFixed(0)}`;
+  }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

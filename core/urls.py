@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 urlpatterns = [
@@ -10,6 +10,7 @@ urlpatterns = [
     path('auth/login/', views.auth_login, name='auth_login_page'),
     path('auth/register/', views.auth_register, name='auth_register_page'),
     path('auth/logout/', views.auth_logout, name='auth_logout'),
+    path('auth/', include('django.contrib.auth.urls')),
 
     # User
     path('user/dashboard/', views.user_dashboard, name='user_dashboard'),

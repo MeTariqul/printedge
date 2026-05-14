@@ -19,30 +19,46 @@ from .pricing import calculate_order_price
 
 # ─── AUTH VIEWS ────────────────────────────────────────────────────────────────
 
+import re
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+import os
+
 def auth_login(request):
     if request.user.is_authenticated:
         return redirect('admin_dashboard' if request.user.is_admin_user else 'user_dashboard')
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
+        ip = request.META.get('REMOTE_ADDR')
+        cache_key = f'login_attempts_{ip}'
+        attempts = cache.get(cache_key, 0)
+        
+        if attempts >= 5:
+            messages.error(request, 'Too many failed login attempts. Please try again in 15 minutes.')
+            return render(request, 'auth/login.html')
+
+        email = request.POST.get('email', '').strip().lower()[:150]
         password = request.POST.get('password', '')
         user = authenticate(request, username=email, password=password)
         if user is None:
-            # Try by email field
             try:
                 u = User.objects.get(email=email)
                 user = authenticate(request, username=u.username, password=password)
             except User.DoesNotExist:
                 pass
+        
         if user:
             if user.is_banned:
                 messages.error(request, 'Your account has been suspended.')
                 return redirect('auth_login_page')
             login(request, user)
+            cache.delete(cache_key)
             AuditLog.objects.create(
                 user=user, action='LOGIN', resource_type='Auth',
-                ip_address=request.META.get('REMOTE_ADDR')
+                ip_address=ip
             )
             return redirect('admin_dashboard' if user.is_admin_user else 'user_dashboard')
+        
+        cache.set(cache_key, attempts + 1, 900)
         messages.error(request, 'Invalid email or password.')
     return render(request, 'auth/login.html')
 
@@ -51,17 +67,32 @@ def auth_register(request):
     if request.user.is_authenticated:
         return redirect('user_dashboard')
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip().lower()
-        phone = request.POST.get('phone', '').strip()
+        name = request.POST.get('name', '').strip()[:100]
+        email = request.POST.get('email', '').strip().lower()[:150]
+        phone = request.POST.get('phone', '').strip()[:20]
         password = request.POST.get('password', '')
         password2 = request.POST.get('password2', '')
+        
+        if not re.match(r'^(\+88)?01[3-9]\d{8}$', phone):
+            messages.error(request, 'Invalid Bangladeshi phone number format.')
+            return render(request, 'auth/register.html')
+            
+        blocked_domains = ['yopmail.com', 'mailinator.com', 'tempmail.com']
+        domain = email.split('@')[-1] if '@' in email else ''
+        if domain in blocked_domains:
+            messages.error(request, 'Disposable email addresses are not allowed.')
+            return render(request, 'auth/register.html')
+
         if password != password2:
             messages.error(request, 'Passwords do not match.')
             return render(request, 'auth/register.html')
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'This email is already registered.')
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
             return render(request, 'auth/register.html')
+        if User.objects.filter(email=email).exists() or User.objects.filter(phone=phone).exists():
+            messages.error(request, 'This email or phone is already registered.')
+            return render(request, 'auth/register.html')
+            
         username = email.split('@')[0]
         base_username = username
         counter = 1
@@ -121,12 +152,29 @@ def user_new_order(request):
         print_type = request.POST.get('print_type', 'bw')
         sides = request.POST.get('sides', 'single')
         paper_size = request.POST.get('paper_size', 'A4')
-        pages = int(request.POST.get('pages', 1))
-        copies = int(request.POST.get('copies', 1))
+        try:
+            pages = max(1, int(request.POST.get('pages', 1)))
+            copies = max(1, int(request.POST.get('copies', 1)))
+        except ValueError:
+            pages = 1
+            copies = 1
+            
         is_urgent = request.POST.get('is_urgent') == 'on'
         addon_ids = request.POST.getlist('addons')
-        instructions = request.POST.get('special_instructions', '')
+        instructions = request.POST.get('special_instructions', '')[:500]
         file = request.FILES.get('file')
+        
+        if file:
+            if file.size > 50 * 1024 * 1024:
+                messages.error(request, 'File size exceeds 50MB limit.')
+                return render(request, 'user/new_order.html', {'addons': addons})
+            
+            ext = os.path.splitext(file.name)[1].lower()
+            allowed = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png']
+            if ext not in allowed:
+                messages.error(request, 'Invalid file type.')
+                return render(request, 'user/new_order.html', {'addons': addons})
+                
         promo_code_str = request.POST.get('promo_code', '').strip().upper()
         promo_obj = None
         if promo_code_str:

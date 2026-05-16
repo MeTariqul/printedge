@@ -1,137 +1,179 @@
 {% extends "base.html" %}
-{% block title %}Pricing — Print-Edge{% endblock %}
+{% block title %}Pricing | PrintEase{% endblock %}
 
 {% block content %}
-<div style="max-width:1100px;margin:0 auto;padding:4rem 1rem;">
-  
-  <div style="text-align:center;margin-bottom:4rem;">
-    <div style="display:inline-block;padding:.4rem 1rem;border-radius:999px;background:rgba(99,102,241,.1);color:var(--primary);font-size:13px;font-weight:600;margin-bottom:1rem;">
-      <i class="bi bi-tag-fill"></i> Transparent Pricing
-    </div>
-    <h1 style="font-size:2.5rem;font-weight:900;margin-bottom:1rem;">Simple &amp; Student-Friendly Pricing</h1>
-    <p class="text-muted" style="max-width:600px;margin:0 auto;font-size:1.1rem;line-height:1.6;">
-      No hidden fees. No surprises. Know exactly what you'll pay before placing your order.
-    </p>
-  </div>
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-  <div class="grid-auto" style="margin-bottom:4rem;">
-    <!-- B&W -->
-    <div class="card" style="padding:2.5rem;text-align:center;border-top:4px solid var(--secondary);">
-      <div style="width:64px;height:64px;border-radius:50%;background:rgba(100,116,139,.1);color:#64748b;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1.5rem;">
-        <i class="bi bi-file-earmark-text-fill"></i>
-      </div>
-      <h3 style="font-size:1.5rem;margin-bottom:.25rem;">Black &amp; White</h3>
-      <p class="text-muted" style="font-size:14px;margin-bottom:1.5rem;">Standard A4 Printing</p>
-      
-      <div style="margin-bottom:2rem;">
-        <span style="font-size:3rem;font-weight:900;">৳2</span>
-        <span class="text-muted">/page</span>
-      </div>
-
-      <div style="text-align:left;display:flex;flex-direction:column;gap:1rem;margin-bottom:2.5rem;">
-        <div style="display:flex;align-items:center;gap:.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-          <i class="bi bi-check-circle-fill text-success"></i> <span>Single Sided — <strong>৳2/page</strong></span>
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-16 relative z-10">
+    
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-20 animate-slide-up">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 mb-8 backdrop-blur-md">
+            <i class="bi bi-tag-fill text-brand-400"></i>
+            <span class="text-xs font-bold text-brand-300 uppercase tracking-widest">Transparent Pricing</span>
         </div>
-        <div style="display:flex;align-items:center;gap:.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-          <i class="bi bi-check-circle-fill text-success"></i> <span>Double Sided — <strong>৳3/page</strong></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-          <i class="bi bi-check-circle-fill text-success"></i> <span>80 GSM High Quality Paper</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.75rem;">
-          <i class="bi bi-check-circle-fill text-success"></i> <span>Instant Online Estimate</span>
-        </div>
-      </div>
-
-      <a href="{% url 'auth_register_page' %}" class="btn btn-outline btn-pill" style="width:100%;padding:1rem;">Start Printing</a>
+        <h1 class="text-5xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight leading-tight">Simple & <span class="gradient-text">Student-Friendly</span></h1>
+        <p class="text-lg text-neutral-400 font-medium">No hidden fees. No surprises. Know exactly what you'll pay before placing your order.</p>
     </div>
 
-    <!-- Color -->
-    <div class="card" style="padding:2.5rem;text-align:center;border-top:4px solid var(--primary);transform:scale(1.05);box-shadow:0 20px 40px rgba(0,0,0,.1);position:relative;">
-      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:white;padding:.25rem 1rem;border-radius:999px;font-size:12px;font-weight:700;">
-        ⭐ Most Popular
-      </div>
-      
-      <div style="width:64px;height:64px;border-radius:50%;background:rgba(99,102,241,.1);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1.5rem;">
-        <i class="bi bi-palette-fill"></i>
-      </div>
-      <h3 style="font-size:1.5rem;margin-bottom:.25rem;color:var(--primary);">Full Color</h3>
-      <p class="text-muted" style="font-size:14px;margin-bottom:1.5rem;">Vibrant A4 Printing</p>
-      
-      <div style="margin-bottom:2rem;">
-        <span style="font-size:3rem;font-weight:900;color:var(--primary);">৳5</span>
-        <span class="text-muted">/page</span>
-      </div>
+    <!-- Pricing Cards -->
+    <div class="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto mb-20">
+        
+        <!-- B&W -->
+        <div class="premium-card rounded-3xl p-8 md:p-10 relative overflow-hidden group animate-slide-up" style="animation-delay: 0.1s;">
+            <div class="w-16 h-16 rounded-2xl bg-neutral-800 border border-neutral-700 flex items-center justify-center mb-8">
+                <i class="bi bi-file-earmark-text-fill text-3xl text-neutral-400"></i>
+            </div>
+            
+            <h3 class="text-3xl font-display font-bold text-white mb-2">Black & White</h3>
+            <p class="text-neutral-500 font-medium mb-8">Standard A4 Printing</p>
+            
+            <div class="mb-10 flex items-baseline gap-1">
+                <span class="text-6xl font-display font-extrabold text-white">৳2</span>
+                <span class="text-neutral-500 font-medium">/page</span>
+            </div>
+            
+            <div class="space-y-5 mb-10">
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Single Sided — <strong class="text-white">৳2/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Double Sided — <strong class="text-white">৳3/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">80 GSM High Quality Paper</span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Instant Online Estimate</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'user_new_order' %}" class="block w-full py-4 rounded-xl text-center font-bold text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                Start Printing
+            </a>
+        </div>
 
-      <div style="text-align:left;display:flex;flex-direction:column;gap:1rem;margin-bottom:2.5rem;">
-        <div style="display:flex;align-items:center;gap:.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-          <i class="bi bi-check-circle-fill text-primary"></i> <span>Single Sided — <strong>৳5/page</strong></span>
+        <!-- Color -->
+        <div class="premium-card rounded-3xl p-8 md:p-10 relative overflow-hidden group border-brand-500/30 shadow-2xl shadow-brand-500/10 animate-slide-up" style="animation-delay: 0.2s;">
+            <div class="absolute top-0 right-0 w-48 h-48 bg-brand-500/20 rounded-full blur-[80px] transition-transform group-hover:scale-150"></div>
+            
+            <div class="absolute top-0 inset-x-0 flex justify-center -mt-3">
+                <span class="bg-gradient-to-r from-brand-600 to-purple-600 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-brand-500/30">Most Popular</span>
+            </div>
+            
+            <div class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-8">
+                <i class="bi bi-palette-fill text-3xl text-brand-400"></i>
+            </div>
+            
+            <h3 class="text-3xl font-display font-bold text-white mb-2">Full Color</h3>
+            <p class="text-neutral-500 font-medium mb-8">Vibrant A4 Printing</p>
+            
+            <div class="mb-10 flex items-baseline gap-1">
+                <span class="text-6xl font-display font-extrabold gradient-text">৳5</span>
+                <span class="text-neutral-500 font-medium">/page</span>
+            </div>
+            
+            <div class="space-y-5 mb-10 relative z-10">
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Single Sided — <strong class="text-white">৳5/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Double Sided — <strong class="text-white">৳8/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">100 GSM Premium Paper</span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">CMYK High-Resolution Print</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'user_new_order' %}" class="block w-full py-4 rounded-xl text-center font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-lg shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10">
+                Start Printing
+            </a>
         </div>
-        <div style="display:flex;align-items:center;gap:.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-          <i class="bi bi-check-circle-fill text-primary"></i> <span>Double Sided — <strong>৳8/page</strong></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.75rem;padding-bottom:1rem;border-bottom:1px solid var(--border);">
-          <i class="bi bi-check-circle-fill text-primary"></i> <span>100 GSM Premium Paper</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.75rem;">
-          <i class="bi bi-check-circle-fill text-primary"></i> <span>CMYK High-Resolution Print</span>
-        </div>
-      </div>
 
-      <a href="{% url 'auth_register_page' %}" class="btn btn-primary btn-pill" style="width:100%;padding:1rem;">Start Printing</a>
     </div>
-  </div>
 
-  <!-- Add-ons -->
-  <div class="card" style="max-width:800px;margin:0 auto 4rem;padding:2rem;">
-    <h3 style="font-size:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;"><i class="bi bi-plus-circle-fill text-primary"></i> Add-ons &amp; Extras</h3>
-    <div class="grid-auto" style="gap:1rem;">
-      {% for addon in addons %}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;">
-        <span style="font-weight:600;font-size:14px;">{{ addon.name }}</span>
-        <span class="badge badge-primary">+৳{{ addon.price|floatformat:0 }}</span>
-      </div>
-      {% empty %}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;">
-        <span style="font-weight:600;font-size:14px;">Spiral Binding</span><span class="badge badge-primary">+৳20</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;">
-        <span style="font-weight:600;font-size:14px;">Comb Binding</span><span class="badge badge-primary">+৳15</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;">
-        <span style="font-weight:600;font-size:14px;">Stapling</span><span class="badge badge-primary">+৳5</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;">
-        <span style="font-weight:600;font-size:14px;">Lamination</span><span class="badge badge-primary">+৳15</span>
-      </div>
-      {% endfor %}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;background:rgba(245,158,11,.05);">
-        <span style="font-weight:600;font-size:14px;">Urgent (same-hour)</span><span class="badge badge-warning">+50%</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border:1px solid var(--border);border-radius:8px;background:rgba(16,185,129,.05);">
-        <span style="font-weight:600;font-size:14px;">Bulk Discount (100+ pages)</span><span class="badge badge-success">-10%</span>
-      </div>
+    <!-- Add-ons Section -->
+    <div class="max-w-4xl mx-auto mb-24 animate-slide-up" style="animation-delay: 0.3s;">
+        <div class="premium-card rounded-3xl p-8 md:p-12">
+            <h3 class="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                    <i class="bi bi-puzzle-fill text-purple-400"></i>
+                </div>
+                Add-ons & Extras
+            </h3>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                {% for addon in addons %}
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">{{ addon.name }}</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳{{ addon.price|floatformat:0 }}</span>
+                </div>
+                {% empty %}
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Spiral Binding</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳20</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Comb Binding</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳15</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Stapling</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳5</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Lamination</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳15</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+                <div class="flex justify-between items-center p-5 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                    <span class="font-medium text-neutral-200">Urgent (same-hour)</span>
+                    <span class="px-3 py-1 rounded-md bg-amber-500/10 text-amber-400 text-sm font-bold border border-amber-500/20">+50%</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-brand-500/20 bg-brand-500/5">
+                    <span class="font-medium text-neutral-200">Bulk Discount (100+ pages)</span>
+                    <span class="px-3 py-1 rounded-md bg-brand-500/10 text-brand-400 text-sm font-bold border border-brand-500/20">-10%</span>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- FAQ -->
-  <div style="max-width:800px;margin:0 auto;">
-    <h3 style="font-size:1.5rem;text-align:center;margin-bottom:2rem;">Frequently Asked Questions</h3>
-    <div style="display:flex;flex-direction:column;gap:1rem;">
-      <div class="card" style="padding:1.5rem;">
-        <h4 style="font-size:1.1rem;margin-bottom:.5rem;">How do I pay?</h4>
-        <p class="text-muted" style="font-size:14px;line-height:1.6;">Payment is due on delivery. We accept Cash, bKash, Nagad, and Rocket at the Print-Edge campus desk.</p>
-      </div>
-      <div class="card" style="padding:1.5rem;">
-        <h4 style="font-size:1.1rem;margin-bottom:.5rem;">How long does printing take?</h4>
-        <p class="text-muted" style="font-size:14px;line-height:1.6;">Standard orders are ready within 1–2 hours during business hours. Track live status from your dashboard.</p>
-      </div>
-      <div class="card" style="padding:1.5rem;">
-        <h4 style="font-size:1.1rem;margin-bottom:.5rem;">Can I cancel my order?</h4>
-        <p class="text-muted" style="font-size:14px;line-height:1.6;">Yes! You can cancel any order that has not yet moved to the "Printing" status. Contact the desk or cancel via your dashboard.</p>
-      </div>
+    <!-- FAQ -->
+    <div class="max-w-4xl mx-auto animate-slide-up" style="animation-delay: 0.4s;">
+        <h3 class="text-3xl font-display font-bold text-center text-white mb-10">Frequently Asked Questions</h3>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="premium-card p-6 rounded-2xl">
+                <div class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mb-4"><i class="bi bi-wallet2 text-neutral-400"></i></div>
+                <h4 class="text-lg font-bold text-white mb-3">How do I pay?</h4>
+                <p class="text-neutral-500 text-sm leading-relaxed font-medium">Payment is due on delivery. We accept Cash, bKash, Nagad, and Rocket at the PrintEase campus desk. Partial upfront payment may be required for bulk orders.</p>
+            </div>
+            <div class="premium-card p-6 rounded-2xl">
+                <div class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mb-4"><i class="bi bi-clock-history text-neutral-400"></i></div>
+                <h4 class="text-lg font-bold text-white mb-3">How long does it take?</h4>
+                <p class="text-neutral-500 text-sm leading-relaxed font-medium">Standard orders are typically ready within 1–2 hours during regular business hours. You can track the live status from your dashboard.</p>
+            </div>
+            <div class="premium-card p-6 rounded-2xl">
+                <div class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mb-4"><i class="bi bi-x-circle text-neutral-400"></i></div>
+                <h4 class="text-lg font-bold text-white mb-3">Can I cancel my order?</h4>
+                <p class="text-neutral-500 text-sm leading-relaxed font-medium">Yes! You can cancel any order directly from your dashboard as long as it hasn't entered the "Printing" phase.</p>
+            </div>
+        </div>
     </div>
-  </div>
 
 </div>
 {% endblock %}

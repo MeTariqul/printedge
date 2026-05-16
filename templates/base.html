@@ -1,100 +1,233 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Print-Edge{% endblock %}</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-{% block extra_css %}{% endblock %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>{% block title %}Print Edge | Affordable & Quality Full Printing{% endblock %}</title>
+    
+    <meta name="theme-color" content="#000000">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="manifest" href="{% url 'manifest' %}" onerror="this.style.display='none'">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        },
+                        dark: {
+                            bg: '#000000',
+                            card: '#0a0a0a',
+                            surface: '#121212',
+                            border: '#262626',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    
+    <style>
+        body {
+            background-color: #000000;
+            color: #ededed;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .premium-card {
+            background: linear-gradient(180deg, rgba(24, 24, 27, 0.6) 0%, rgba(10, 10, 10, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #404040; }
+
+        .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+        .pt-safe { padding-top: calc(1rem + env(safe-area-inset-top)); }
+        [x-cloak] { display: none !important; }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="min-h-screen flex flex-col relative selection:bg-brand-500/30 selection:text-white" x-data="{ mobileMenu: false }">
 
-<!-- PUBLIC NAVBAR -->
-<nav class="navbar">
-  <a href="{% url 'public_index' %}" class="navbar-brand">
-    <div class="navbar-logo"><i class="bi bi-printer-fill"></i></div>
-    <span class="text-gradient">Print-Edge</span>
-  </a>
-  <button class="mobile-toggle" id="mobileToggle" style="display:none;background:none;border:none;color:var(--text);font-size:1.5rem;margin-left:auto;"><i class="bi bi-list"></i></button>
-  <div class="navbar-nav" id="navLinks">
-    <a href="{% url 'public_index' %}" class="nav-link {% if request.resolver_match.url_name == 'public_index' %}active{% endif %}">Home</a>
-    <a href="{% url 'public_pricing_page' %}" class="nav-link {% if request.resolver_match.url_name == 'public_pricing_page' %}active{% endif %}">Pricing</a>
-    {% if user.is_authenticated %}
-      {% if user.is_admin_user %}
-        <a href="{% url 'admin_dashboard' %}" class="nav-link">Admin Panel</a>
-      {% else %}
-        <a href="{% url 'user_dashboard' %}" class="nav-link">Dashboard</a>
-      {% endif %}
-      <a href="{% url 'auth_logout' %}" class="nav-link text-danger">Logout</a>
-    {% else %}
-      <a href="{% url 'auth_login_page' %}" class="nav-link">Login</a>
-    {% endif %}
-  </div>
-  <div class="navbar-actions">
-    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode"></button>
-  </div>
-</nav>
+    <!-- Top Navigation (Desktop) -->
+    <nav class="hidden md:block sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <a href="{% url 'public_index' %}" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                        <i class="bi bi-printer-fill text-xl"></i>
+                    </div>
+                    <span class="font-display font-bold text-2xl tracking-tight text-white">Print<span class="gradient-text">Edge</span></span>
+                </a>
 
-<!-- MESSAGES -->
-<div class="toast-container" id="toastContainer">
-{% for msg in messages %}
-  <div class="toast {{ msg.tags }}">
-    <i class="bi bi-{% if msg.tags == 'error' %}x-circle-fill text-danger{% elif msg.tags == 'success' %}check-circle-fill text-success{% elif msg.tags == 'warning' %}exclamation-triangle-fill text-warning{% else %}info-circle-fill text-primary{% endif %}"></i>
-    <span>{{ msg }}</span>
-    <button onclick="this.closest('.toast').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">&times;</button>
-  </div>
-{% endfor %}
-</div>
+                <!-- Nav Links -->
+                <div class="flex items-center gap-6">
+                    <a href="{% url 'public_index' %}" class="text-sm font-semibold transition-colors hover:text-white {% if request.resolver_match.url_name == 'public_index' %}text-white{% else %}text-neutral-400{% endif %}">Home</a>
+                    <a href="{% url 'public_services_page' %}" class="text-sm font-semibold transition-colors hover:text-white {% if request.resolver_match.url_name == 'public_services_page' %}text-white{% else %}text-neutral-400{% endif %}">Services</a>
+                    <a href="{% url 'public_upload_page' %}" class="text-sm font-semibold transition-colors hover:text-white {% if request.resolver_match.url_name == 'public_upload_page' %}text-white{% else %}text-neutral-400{% endif %}">Upload File</a>
+                    <a href="{% url 'public_pricing_page' %}" class="text-sm font-semibold transition-colors hover:text-white {% if request.resolver_match.url_name == 'public_pricing_page' %}text-white{% else %}text-neutral-400{% endif %}">Price List</a>
+                    <a href="{% url 'public_assignments_page' %}" class="text-sm font-semibold transition-colors hover:text-white {% if request.resolver_match.url_name == 'public_assignments_page' %}text-white{% else %}text-neutral-400{% endif %}">Cover Generator</a>
+                    <a href="{% url 'public_contact_page' %}" class="text-sm font-semibold transition-colors hover:text-white {% if request.resolver_match.url_name == 'public_contact_page' %}text-white{% else %}text-neutral-400{% endif %}">Contact</a>
+                    
+                    <div class="w-px h-6 bg-neutral-800"></div>
 
-<main style="margin-top:64px;">
-  {% block content %}{% endblock %}
-</main>
+                    {% if user.is_authenticated %}
+                        {% if user.is_admin_user %}
+                            <a href="{% url 'admin_dashboard' %}" class="text-sm font-semibold text-brand-400 hover:text-brand-300 transition-colors">Admin Panel</a>
+                        {% else %}
+                            <a href="{% url 'user_dashboard' %}" class="text-sm font-semibold text-white hover:text-brand-400 transition-colors">Dashboard</a>
+                        {% endif %}
+                        <a href="{% url 'auth_logout' %}" class="text-sm font-semibold text-neutral-400 hover:text-red-400 transition-colors">Logout</a>
+                    {% else %}
+                        <a href="{% url 'auth_login_page' %}" class="text-sm font-semibold text-neutral-400 hover:text-white transition-colors">Login</a>
+                        <a href="{% url 'auth_register_page' %}" class="px-4 py-2 rounded-full text-sm font-bold bg-white text-black hover:bg-neutral-200 transition-all hover:scale-105 active:scale-95">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
 
-<!-- FOOTER -->
-<footer style="background:var(--bg-card);border-top:1px solid var(--border);padding:2rem;text-align:center;margin-top:4rem;">
-  <div style="max-width:900px;margin:0 auto;">
-    <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.5rem;">
-      <div class="navbar-logo"><i class="bi bi-printer-fill"></i></div>
-      <span class="text-gradient" style="font-weight:800;font-size:1rem;">Print-Edge</span>
+    <!-- Mobile Header -->
+    <header class="md:hidden sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10 pt-safe">
+        <div class="flex items-center justify-between px-4 h-16">
+            <a href="{% url 'public_index' %}" class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-white">
+                    <i class="bi bi-printer-fill"></i>
+                </div>
+                <span class="font-display font-bold text-xl tracking-tight text-white">Print<span class="gradient-text">Edge</span></span>
+            </a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'auth_login_page' %}" class="text-sm font-semibold text-white bg-neutral-800 px-4 py-1.5 rounded-full">Sign In</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Toasts -->
+    <div class="fixed top-24 right-4 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4 md:px-0">
+        {% for msg in messages %}
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 md:translate-y-0 md:translate-x-8"
+                 x-transition:enter-end="opacity-100 translate-y-0 md:translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="pointer-events-auto flex items-center p-4 rounded-2xl shadow-2xl border premium-card
+                        {% if msg.tags == 'error' %}border-red-500/30{% elif msg.tags == 'success' %}border-emerald-500/30{% else %}border-brand-500/30{% endif %}">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                            {% if msg.tags == 'error' %}bg-red-500/10 text-red-400{% elif msg.tags == 'success' %}bg-emerald-500/10 text-emerald-400{% else %}bg-brand-500/10 text-brand-400{% endif %}">
+                    <i class="bi {% if msg.tags == 'error' %}bi-x-lg{% elif msg.tags == 'success' %}bi-check-lg{% else %}bi-info-lg{% endif %} text-lg"></i>
+                </div>
+                <div class="ml-4 flex-1">
+                    <p class="text-sm font-semibold text-white">{{ msg }}</p>
+                </div>
+                <button @click="show = false" class="ml-4 text-neutral-500 hover:text-white"><i class="bi bi-x-lg"></i></button>
+            </div>
+        {% endfor %}
     </div>
-    <p class="text-muted" style="font-size:13px;">Campus Print Shop · Gono Bishwabidyalay, Savar, Dhaka</p>
-    <p class="text-muted" style="font-size:12px;margin-top:.5rem;">© 2026 Print-Edge. All rights reserved.</p>
-  </div>
-</footer>
 
-<script>
-// Theme toggle
-const root = document.documentElement;
-const btn = document.getElementById('themeToggle');
-const saved = localStorage.getItem('theme') || 'dark';
-root.setAttribute('data-theme', saved);
-if (saved === 'dark') btn.classList.add('dark');
-btn.addEventListener('click', () => {
-  const cur = root.getAttribute('data-theme');
-  const next = cur === 'dark' ? 'light' : 'dark';
-  root.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  btn.classList.toggle('dark', next === 'dark');
-});
-// Auto-dismiss toasts
-setTimeout(() => {
-  document.querySelectorAll('.toast').forEach(t => t.remove());
-}, 5000);
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col pb-24 md:pb-0 relative z-10">
+        {% block content %}{% endblock %}
+    </main>
 
-// Mobile Nav Toggle
-const mobileBtn = document.getElementById('mobileToggle');
-const navLinks = document.getElementById('navLinks');
-if(mobileBtn) {
-  mobileBtn.addEventListener('click', () => {
-    navLinks.classList.toggle('show');
-  });
-}
-</script>
-{% block extra_js %}{% endblock %}
+    <!-- Desktop Footer -->
+    <footer class="hidden md:block border-t border-white/5 bg-dark-card mt-auto py-12">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <i class="bi bi-printer-fill text-brand-500 text-2xl"></i>
+                <span class="font-display font-bold text-2xl tracking-tight text-white">PrintEdge</span>
+            </div>
+            <p class="text-neutral-400 text-sm mb-4 max-w-md mx-auto">Affordable & Quality Full Printing.</p>
+            <p class="text-neutral-600 text-sm">&copy; {% now "Y" %} Print Edge. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-white/10 z-50 pb-safe">
+        <div class="flex justify-around items-center h-16 px-4">
+            <a href="{% url 'public_index' %}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.resolver_match.url_name == 'public_index' %}text-brand-400{% else %}text-neutral-500 hover:text-white{% endif %}">
+                <i class="bi bi-house-door-fill text-xl"></i>
+                <span class="text-[10px] font-semibold">Home</span>
+            </a>
+            
+            {% if user.is_authenticated and not user.is_admin_user %}
+                <a href="{% url 'user_new_order' %}" class="flex flex-col items-center justify-center -mt-6">
+                    <div class="w-14 h-14 rounded-full bg-brand-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/40 border-4 border-black">
+                        <i class="bi bi-plus-lg text-2xl"></i>
+                    </div>
+                </a>
+                <a href="{% url 'user_dashboard' %}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if 'dashboard' in request.resolver_match.url_name %}text-brand-400{% else %}text-neutral-500 hover:text-white{% endif %}">
+                    <i class="bi bi-person-fill text-xl"></i>
+                    <span class="text-[10px] font-semibold">Dashboard</span>
+                </a>
+            {% elif user.is_admin_user %}
+                <a href="{% url 'admin_dashboard' %}" class="flex flex-col items-center justify-center w-full h-full space-y-1 text-brand-400">
+                    <i class="bi bi-grid-1x2-fill text-xl"></i>
+                    <span class="text-[10px] font-semibold">Admin</span>
+                </a>
+            {% else %}
+                <a href="{% url 'public_pricing_page' %}" class="flex flex-col items-center justify-center w-full h-full space-y-1 {% if request.resolver_match.url_name == 'public_pricing_page' %}text-brand-400{% else %}text-neutral-500 hover:text-white{% endif %}">
+                    <i class="bi bi-tags-fill text-xl"></i>
+                    <span class="text-[10px] font-semibold">Pricing</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-24 md:bottom-8 right-4 z-50 flex flex-col gap-3">
+        <a href="https://m.me/printedge" target="_blank" class="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 transition-transform hover:scale-110">
+            <i class="bi bi-messenger text-2xl"></i>
+        </a>
+        <a href="https://wa.me/8801234567890" target="_blank" class="w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 text-white flex items-center justify-center shadow-lg shadow-green-500/30 transition-transform hover:scale-110">
+            <i class="bi bi-whatsapp text-2xl"></i>
+        </a>
+    </div>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

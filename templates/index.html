@@ -1,92 +1,142 @@
 {% extends "base.html" %}
-{% block title %}Print-Edge — Smart Campus Printing{% endblock %}
+{% block title %}Print Edge | Affordable & Quality Full Printing{% endblock %}
+
 {% block content %}
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
 
-<!-- HERO -->
-<section class="hero" style="background:var(--bg);">
-  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
-    <div class="hero-bg-blob" style="width:600px;height:600px;background:var(--primary);top:-200px;right:-100px;"></div>
-    <div class="hero-bg-blob" style="width:400px;height:400px;background:var(--secondary);bottom:-100px;left:-100px;"></div>
-  </div>
+<!-- Hero Section -->
+<section class="relative min-h-[calc(100vh-5rem)] flex items-center pt-10 pb-20 lg:pt-0 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 w-full">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+            
+            <!-- Hero Text -->
+            <div class="max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 mb-8 animate-fade-in backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
+                    <span class="text-xs font-bold text-brand-300 uppercase tracking-widest">Student-Friendly Print Shop</span>
+                </div>
+                
+                <h1 class="text-5xl lg:text-7xl font-display font-bold tracking-tight mb-6 animate-slide-up leading-[1.1]" style="animation-delay: 0.1s;">
+                    Affordable & <br />
+                    <span class="gradient-text">Quality Full Printing</span>
+                </h1>
+                
+                <p class="text-lg text-neutral-400 mb-10 leading-relaxed max-w-lg animate-slide-up font-medium" style="animation-delay: 0.2s;">
+                    Assignment Print, Color Print, Spiral Binding, Cover Page & More. The complete modern student printing solution.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 animate-slide-up" style="animation-delay: 0.3s;">
+                    <a href="{% url 'public_upload_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-105 active:scale-95">
+                        <i class="bi bi-cloud-arrow-up-fill text-xl"></i>
+                        Upload File
+                    </a>
+                    <a href="{% url 'public_pricing_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-black bg-white hover:bg-neutral-200 transition-all hover:scale-105 active:scale-95">
+                        <i class="bi bi-cart-fill"></i>
+                        Order Now
+                    </a>
+                    <a href="{% url 'public_contact_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all hover:scale-105 active:scale-95">
+                        <i class="bi bi-telephone-fill"></i>
+                        Contact Us
+                    </a>
+                </div>
 
-  <div style="max-width:1100px;margin:0 auto;width:100%;position:relative;z-index:1;">
-    <div class="grid-2" style="gap:4rem;align-items:center;">
-      <div>
-        <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:999px;padding:.35rem .85rem;margin-bottom:1.5rem;">
-          <span style="width:6px;height:6px;background:var(--success);border-radius:50%;animation:pulse-dot 2s infinite;"></span>
-          <span style="font-size:13px;font-weight:600;color:var(--primary);">Print shop now open · Gono Bishwabidyalay</span>
-        </div>
+                <div class="grid grid-cols-3 gap-8 mt-16 pt-8 border-t border-white/10 animate-slide-up" style="animation-delay: 0.4s;">
+                    <div>
+                        <div class="text-3xl font-display font-bold text-white mb-1">৳2</div>
+                        <div class="text-xs text-neutral-500 uppercase tracking-widest font-bold">B&W Page</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-display font-bold text-white mb-1">৳5</div>
+                        <div class="text-xs text-neutral-500 uppercase tracking-widest font-bold">Color Page</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-display font-bold text-white mb-1">50<span class="text-xl">MB</span></div>
+                        <div class="text-xs text-neutral-500 uppercase tracking-widest font-bold">Max Upload</div>
+                    </div>
+                </div>
+            </div>
 
-        <h1 style="font-size:clamp(2rem,5vw,3.25rem);font-weight:900;line-height:1.15;margin-bottom:1.25rem;">
-          Campus Printing<br><span class="text-gradient">Made Effortless</span>
-        </h1>
-        <p style="font-size:1.05rem;color:var(--text-muted);margin-bottom:2rem;max-width:480px;line-height:1.7;">
-          Upload your documents, configure print options, get an instant price quote, and have your prints ready in minutes — all without leaving your seat.
-        </p>
+            <!-- Hero Image/Illustration Area -->
+            <div class="relative flex items-center justify-center animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="relative w-full max-w-lg aspect-square">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-brand-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+                    
+                    <!-- Cartoon Printing Shop Illustration Proxy -->
+                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                        <div class="premium-card w-full h-full rounded-3xl p-8 flex flex-col items-center justify-center gap-6 border-brand-500/30 overflow-hidden relative shadow-2xl shadow-brand-500/20 transform transition hover:scale-105">
+                            <div class="absolute top-0 right-0 p-4 opacity-50"><i class="bi bi-asterisk text-brand-400 animate-spin" style="animation-duration: 10s;"></i></div>
+                            <div class="absolute bottom-10 left-10 p-4 opacity-50"><i class="bi bi-circle text-purple-400 animate-ping" style="animation-duration: 3s;"></i></div>
+                            
+                            <i class="bi bi-printer-fill text-8xl text-brand-400 drop-shadow-lg"></i>
+                            <div class="text-center">
+                                <h3 class="text-2xl font-bold text-white mb-2">Print Edge Express</h3>
+                                <p class="text-neutral-400 font-medium">Fast, Reliable, Student-Focused.</p>
+                            </div>
+                        </div>
+                    </div>
 
-        <div style="display:flex;gap:.85rem;flex-wrap:wrap;">
-          <a href="{% url 'user_new_order' %}" class="btn btn-primary btn-lg btn-pill">
-            <i class="bi bi-cloud-upload-fill"></i> Print Now — It's Free
-          </a>
-          <a href="{% url 'public_pricing_page' %}" class="btn btn-outline btn-lg btn-pill">
-            <i class="bi bi-tag"></i> View Pricing
-          </a>
+                    <!-- Floating Elements -->
+                    <div class="absolute top-[10%] right-[-5%] premium-card px-4 py-2 rounded-xl border-emerald-500/30 flex items-center gap-2 z-20 animate-bounce" style="animation-delay: 1s; animation-duration: 3s;">
+                        <i class="bi bi-check-circle-fill text-emerald-400"></i>
+                        <span class="text-sm font-bold text-white">Assignment Ready</span>
+                    </div>
+                    <div class="absolute bottom-[20%] left-[-10%] premium-card px-4 py-2 rounded-xl border-amber-500/30 flex items-center gap-2 z-20 animate-bounce" style="animation-delay: 2s; animation-duration: 4s;">
+                        <i class="bi bi-lightning-charge-fill text-amber-400"></i>
+                        <span class="text-sm font-bold text-white">Instant Printing</span>
+                    </div>
+                </div>
+            </div>
+            
         </div>
-
-        <div style="display:flex;gap:2rem;margin-top:2.5rem;">
-          <div><div style="font-size:1.5rem;font-weight:800;">৳2</div><div style="font-size:12px;color:var(--text-muted);">per B&W page</div></div>
-          <div><div style="font-size:1.5rem;font-weight:800;">৳5</div><div style="font-size:12px;color:var(--text-muted);">per Color page</div></div>
-          <div><div style="font-size:1.5rem;font-weight:800;">50MB</div><div style="font-size:12px;color:var(--text-muted);">max upload</div></div>
-        </div>
-      </div>
-
-      <!-- Feature Card Preview -->
-      <div class="grid-2" style="gap:1rem;">
-        <div class="feature-card">
-          <div class="feature-icon avatar-primary"><i class="bi bi-cloud-arrow-up-fill" style="font-size:24px;color:var(--primary);"></i></div>
-          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Upload Instantly</h3>
-          <p class="text-muted" style="font-size:13px;">PDF, DOCX, PPT, JPG, PNG — up to 50MB</p>
-        </div>
-        <div class="feature-card" style="margin-top:1.5rem;">
-          <div class="feature-icon avatar-success"><i class="bi bi-calculator-fill" style="font-size:24px;color:var(--success);"></i></div>
-          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Live Price Quote</h3>
-          <p class="text-muted" style="font-size:13px;">Know the exact cost before you submit</p>
-        </div>
-        <div class="feature-card" style="margin-top:-1.5rem;">
-          <div class="feature-icon avatar-warning"><i class="bi bi-bell-fill" style="font-size:24px;color:var(--warning);"></i></div>
-          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Real-time Tracking</h3>
-          <p class="text-muted" style="font-size:13px;">Get notified when your prints are ready</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon avatar-info"><i class="bi bi-shield-fill-check" style="font-size:24px;color:var(--info);"></i></div>
-          <h3 style="font-size:.95rem;margin-bottom:.35rem;">Secure Files</h3>
-          <p class="text-muted" style="font-size:13px;">Auto-deleted 7 days after delivery</p>
-        </div>
-      </div>
     </div>
-  </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section style="padding:5rem 2rem;background:var(--bg-card);border-top:1px solid var(--border);">
-  <div style="max-width:900px;margin:0 auto;text-align:center;">
-    <h2 style="font-size:2rem;margin-bottom:.5rem;">How It Works</h2>
-    <p class="text-muted" style="margin-bottom:3rem;">Place your order in 4 simple steps</p>
-
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;position:relative;">
-      <div style="position:absolute;top:24px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--primary),var(--secondary));z-index:0;"></div>
-      {% for step in "1234" %}
-      <div style="text-align:center;position:relative;z-index:1;">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;color:white;font-weight:800;font-size:1.1rem;">{{ step }}</div>
-        <h4 style="font-size:.9rem;margin-bottom:.35rem;">{% if step == '1' %}Upload File{% elif step == '2' %}Configure{% elif step == '3' %}Get Quote{% else %}Pickup{% endif %}</h4>
-        <p class="text-muted" style="font-size:13px;">{% if step == '1' %}Choose your document{% elif step == '2' %}Set pages, copies, type{% elif step == '3' %}Instant live price{% else %}Track & collect{% endif %}</p>
-      </div>
-      {% endfor %}
+<!-- Review Section (Mini) -->
+<section class="py-12 border-t border-white/5 bg-black/50">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+        <p class="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-6">Trusted by Students Everywhere</p>
+        <div class="flex flex-wrap justify-center gap-8 opacity-70 grayscale">
+            <div class="text-xl font-bold font-display flex items-center gap-2"><i class="bi bi-mortarboard-fill"></i> Gono Bishwabidyalay</div>
+            <div class="text-xl font-bold font-display flex items-center gap-2"><i class="bi bi-book-half"></i> Assignment Center</div>
+        </div>
     </div>
+</section>
 
-    <a href="{% url 'auth_register_page' %}" class="btn btn-primary btn-lg btn-pill" style="margin-top:3rem;">
-      <i class="bi bi-person-plus-fill"></i> Create Free Account
-    </a>
-  </div>
+<!-- How It Works Section -->
+<section class="py-32 relative">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 text-center">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-white mb-6">How It Works</h2>
+        <p class="text-neutral-400 text-lg max-w-2xl mx-auto mb-20 font-medium">Four simple steps to get your assignments and documents printed easily.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            <div class="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"></div>
+            
+            <div class="relative z-10 flex flex-col items-center group">
+                <div class="w-20 h-20 rounded-2xl premium-card flex items-center justify-center text-2xl font-bold text-brand-400 mb-6 group-hover:scale-110 transition-transform">1</div>
+                <h4 class="text-xl font-bold text-white mb-2">Upload File</h4>
+                <p class="text-neutral-500 text-sm max-w-[200px] font-medium">Drop your PDF or DOCX</p>
+            </div>
+            
+            <div class="relative z-10 flex flex-col items-center group">
+                <div class="w-20 h-20 rounded-2xl premium-card flex items-center justify-center text-2xl font-bold text-brand-400 mb-6 group-hover:scale-110 transition-transform">2</div>
+                <h4 class="text-xl font-bold text-white mb-2">Select Options</h4>
+                <p class="text-neutral-500 text-sm max-w-[200px] font-medium">Color, B&W, Binding</p>
+            </div>
+            
+            <div class="relative z-10 flex flex-col items-center group">
+                <div class="w-20 h-20 rounded-2xl premium-card flex items-center justify-center text-2xl font-bold text-brand-400 mb-6 group-hover:scale-110 transition-transform">3</div>
+                <h4 class="text-xl font-bold text-white mb-2">Instant Quote</h4>
+                <p class="text-neutral-500 text-sm max-w-[200px] font-medium">See live affordable pricing</p>
+            </div>
+            
+            <div class="relative z-10 flex flex-col items-center group">
+                <div class="w-20 h-20 rounded-2xl premium-card flex items-center justify-center text-2xl font-bold text-brand-400 mb-6 group-hover:scale-110 transition-transform">4</div>
+                <h4 class="text-xl font-bold text-white mb-2">Ready</h4>
+                <p class="text-neutral-500 text-sm max-w-[200px] font-medium">Pick up your fresh prints</p>
+            </div>
+        </div>
+    </div>
 </section>
 {% endblock %}

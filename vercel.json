@@ -1,5 +1,11 @@
 {
   "version": 2,
+  "crons": [
+    {
+      "path": "/api/cron/purge-files/",
+      "schedule": "0 3 * * *"
+    }
+  ],
   "builds": [
     {
       "src": "printease/wsgi.py",

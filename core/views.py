@@ -4,7 +4,6 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Sum, Count, Q
-from django.db.models.functions import TruncDate
 import json
 from datetime import timedelta
 from decimal import Decimal
@@ -14,15 +13,17 @@ from .models import (
     PricingRule, AddonService, Expense, AuditLog,
     Notification, OrderStatusLog, SiteSettings, PromoCode
 )
-from .decorators import login_required_custom, admin_required
+from .decorators import login_required_custom, admin_required, superadmin_required
 from .pricing import calculate_order_price
+from .utils import safe_int, validate_upload_file
+from .audit_helpers import log_audit
+from .user_helpers import create_user_account, set_user_password, validate_password_strength
+from .order_files import apply_order_delivered, delete_order_file, save_order_file_metadata
 
 # ─── AUTH VIEWS ────────────────────────────────────────────────────────────────
 
 import re
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
-import os
 
 def auth_login(request):
     if request.user.is_authenticated:
@@ -36,7 +37,7 @@ def auth_login(request):
             messages.error(request, 'Too many failed login attempts. Please try again in 15 minutes.')
             return render(request, 'auth/login.html')
 
-        email = request.POST.get('email', '').strip().lower()[:150]
+        email = (request.POST.get('email') or request.POST.get('username') or '').strip().lower()[:150]
         password = request.POST.get('password', '')
         user = authenticate(request, username=email, password=password)
         if user is None:
@@ -67,7 +68,8 @@ def auth_register(request):
     if request.user.is_authenticated:
         return redirect('user_dashboard')
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()[:100]
+        first_name = request.POST.get('first_name', '').strip()[:50]
+        last_name = request.POST.get('last_name', '').strip()[:50]
         email = request.POST.get('email', '').strip().lower()[:150]
         phone = request.POST.get('phone', '').strip()[:20]
         password = request.POST.get('password', '')
@@ -99,11 +101,14 @@ def auth_register(request):
         while User.objects.filter(username=username).exists():
             username = f"{base_username}{counter}"
             counter += 1
-        parts = name.split(' ', 1)
-        user = User.objects.create_user(
-            username=username, email=email, password=password,
-            first_name=parts[0], last_name=parts[1] if len(parts) > 1 else '',
-            phone=phone, role='customer'
+        
+        user = create_user_account(
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            role='customer',
         )
         login(request, user)
         messages.success(request, f'Welcome to Print-Edge, {user.first_name}!')
@@ -127,6 +132,25 @@ def public_pricing(request):
     return render(request, 'pricing.html', {'addons': addons})
 
 
+def public_services(request):
+    addons = AddonService.objects.filter(is_active=True)
+    return render(request, 'services.html', {'addons': addons})
+
+
+def public_upload(request):
+    if request.user.is_authenticated:
+        return redirect('user_new_order')
+    return render(request, 'upload.html')
+
+
+def public_assignments(request):
+    return render(request, 'assignments.html')
+
+
+def public_contact(request):
+    return render(request, 'contact.html')
+
+
 # ─── USER VIEWS ─────────────────────────────────────────────────────────────────
 
 @login_required_custom
@@ -138,10 +162,26 @@ def user_dashboard(request):
         'completed_count': orders.filter(status='delivered').count(),
         'total_spent': orders.filter(status='delivered').aggregate(s=Sum('total_amount'))['s'] or 0,
     }
+    # Status pipeline data for the tracker UI
+    status_steps = [
+        ('pending', 'Pending', 'bi-hourglass-split'),
+        ('confirmed', 'Confirmed', 'bi-check-lg'),
+        ('printing', 'Printing', 'bi-printer-fill'),
+        ('quality_check', 'QC', 'bi-eye-fill'),
+        ('ready', 'Ready', 'bi-bag-check-fill'),
+    ]
+    active_order = active.first()
+    passed_statuses = []
+    if active_order:
+        status_order = ['pending', 'confirmed', 'printing', 'quality_check', 'ready']
+        current_idx = status_order.index(active_order.status) if active_order.status in status_order else -1
+        passed_statuses = status_order[:current_idx]
     return render(request, 'user/dashboard.html', {
         'orders': orders[:10],
-        'active_order': active.first(),
+        'active_order': active_order,
         'stats': stats,
+        'status_steps': status_steps,
+        'passed_statuses': passed_statuses,
     })
 
 
@@ -152,28 +192,25 @@ def user_new_order(request):
         print_type = request.POST.get('print_type', 'bw')
         sides = request.POST.get('sides', 'single')
         paper_size = request.POST.get('paper_size', 'A4')
-        try:
-            pages = max(1, int(request.POST.get('pages', 1)))
-            copies = max(1, int(request.POST.get('copies', 1)))
-        except ValueError:
-            pages = 1
-            copies = 1
-            
+        pages = safe_int(request.POST.get('pages', 1))
+        copies = safe_int(request.POST.get('copies', 1))
         is_urgent = request.POST.get('is_urgent') == 'on'
         addon_ids = request.POST.getlist('addons')
         instructions = request.POST.get('special_instructions', '')[:500]
+        fulfillment_type = request.POST.get('fulfillment_type', 'pickup')
+        if fulfillment_type not in ('pickup', 'delivery'):
+            fulfillment_type = 'pickup'
+        delivery_address = request.POST.get('delivery_address', '').strip()[:500]
+        delivery_phone = request.POST.get('delivery_contact_phone', '').strip()[:20]
+        if fulfillment_type == 'delivery' and not delivery_address:
+            messages.error(request, 'Please enter a delivery address.')
+            return render(request, 'user/new_order.html', {'addons': addons})
         file = request.FILES.get('file')
-        
-        if file:
-            if file.size > 50 * 1024 * 1024:
-                messages.error(request, 'File size exceeds 50MB limit.')
-                return render(request, 'user/new_order.html', {'addons': addons})
-            
-            ext = os.path.splitext(file.name)[1].lower()
-            allowed = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png']
-            if ext not in allowed:
-                messages.error(request, 'Invalid file type.')
-                return render(request, 'user/new_order.html', {'addons': addons})
+
+        file_error = validate_upload_file(file)
+        if file_error:
+            messages.error(request, file_error)
+            return render(request, 'user/new_order.html', {'addons': addons})
                 
         promo_code_str = request.POST.get('promo_code', '').strip().upper()
         promo_obj = None
@@ -196,14 +233,20 @@ def user_new_order(request):
             print_type=print_type, sides=sides, paper_size=paper_size,
             pages=pages, copies=copies, is_urgent=is_urgent,
             special_instructions=instructions,
+            fulfillment_type=fulfillment_type,
+            delivery_address=delivery_address if fulfillment_type == 'delivery' else '',
+            delivery_contact_phone=delivery_phone if fulfillment_type == 'delivery' else '',
             base_price=breakdown['base_price'],
             addons_price=breakdown['addons_price'],
             urgent_surcharge=breakdown['urgent_surcharge'],
             discount_amount=breakdown['total_discount'],
             total_amount=breakdown['total'],
             promo_code=promo_obj, created_by=request.user,
-            file=file, file_name=file.name if file else None,
+            file=file,
         )
+        save_order_file_metadata(order, file)
+        if file:
+            order.save(update_fields=['file_name', 'file_size_bytes'])
         if addon_ids:
             order.addons.set(addon_ids)
         if promo_obj:
@@ -355,17 +398,15 @@ def admin_order_detail(request, pk):
         action = request.POST.get('action')
         if action == 'status':
             new_status = request.POST.get('status')
+            valid_statuses = [s[0] for s in Order.STATUS_CHOICES]
+            if new_status not in valid_statuses:
+                messages.error(request, 'Invalid order status.')
+                return redirect('admin_order_detail', pk=pk)
             old_status = order.status
             note = request.POST.get('note', '')
             order.status = new_status
             if new_status == 'delivered':
-                order.completed_at = timezone.now()
-                if order.customer:
-                    order.customer.total_spent += order.total_amount
-                    order.customer.update_tier()
-                elif order.walkin_customer:
-                    order.walkin_customer.total_spent += order.total_amount
-                    order.walkin_customer.save()
+                apply_order_delivered(order)
             order.save()
             OrderStatusLog.objects.create(
                 order=order, old_status=old_status,
@@ -387,10 +428,18 @@ def admin_order_detail(request, pk):
         elif action == 'notes':
             order.admin_notes = request.POST.get('admin_notes', '')
             order.save(update_fields=['admin_notes'])
+        elif action == 'delete_file' and request.user.is_full_admin:
+            delete_order_file(order, request=request, reason='admin_manual')
+            messages.success(request, 'Order file removed.')
+            return redirect('admin_order_detail', pk=pk)
         messages.success(request, 'Order updated.')
         return redirect('admin_order_detail', pk=pk)
+    site = SiteSettings.get()
     return render(request, 'admin/order_detail.html', {
-        'order': order, 'staff_list': staff_list
+        'order': order,
+        'staff_list': staff_list,
+        'retention_days': site.auto_delete_files_days,
+        'can_delete_file': request.user.is_full_admin and order.has_stored_file,
     })
 
 
@@ -409,11 +458,18 @@ def admin_walkin_order(request):
         print_type = request.POST.get('print_type', 'bw')
         sides = request.POST.get('sides', 'single')
         paper_size = request.POST.get('paper_size', 'A4')
-        pages = int(request.POST.get('pages', 1))
-        copies = int(request.POST.get('copies', 1))
+        pages = safe_int(request.POST.get('pages', 1))
+        copies = safe_int(request.POST.get('copies', 1))
         is_urgent = request.POST.get('is_urgent') == 'on'
         is_physical = request.POST.get('is_physical_document') == 'on'
         addon_ids = request.POST.getlist('addons')
+        upload = request.FILES.get('file')
+        file_error = validate_upload_file(upload)
+        if file_error:
+            messages.error(request, file_error)
+            return render(request, 'admin/walkin_order.html', {
+                'addons': addons, 'walkin_customers': WalkInCustomer.objects.order_by('-last_visit')[:50]
+            })
         manual_discount = Decimal(request.POST.get('manual_discount', '0') or '0')
         payment_method = request.POST.get('payment_method', 'Cash')
         amount_paid = Decimal(request.POST.get('amount_paid', '0') or '0')
@@ -424,11 +480,19 @@ def admin_walkin_order(request):
             tier_discount_pct=Decimal('0')
         )
         payment_status = 'paid' if amount_paid >= breakdown['total'] else ('partial' if amount_paid > 0 else 'unpaid')
+        fulfillment_type = request.POST.get('fulfillment_type', 'pickup')
+        if fulfillment_type not in ('pickup', 'delivery'):
+            fulfillment_type = 'pickup'
+        delivery_address = request.POST.get('delivery_address', '').strip()[:500]
+        delivery_phone = request.POST.get('delivery_contact_phone', '').strip()[:20]
         order = Order.objects.create(
             source='offline', walkin_customer=walkin,
             print_type=print_type, sides=sides, paper_size=paper_size,
             pages=pages, copies=copies, is_urgent=is_urgent,
             is_physical_document=is_physical,
+            fulfillment_type=fulfillment_type,
+            delivery_address=delivery_address if fulfillment_type == 'delivery' else '',
+            delivery_contact_phone=delivery_phone if fulfillment_type == 'delivery' else '',
             base_price=breakdown['base_price'],
             addons_price=breakdown['addons_price'],
             urgent_surcharge=breakdown['urgent_surcharge'],
@@ -439,8 +503,11 @@ def admin_walkin_order(request):
             amount_paid=amount_paid,
             payment_status=payment_status,
             created_by=request.user,
-            file=request.FILES.get('file'),
+            file=upload,
         )
+        save_order_file_metadata(order, upload)
+        if upload:
+            order.save(update_fields=['file_name', 'file_size_bytes'])
         if addon_ids:
             order.addons.set(addon_ids)
         OrderStatusLog.objects.create(
@@ -464,7 +531,70 @@ def admin_users(request):
     search = request.GET.get('q', '')
     if search:
         users = users.filter(Q(email__icontains=search) | Q(first_name__icontains=search) | Q(phone__icontains=search))
-    return render(request, 'admin/users.html', {'users': users, 'search': search})
+
+    if request.method == 'POST' and request.user.is_full_admin:
+        action = request.POST.get('action')
+        if action == 'create':
+            try:
+                user = create_user_account(
+                    email=request.POST.get('email', ''),
+                    password=request.POST.get('password', ''),
+                    first_name=request.POST.get('first_name', ''),
+                    last_name=request.POST.get('last_name', ''),
+                    phone=request.POST.get('phone', ''),
+                    role='customer',
+                )
+                log_audit(request, 'CREATE_USER', 'User', user.pk, new_value=user.email)
+                messages.success(request, f'Customer {user.email} created.')
+            except ValueError as exc:
+                messages.error(request, str(exc))
+        elif action == 'toggle_active':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'), role='customer')
+            user.is_active = not user.is_active
+            user.save(update_fields=['is_active'])
+            log_audit(request, 'TOGGLE_ACTIVE', 'User', user.pk, new_value=str(user.is_active))
+            messages.success(request, f'Account {"activated" if user.is_active else "deactivated"}.')
+        elif action == 'ban':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'), role='customer')
+            user.is_banned = True
+            user.ban_reason = request.POST.get('ban_reason', '')[:500]
+            user.save(update_fields=['is_banned', 'ban_reason'])
+            log_audit(request, 'BAN_USER', 'User', user.pk, new_value=user.ban_reason)
+            messages.success(request, f'{user.display_name} banned.')
+        elif action == 'unban':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'), role='customer')
+            user.is_banned = False
+            user.ban_reason = ''
+            user.save(update_fields=['is_banned', 'ban_reason'])
+            log_audit(request, 'UNBAN_USER', 'User', user.pk)
+            messages.success(request, f'{user.display_name} unbanned.')
+        elif action == 'set_password':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'), role='customer')
+            pwd = request.POST.get('password', '')
+            err = validate_password_strength(pwd)
+            if err:
+                messages.error(request, err)
+            else:
+                set_user_password(user, pwd)
+                log_audit(request, 'SET_PASSWORD', 'User', user.pk)
+                messages.success(request, f'Password updated for {user.email}.')
+        elif action == 'delete':
+            uid = request.POST.get('user_id')
+            if Order.objects.filter(customer_id=uid).exists():
+                messages.error(request, 'Cannot delete customer with existing orders.')
+            else:
+                user = get_object_or_404(User, pk=uid, role='customer')
+                email = user.email
+                user.delete()
+                log_audit(request, 'DELETE_USER', 'User', '', old_value=email)
+                messages.success(request, 'Customer deleted.')
+        return redirect('admin_users')
+
+    return render(request, 'admin/users.html', {
+        'users': users,
+        'search': search,
+        'can_manage': request.user.is_full_admin,
+    })
 
 
 @admin_required
@@ -565,7 +695,7 @@ def admin_audit_log(request):
     return render(request, 'admin/audit_log.html', {'logs': logs})
 
 
-@admin_required
+@superadmin_required
 def admin_settings(request):
     site = SiteSettings.get()
     if request.method == 'POST':
@@ -574,8 +704,8 @@ def admin_settings(request):
         site.business_email = request.POST.get('business_email', site.business_email)
         site.business_address = request.POST.get('business_address', site.business_address)
         site.business_hours = request.POST.get('business_hours', site.business_hours)
-        site.urgent_surcharge_percent = int(request.POST.get('urgent_surcharge_percent', 50))
-        site.auto_delete_files_days = int(request.POST.get('auto_delete_files_days', 7))
+        site.urgent_surcharge_percent = safe_int(request.POST.get('urgent_surcharge_percent', 50), default=50, minimum=0)
+        site.auto_delete_files_days = safe_int(request.POST.get('auto_delete_files_days', 7), default=7, minimum=1)
         site.save()
         messages.success(request, 'Settings saved.')
         return redirect('admin_settings')
@@ -598,8 +728,8 @@ def api_price_calculate(request):
     print_type = request.GET.get('print_type', 'bw')
     sides = request.GET.get('sides', 'single')
     paper_size = request.GET.get('paper_size', 'A4')
-    pages = int(request.GET.get('pages', 1) or 1)
-    copies = int(request.GET.get('copies', 1) or 1)
+    pages = safe_int(request.GET.get('pages', 1))
+    copies = safe_int(request.GET.get('copies', 1))
     is_urgent = request.GET.get('is_urgent') == '1'
     addon_ids = request.GET.getlist('addons')
     breakdown = calculate_order_price(print_type, sides, paper_size, pages, copies, addon_ids=addon_ids, is_urgent=is_urgent)
@@ -607,6 +737,8 @@ def api_price_calculate(request):
 
 
 def api_walkin_search(request):
+    if not request.user.is_authenticated or not request.user.is_admin_user:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
     q = request.GET.get('q', '').strip()
     results = []
     if len(q) >= 2:
@@ -631,14 +763,16 @@ def api_order_status_update(request, pk):
             return JsonResponse({'error': 'Invalid status'}, status=400)
         old_status = order.status
         order.status = new_status
-        order.save(update_fields=['status'])
+        if new_status == 'delivered':
+            apply_order_delivered(order)
+        order.save()
         OrderStatusLog.objects.create(
             order=order, old_status=old_status,
             new_status=new_status, changed_by=request.user
         )
         return JsonResponse({'success': True, 'status': new_status})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return JsonResponse({'error': 'Invalid request data'}, status=400)
 
 
 def api_global_search(request):
@@ -671,3 +805,152 @@ def api_notifications(request):
         {'id': n.pk, 'title': n.title, 'body': n.body, 'type': n.type, 'link': n.link or '#'}
         for n in notifs
     ]})
+
+
+# ─── PWA MANIFEST ──────────────────────────────────────────────────────────────
+
+def pwa_manifest(request):
+    """Serve PWA manifest.json dynamically."""
+    manifest = {
+        'name': 'PrintEase - Campus Printing',
+        'short_name': 'PrintEase',
+        'description': 'Premium campus printing service - upload, configure, print.',
+        'start_url': '/',
+        'display': 'standalone',
+        'background_color': '#020617',
+        'theme_color': '#14b8a6',
+        'orientation': 'portrait-primary',
+        'icons': [
+            {'src': '/static/icons/icon-192.png', 'sizes': '192x192', 'type': 'image/png'},
+            {'src': '/static/icons/icon-512.png', 'sizes': '512x512', 'type': 'image/png'},
+        ],
+        'categories': ['business', 'productivity'],
+    }
+    return JsonResponse(manifest)
+
+
+# ─── STAFF MANAGEMENT ──────────────────────────────────────────────────────────
+
+@admin_required
+def admin_staff(request):
+    staff = User.objects.filter(role__in=['operator', 'manager', 'admin', 'super_admin']).order_by('role', 'first_name')
+    staff_roles = [c for c in User.ROLE_CHOICES if c[0] != 'customer']
+
+    if request.method == 'POST' and request.user.is_full_admin:
+        action = request.POST.get('action')
+        if action == 'create':
+            try:
+                role = request.POST.get('role', 'operator')
+                if role not in ('operator', 'manager', 'admin', 'super_admin'):
+                    role = 'operator'
+                user = create_user_account(
+                    email=request.POST.get('email', ''),
+                    password=request.POST.get('password', ''),
+                    first_name=request.POST.get('first_name', ''),
+                    last_name=request.POST.get('last_name', ''),
+                    phone=request.POST.get('phone', ''),
+                    role=role,
+                )
+                user.is_staff = True
+                user.save(update_fields=['is_staff'])
+                log_audit(request, 'CREATE_STAFF', 'User', user.pk, new_value=f'{user.email}:{role}')
+                messages.success(request, f'Staff {user.email} created.')
+            except ValueError as exc:
+                messages.error(request, str(exc))
+        elif action == 'update_role':
+            uid = request.POST.get('user_id')
+            new_role = request.POST.get('role')
+            if new_role in {r[0] for r in staff_roles}:
+                user = get_object_or_404(User, pk=uid)
+                old = user.role
+                user.role = new_role
+                user.save(update_fields=['role'])
+                log_audit(request, 'UPDATE_ROLE', 'User', user.pk, old_value=old, new_value=new_role)
+                messages.success(request, f'{user.display_name} role updated to {new_role}.')
+        elif action == 'toggle_active':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'))
+            if user.pk == request.user.pk:
+                messages.error(request, 'You cannot deactivate your own account.')
+            else:
+                user.is_active = not user.is_active
+                user.save(update_fields=['is_active'])
+                log_audit(request, 'TOGGLE_ACTIVE', 'User', user.pk, new_value=str(user.is_active))
+                messages.success(request, 'Staff access updated.')
+        elif action == 'set_password':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'))
+            pwd = request.POST.get('password', '')
+            err = validate_password_strength(pwd)
+            if err:
+                messages.error(request, err)
+            else:
+                set_user_password(user, pwd)
+                log_audit(request, 'SET_PASSWORD', 'User', user.pk)
+                messages.success(request, f'Password updated for {user.email}.')
+        elif action == 'demote':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'))
+            if user.pk == request.user.pk:
+                messages.error(request, 'You cannot demote yourself.')
+            else:
+                user.role = 'customer'
+                user.is_staff = False
+                user.save(update_fields=['role', 'is_staff'])
+                log_audit(request, 'DEMOTE_STAFF', 'User', user.pk)
+                messages.success(request, f'{user.display_name} moved to customer role.')
+        return redirect('admin_staff')
+
+    return render(request, 'admin/staff.html', {
+        'staff': staff,
+        'staff_roles': staff_roles,
+        'can_manage': request.user.is_full_admin,
+    })
+
+
+# ─── REPORTS EXPORT ────────────────────────────────────────────────────────────
+
+import csv
+from django.http import HttpResponse
+
+@admin_required
+def admin_reports_export(request):
+    """Export orders to CSV."""
+    report_type = request.GET.get('type', 'orders')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="printease_{report_type}_{timezone.now().strftime("%Y%m%d")}.csv"'
+    writer = csv.writer(response)
+
+    if report_type == 'orders':
+        writer.writerow(['Order #', 'Source', 'Customer', 'Phone', 'Print Type', 'Pages', 'Copies',
+                         'Total', 'Paid', 'Payment Status', 'Status', 'Created'])
+        orders = Order.objects.select_related('customer', 'walkin_customer').order_by('-created_at')[:500]
+        for o in orders:
+            writer.writerow([
+                o.order_number, o.source, o.customer_name, o.customer_phone,
+                o.get_print_type_display(), o.pages, o.copies,
+                float(o.total_amount), float(o.amount_paid),
+                o.get_payment_status_display(), o.get_status_display(),
+                o.created_at.strftime('%Y-%m-%d %H:%M'),
+            ])
+    elif report_type == 'customers':
+        writer.writerow(['Name', 'Email', 'Phone', 'Tier', 'Total Spent', 'Total Orders', 'Joined'])
+        users = User.objects.filter(role='customer').order_by('-total_spent')
+        for u in users:
+            writer.writerow([u.display_name, u.email, u.phone, u.tier,
+                             float(u.total_spent), u.total_orders, u.date_joined.strftime('%Y-%m-%d')])
+    elif report_type == 'inventory':
+        writer.writerow(['Item', 'Category', 'Stock', 'Unit', 'Alert Level', 'Cost/Unit', 'Status'])
+        items = InventoryItem.objects.all()
+        for i in items:
+            writer.writerow([i.name, i.get_category_display(), float(i.current_stock),
+                             i.unit, float(i.min_alert_level), float(i.cost_per_unit), i.status[1]])
+    elif report_type == 'financial':
+        writer.writerow(['Date', 'Category', 'Description', 'Amount', 'Payment Method', 'Logged By'])
+        expenses = Expense.objects.select_related('logged_by').order_by('-date')[:500]
+        for e in expenses:
+            writer.writerow([e.date, e.get_category_display(), e.description,
+                             float(e.amount), e.payment_method, e.logged_by.display_name if e.logged_by else ''])
+
+    return response
+
+
+def page_not_found(request, exception):
+    return render(request, '404.html', status=404)

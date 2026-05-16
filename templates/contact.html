@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Contact Us | Print Edge{% endblock %}
+
+{% block content %}
+<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 relative z-10">
+    <div class="text-center mb-16 animate-fade-in">
+        <h1 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">Contact Us</h1>
+        <p class="text-neutral-400 max-w-2xl mx-auto text-lg">We're here to help with your printing and design needs. Reach out anytime.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-12 items-start">
+        <!-- Contact Cards -->
+        <div class="space-y-6">
+            <h2 class="text-2xl font-bold text-white mb-6">Get in Touch</h2>
+            
+            <a href="tel:{{ SITE.business_phone }}" class="premium-card p-6 rounded-2xl flex items-center gap-6 group hover:scale-[1.02] transition-transform animate-slide-up" style="animation-delay: 0.1s;">
+                <div class="w-14 h-14 rounded-full bg-brand-500/10 flex items-center justify-center border border-brand-500/20 group-hover:bg-brand-500 group-hover:text-white transition-colors text-brand-400">
+                    <i class="bi bi-telephone-fill text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-neutral-400 font-bold uppercase tracking-wider mb-1">Call Us</p>
+                    <p class="text-xl font-bold text-white">{{ SITE.business_phone }}</p>
+                </div>
+            </a>
+
+            <a href="https://wa.me/{{ SITE.phone_digits }}" target="_blank" class="premium-card p-6 rounded-2xl flex items-center gap-6 group hover:scale-[1.02] transition-transform animate-slide-up" style="animation-delay: 0.2s;">
+                <div class="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20 group-hover:bg-green-500 group-hover:text-white transition-colors text-green-400">
+                    <i class="bi bi-whatsapp text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-neutral-400 font-bold uppercase tracking-wider mb-1">WhatsApp</p>
+                    <p class="text-xl font-bold text-white">Message Us</p>
+                </div>
+            </a>
+
+            <a href="https://m.me/printedge" target="_blank" class="premium-card p-6 rounded-2xl flex items-center gap-6 group hover:scale-[1.02] transition-transform animate-slide-up" style="animation-delay: 0.3s;">
+                <div class="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white transition-colors text-blue-400">
+                    <i class="bi bi-messenger text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-neutral-400 font-bold uppercase tracking-wider mb-1">Messenger</p>
+                    <p class="text-xl font-bold text-white">Chat on Facebook</p>
+                </div>
+            </a>
+
+            <a href="mailto:{{ SITE.business_email }}" class="premium-card p-6 rounded-2xl flex items-center gap-6 group hover:scale-[1.02] transition-transform animate-slide-up" style="animation-delay: 0.4s;">
+                <div class="w-14 h-14 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 group-hover:bg-rose-500 group-hover:text-white transition-colors text-rose-400">
+                    <i class="bi bi-envelope-fill text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-neutral-400 font-bold uppercase tracking-wider mb-1">Email</p>
+                    <p class="text-xl font-bold text-white">{{ SITE.business_email }}</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- Details & Map -->
+        <div class="space-y-8 animate-slide-up" style="animation-delay: 0.3s;">
+            <div class="premium-card p-8 rounded-3xl">
+                <h2 class="text-2xl font-bold text-white mb-6">Business Hours</h2>
+                <p class="text-neutral-300 font-medium leading-relaxed">{{ SITE.business_hours }}</p>
+            </div>
+
+            <div class="premium-card p-4 rounded-3xl overflow-hidden aspect-video relative">
+                <!-- Map Placeholder -->
+                <div class="absolute inset-0 bg-neutral-800 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="bi bi-geo-alt-fill text-4xl text-brand-400 mb-2"></i>
+                        <h3 class="text-lg font-bold text-white">{{ SITE.business_name }}</h3>
+                        <p class="text-neutral-500 text-sm">{{ SITE.business_address }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

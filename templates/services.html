@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Our Services | Print Edge{% endblock %}
+
+{% block content %}
+<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 relative z-10">
+    <div class="text-center mb-16 animate-fade-in">
+        <h1 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">Our Services</h1>
+        <p class="text-neutral-400 max-w-2xl mx-auto text-lg">Comprehensive printing, design, and student support services tailored for you.</p>
+    </div>
+
+    <!-- Student Services -->
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-8 border-l-4 border-brand-500 pl-4">Student Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Service Card -->
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-brand-500/10 flex items-center justify-center mb-6 border border-brand-500/20">
+                    <i class="bi bi-journal-text text-3xl text-brand-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Assignment Printing</h3>
+                <p class="text-sm text-neutral-400 mb-4">High-quality printing for your daily assignments.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-brand-400 font-bold">From ৳2</span>
+                    <a href="{% url 'public_upload_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+            
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-brand-500/10 flex items-center justify-center mb-6 border border-brand-500/20">
+                    <i class="bi bi-journal-bookmark-fill text-3xl text-brand-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Thesis Printing</h3>
+                <p class="text-sm text-neutral-400 mb-4">Premium paper and binding for your final thesis.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-brand-400 font-bold">From ৳500</span>
+                    <a href="{% url 'public_upload_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-brand-500/10 flex items-center justify-center mb-6 border border-brand-500/20">
+                    <i class="bi bi-file-earmark-easel-fill text-3xl text-brand-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Project Printing</h3>
+                <p class="text-sm text-neutral-400 mb-4">Color prints and professional reports for projects.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-brand-400 font-bold">From ৳10</span>
+                    <a href="{% url 'public_upload_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-brand-500/10 flex items-center justify-center mb-6 border border-brand-500/20">
+                    <i class="bi bi-palette-fill text-3xl text-brand-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Cover Page Generator</h3>
+                <p class="text-sm text-neutral-400 mb-4">Free universal cover page builder with PDF download.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-brand-400 font-bold">Free</span>
+                    <a href="{% url 'public_assignments_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Open Generator</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-brand-500/10 flex items-center justify-center mb-6 border border-brand-500/20">
+                    <i class="bi bi-journal-album text-3xl text-brand-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Spiral Binding</h3>
+                <p class="text-sm text-neutral-400 mb-4">Durable spiral binding with transparent covers.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-brand-400 font-bold">From ৳30</span>
+                    <a href="{% url 'public_pricing_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printing Services -->
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-8 border-l-4 border-purple-500 pl-4">Printing Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20">
+                    <i class="bi bi-file-earmark-fill text-3xl text-purple-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Black & White Print</h3>
+                <p class="text-sm text-neutral-400 mb-4">Crisp and clear black and white document printing.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-purple-400 font-bold">৳2 / Page</span>
+                    <a href="{% url 'public_upload_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20">
+                    <i class="bi bi-file-earmark-image-fill text-3xl text-purple-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Color Print</h3>
+                <p class="text-sm text-neutral-400 mb-4">Vibrant color prints for your presentations.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-purple-400 font-bold">৳5 / Page</span>
+                    <a href="{% url 'public_upload_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20">
+                    <i class="bi bi-image-fill text-3xl text-purple-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Photo Print</h3>
+                <p class="text-sm text-neutral-400 mb-4">High-quality glossy or matte photo prints.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-purple-400 font-bold">From ৳10</span>
+                    <a href="{% url 'public_upload_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Design Services -->
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-8 border-l-4 border-emerald-500 pl-4">Design Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20">
+                    <i class="bi bi-easel-fill text-3xl text-emerald-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Poster Design</h3>
+                <p class="text-sm text-neutral-400 mb-4">Creative event and promotional poster design.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-emerald-400 font-bold">From ৳300</span>
+                    <a href="{% url 'public_contact_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Contact</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20">
+                    <i class="bi bi-person-vcard-fill text-3xl text-emerald-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Visiting Card Design</h3>
+                <p class="text-sm text-neutral-400 mb-4">Professional business card designs.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-emerald-400 font-bold">From ৳200</span>
+                    <a href="{% url 'public_contact_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Contact</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 border border-emerald-500/20">
+                    <i class="bi bi-file-earmark-person-fill text-3xl text-emerald-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">CV Design</h3>
+                <p class="text-sm text-neutral-400 mb-4">Modern resume designs to help you land the job.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-emerald-400 font-bold">From ৳150</span>
+                    <a href="{% url 'public_contact_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Services -->
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-8 border-l-4 border-amber-500 pl-4">Extra Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center mb-6 border border-amber-500/20">
+                    <i class="bi bi-layers-fill text-3xl text-amber-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Lamination</h3>
+                <p class="text-sm text-neutral-400 mb-4">Protect your important documents with lamination.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-amber-400 font-bold">From ৳20</span>
+                    <a href="{% url 'public_pricing_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Order Now</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center mb-6 border border-amber-500/20">
+                    <i class="bi bi-scanner text-3xl text-amber-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Scan & Photocopy</h3>
+                <p class="text-sm text-neutral-400 mb-4">High-resolution scanning and quick photocopies.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-amber-400 font-bold">From ৳2</span>
+                    <a href="{% url 'public_contact_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Contact</a>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 rounded-2xl group hover:scale-105 transition-transform duration-300">
+                <div class="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center mb-6 border border-amber-500/20">
+                    <i class="bi bi-keyboard-fill text-3xl text-amber-400 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Typing & Form Fillup</h3>
+                <p class="text-sm text-neutral-400 mb-4">Fast English/Bangla typing and online form submission.</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
+                    <span class="text-amber-400 font-bold">From ৳30/Page</span>
+                    <a href="{% url 'public_contact_page' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-bold text-white transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

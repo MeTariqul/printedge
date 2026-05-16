@@ -1,0 +1,1028 @@
+/* Based on Assignment-Cover-Page by MeTariqul (MIT). Adapted for Print Edge. */
+
+#cover-sheet {
+  --pe-brand: #4f46e5;
+  --pe-purple: #9333ea;
+  --pe-dark: #0a0a0a;
+  --pe-gold: #c9a227;
+  --pe-gold-light: #e0e7ff;
+  --pe-gold-dark: #4338ca;
+  --pe-brand-dark: #312e81;
+  --a4-width: 794px;
+  --a4-height: 1123px;
+  --primary-dark: #0f172a;
+  --text-primary: #172033;
+  --text-secondary: #5f6b7f;
+  --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.08);
+  --shadow-medium: 0 24px 60px rgba(15, 23, 42, 0.14);
+  --shadow-strong: 0 32px 90px rgba(15, 23, 42, 0.2);
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+#cover-sheet .export-stage {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  z-index: -1;
+}
+
+@media print {
+  body * { visibility: hidden !important; }
+  #cover-print-root, #cover-print-root * { visibility: visible !important; }
+  #cover-print-root { position: absolute; left: 0; top: 0; width: 100%; }
+  #cover-sheet { box-shadow: none; margin: 0; transform: none !important; }
+}
+
+#cover-sheet .cover-page{
+            width: var(--a4-width);
+            min-height: var(--a4-height);
+            background: linear-gradient(145deg, #f8fafc 0%, #e8eaf6 50%, #e2e8f0 100%);
+            padding: 70px 60px 48px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-areas:
+                'logo logo'
+                'university university'
+                'title title'
+                'details details'
+                'to by'
+                '. .'
+                'footer footer';
+            grid-template-rows: auto auto auto auto auto 1fr auto;
+            column-gap: 24px;
+            row-gap: 20px;
+            align-items: start;
+            font-family: 'Aptos', 'Trebuchet MS', 'Segoe UI', sans-serif;
+            position: relative;
+            page-break-after: avoid;
+            overflow: hidden;
+            box-sizing: border-box;
+            border-radius: 28px;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            box-shadow: var(--shadow-strong), var(--shadow-medium), var(--shadow-soft);
+            transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.3s ease;
+        }
+
+        #cover-sheet .cover-page *{
+            color: #000;
+        }
+
+        #cover-sheet .logo-section{
+            grid-area: logo;
+            width: 100%;
+            text-align: center;
+            margin: 0;
+        }
+
+        #cover-sheet .logo-section img{
+            display: block;
+            height: 120px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            margin-left: auto;
+            margin-right: auto;
+            background: transparent !important;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 0;
+            filter: drop-shadow(0 14px 22px rgba(15, 23, 42, 0.16));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        #cover-sheet .logo-section img:hover{
+            transform: translateY(-2px) scale(1.01);
+            filter: drop-shadow(0 18px 28px rgba(15, 23, 42, 0.2));
+        }
+
+        #cover-sheet .logo-section img.logo-fallback{
+            mix-blend-mode: multiply;
+        }
+
+        #cover-sheet .university-name{
+            grid-area: university;
+            width: 100%;
+            font-size: 38px;
+            font-weight: 900;
+            text-align: center;
+            margin: 0;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #cover-sheet .assignment-title-text{
+            grid-area: title;
+            justify-self: center;
+            font-size: 30px;
+            font-weight: 800;
+            text-align: center;
+            margin: 0;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #414345;
+            background: linear-gradient(135deg, #ffd700 0%, #ffb700 50%, #ffd700 100%);
+            border-radius: 12px;
+            padding: 16px 34px;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+
+        #cover-sheet .details-section{
+            grid-area: details;
+            width: 100%;
+            margin: 0;
+            padding: 20px 18px;
+            border-top: 2px solid #1a1a1a;
+            border-bottom: 2px solid #1a1a1a;
+            background: rgba(255,255,255,0.6);
+            border-radius: 18px;
+        }
+
+        #cover-sheet .detail-item{
+            font-size: 17px;
+            margin: 4px 0;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        #cover-sheet .info-section{
+            width: 100%;
+            margin: 0;
+            min-height: 178px;
+            text-align: left;
+            padding: 18px 20px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        #cover-sheet .info-section h4{
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-decoration: none;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #1a1a1a;
+        }
+
+        #cover-sheet .info-section p{
+            font-size: 15px;
+            margin: 4px 0;
+            line-height: 1.5;
+            color: #333;
+            overflow-wrap: anywhere;
+        }
+
+        #cover-sheet .info-section strong{
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        #cover-sheet .submitted-to{
+            grid-area: to;
+        }
+
+        #cover-sheet .submitted-by{
+            grid-area: by;
+        }
+
+        #cover-sheet .footer-row{
+            grid-area: footer;
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 65px;
+            column-gap: 20px;
+            align-items: end;
+        }
+
+        #cover-sheet .submission-date-section{
+            align-self: end;
+            text-align: left;
+            width: auto;
+            margin: 0;
+            padding: 0;
+            border-top: none;
+            position: static;
+            z-index: 1;
+        }
+
+        #cover-sheet .submission-date-section p{
+            font-size: 15px;
+            margin: 0;
+            line-height: 1.5;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        #cover-sheet .qrcode-section{
+            position: static;
+            width: 65px;
+            justify-self: end;
+            text-align: center;
+            z-index: 1;
+        }
+
+        #cover-sheet .qrcode-section img{
+            display: block;
+            width: 65px;
+            height: 65px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            background: white;
+            padding: 3px;
+        }
+
+        #cover-sheet .qrcode-section p{
+            font-size: 6px;
+            color: #444;
+            margin-top: 3px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        #cover-sheet .export-stage{
+            position: fixed;
+            top: 0;
+            left: -10000px;
+            width: var(--a4-width);
+            height: var(--a4-height);
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            background: white;
+        }
+
+        #cover-sheet .export-stage .cover-page{
+            transform: none !important;
+        }
+
+        #cover-sheet .template-classic{
+            background: linear-gradient(145deg, #fafafa 0%, #f0f0f0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #cover-sheet .template-classic::before{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0,0,0,0.03) 0%, transparent 30%),
+                radial-gradient(circle at 80% 20%, rgba(0,0,0,0.03) 0%, transparent 30%);
+            pointer-events: none;
+        }
+
+        #cover-sheet .template-classic::after{
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            bottom: 30px;
+            border: 2px solid #2c2c2c;
+            pointer-events: none;
+        }
+
+        #cover-sheet .template-classic > *{
+            position: relative;
+            z-index: 1;
+        }
+
+        #cover-sheet .template-classic .logo-section{
+            margin-top: 8px;
+        }
+
+        #cover-sheet .template-classic .logo-section img{
+            height: 88px;
+            filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.18));
+        }
+
+        #cover-sheet .template-classic .university-name{
+            font-family: 'Cambria', 'Georgia', 'Times New Roman', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        #cover-sheet .template-classic .assignment-title-text{
+            background: linear-gradient(135deg, #131313 0%, #2b2b2b 100%);
+            color: white;
+            padding: 14px 40px;
+            border-radius: 2px;
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            display: inline-block;
+            text-align: center;
+            border: 1px solid rgba(201, 165, 90, 0.65);
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        #cover-sheet .template-classic .details-section{
+            max-width: 620px;
+            justify-self: center;
+            padding: 18px 20px;
+            text-align: center;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            background: rgba(255, 255, 255, 0.64);
+            box-shadow: none;
+        }
+
+        #cover-sheet .template-classic .detail-item{
+            font-size: 15px;
+            color: #333;
+            letter-spacing: 0.5px;
+        }
+
+        #cover-sheet .template-classic .info-section{
+            padding: 10px 12px 0;
+            text-align: center;
+            background: transparent;
+            box-shadow: none;
+            min-height: auto;
+        }
+
+        #cover-sheet .template-classic .info-section h4{
+            color: #1a1a1a;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+
+        #cover-sheet .template-classic .info-section p{
+            color: #333;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+
+        #cover-sheet .template-classic .info-section strong{
+            font-weight: 700;
+        }
+
+        #cover-sheet .template-classic .submitted-to, #cover-sheet .template-classic .submitted-by{
+            padding: 0 10px;
+        }
+
+        #cover-sheet .template-classic .footer-row{
+            border-top: 1px solid #1a1a1a;
+            padding-top: 16px;
+        }
+
+        #cover-sheet .template-classic .submission-date-section p{
+            color: #1a1a1a;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        #cover-sheet .template-classic .qrcode-section img{
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        #cover-sheet .template-classic .qrcode-section p{
+            color: #2b2b2b;
+        }
+
+        #cover-sheet .template-modern{
+            background: linear-gradient(180deg, #ffffff 0%, #f0f6fa 100%);
+            position: relative;
+        }
+
+        #cover-sheet .template-modern::before{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #0a3d62, #1e5f8a, #3498db);
+        }
+
+        #cover-sheet .template-modern::after{
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #0a3d62);
+            opacity: 0.6;
+        }
+
+        #cover-sheet .template-modern .logo-section{
+            justify-self: start;
+            width: auto;
+            text-align: left;
+        }
+
+        #cover-sheet .template-modern .logo-section img{
+            height: 90px;
+            margin-left: 0;
+            margin-right: auto;
+            filter: drop-shadow(0 14px 22px rgba(10, 61, 98, 0.2));
+        }
+
+        #cover-sheet .template-modern .university-name{
+            font-size: 36px;
+            text-align: left;
+            letter-spacing: 0.04em;
+            color: #0a3d62;
+            font-weight: 700;
+            border-left: 4px solid #3498db;
+            padding-left: 16px;
+        }
+
+        #cover-sheet .template-modern .assignment-title-text{
+            justify-self: start;
+            padding: 14px 28px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #0a3d62 0%, #1e5f8a 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(10, 61, 98, 0.25);
+        }
+
+        #cover-sheet .template-modern .details-section{
+            border: none;
+            border-left: 6px solid #3498db;
+            border-radius: 0 16px 16px 0;
+            background: linear-gradient(135deg, #f8fbfd 0%, #e8f2f7 100%);
+            padding: 22px 26px;
+            box-shadow: 0 8px 24px rgba(10, 61, 98, 0.1);
+            text-align: left;
+        }
+
+        #cover-sheet .template-modern .detail-item, #cover-sheet .template-modern .info-section h4, #cover-sheet .template-modern .info-section p{
+            text-align: left;
+        }
+
+        #cover-sheet .template-modern .info-section{
+            padding: 20px 24px;
+            border: none;
+            border-radius: 14px;
+            background: white;
+            box-shadow: 0 8px 20px rgba(10, 61, 98, 0.08);
+            text-align: left;
+        }
+
+        #cover-sheet .template-modern .info-section h4{
+            color: #0a3d62;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        #cover-sheet .template-modern .info-section p{
+            color: #2c3e50;
+        }
+
+        #cover-sheet .template-modern .footer-row{
+            border-top: 3px solid #3498db;
+            padding-top: 16px;
+        }
+
+        #cover-sheet .template-modern .submission-date-section p{
+            color: #0a3d62;
+            font-weight: 600;
+        }
+
+        #cover-sheet .template-framed{
+            background: linear-gradient(180deg, #fdfaf3 0%, #f4efe3 100%);
+            border: 2px solid #1f1f1f;
+            padding: 84px 68px 52px;
+        }
+
+        #cover-sheet .template-framed::before{
+            content: '';
+            position: absolute;
+            inset: 22px;
+            border: 1px solid #1f1f1f;
+            pointer-events: none;
+        }
+
+        #cover-sheet .template-framed .logo-section, #cover-sheet .template-framed .university-name, #cover-sheet .template-framed .assignment-title-text, #cover-sheet .template-framed .info-section, #cover-sheet .template-framed .submission-date-section, #cover-sheet .template-framed .details-section{
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        #cover-sheet .template-framed .logo-section img{
+            height: 86px;
+            filter: drop-shadow(0 10px 18px rgba(31, 31, 31, 0.14));
+        }
+
+        #cover-sheet .template-framed .university-name, #cover-sheet .template-framed .assignment-title-text, #cover-sheet .template-framed .info-section h4{
+            font-family: 'Times New Roman', Georgia, serif;
+        }
+
+        #cover-sheet .template-framed .university-name{
+            font-size: 40px;
+            letter-spacing: 0.06em;
+        }
+
+        #cover-sheet .template-framed .assignment-title-text{
+            padding: 14px 34px;
+            border: 1px solid #1f1f1f;
+            background: #faf7f1;
+        }
+
+        #cover-sheet .template-framed .details-section{
+            padding: 20px 0;
+            border-top-width: 2px;
+            border-bottom-width: 2px;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        #cover-sheet .template-framed .detail-item{
+            font-size: 17px;
+        }
+
+        #cover-sheet .template-framed .info-section{
+            border: 1px solid rgba(31, 31, 31, 0.14);
+            background: rgba(255, 255, 255, 0.7);
+            min-height: 168px;
+        }
+
+        #cover-sheet .template-framed .footer-row{
+            border-top: 1px solid #1f1f1f;
+            padding-top: 14px;
+        }
+
+        #cover-sheet .template-elegant{
+            background: linear-gradient(145deg, #fdfbf7 0%, #f5f0e6 50%, #ebe5d8 100%);
+            padding: 72px 64px 48px;
+            position: relative;
+        }
+
+        #cover-sheet .template-elegant::before{
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(139, 90, 43, 0.12) 0%, transparent 35%),
+                radial-gradient(circle at 90% 90%, rgba(139, 90, 43, 0.08) 0%, transparent 30%),
+                radial-gradient(circle at 90% 10%, rgba(212, 175, 55, 0.1) 0%, transparent 25%);
+            pointer-events: none;
+        }
+
+        #cover-sheet .template-elegant::after{
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(139, 90, 43, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        #cover-sheet .template-elegant > *{
+            position: relative;
+            z-index: 1;
+        }
+
+        #cover-sheet .template-elegant .logo-section img{
+            height: 95px;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(92, 60, 30, 0.15);
+        }
+
+        #cover-sheet .template-elegant .university-name, #cover-sheet .template-elegant .assignment-title-text{
+            font-family: 'Cambria', 'Georgia', 'Times New Roman', serif;
+            color: #4a3222;
+        }
+
+        #cover-sheet .template-elegant .university-name{
+            margin-bottom: 28px;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: capitalize;
+        }
+
+        #cover-sheet .template-elegant .assignment-title-text{
+            margin-bottom: 36px;
+            padding: 16px 32px;
+            border-bottom: 3px solid #c9a961;
+            color: #6b4423;
+            background: linear-gradient(135deg, rgba(201, 169, 97, 0.15) 0%, rgba(201, 169, 97, 0.05) 100%);
+            border-radius: 4px 4px 0 0;
+        }
+
+        #cover-sheet .template-elegant .details-section{
+            border: none;
+            border-left: 5px solid #8b5a2b;
+            border-radius: 0 14px 14px 0;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px 24px;
+            text-align: left;
+            box-shadow: 0 4px 16px rgba(92, 60, 30, 0.08);
+        }
+
+        #cover-sheet .template-elegant .detail-item{
+            text-align: left;
+            color: #3d2e1f;
+            font-weight: 500;
+        }
+
+        #cover-sheet .template-elegant .info-section{
+            width: 100%;
+            padding: 20px 22px;
+            margin-bottom: 20px;
+            border: 1px solid #d4c4a8;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        #cover-sheet .template-elegant .info-section h4{
+            text-align: left;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #8b5a2b;
+            margin-bottom: 8px;
+        }
+
+        #cover-sheet .template-elegant .info-section p{
+            text-align: left;
+            color: #3d2e1f;
+        }
+
+        #cover-sheet .template-elegant .submission-date-section{
+            border-top: 2px solid #c9a961;
+            text-align: left;
+            padding-top: 14px;
+            padding-left: 0;
+            left: 64px;
+            right: 64px;
+        }
+
+        #cover-sheet .template-elegant .submission-date-section p{
+            color: #6b4423;
+            font-weight: 600;
+        }
+
+/* Print Edge — 6 custom cover templates */
+
+#cover-sheet .template-edge {
+  background: linear-gradient(160deg, #f8f8fc 0%, #eef2ff 50%, #faf5ff 100%);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+#cover-sheet .template-edge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #4f46e5, #9333ea);
+  z-index: 2;
+}
+#cover-sheet .template-edge .university-name { color: #312e81; }
+#cover-sheet .template-edge .assignment-title-text {
+  color: #4f46e5;
+  border-bottom: 2px solid #9333ea;
+  display: inline-block;
+  padding-bottom: 6px;
+}
+#cover-sheet .template-edge .details-section {
+  border-left: 4px solid #4f46e5;
+  padding-left: 18px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+#cover-sheet .template-edge .info-section {
+  background: rgba(79, 70, 229, 0.07);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+#cover-sheet .template-minimal {
+  background: #fff;
+  font-family: Georgia, 'Times New Roman', serif;
+  padding-top: 88px;
+}
+#cover-sheet .template-minimal .university-name {
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0.3em;
+  color: #888;
+}
+#cover-sheet .template-minimal .assignment-title-text {
+  font-weight: 400;
+  font-size: 0.72rem;
+  letter-spacing: 0.45em;
+  color: #bbb;
+  margin: 2rem 0 1.25rem;
+}
+#cover-sheet .template-minimal .details-section {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 1.5rem 0;
+  max-width: 460px;
+}
+#cover-sheet .template-minimal .detail-item {
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+#cover-sheet .template-minimal .info-section h4 {
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  color: #999;
+}
+
+#cover-sheet .template-academic {
+  background: #fafafa;
+  font-family: 'Times New Roman', Times, serif;
+}
+#cover-sheet .template-academic .logo-section img {
+  border: 3px double #222;
+  border-radius: 50%;
+  padding: 8px;
+  background: #fff;
+}
+#cover-sheet .template-academic .assignment-title-text {
+  background: #0a0a0a;
+  color: #fff;
+  display: inline-block;
+  padding: 10px 32px;
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  border-left: 4px solid #4f46e5;
+}
+#cover-sheet .template-academic .details-section,
+#cover-sheet .template-academic .info-section {
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 14px 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#cover-sheet .cover-page.cover-compact-mid {
+  grid-template-rows: auto auto auto auto auto minmax(80px, 1fr) auto;
+}
+#cover-sheet .cover-page.cover-no-info {
+  grid-template-areas:
+    'logo logo'
+    'university university'
+    'title title'
+    'details details'
+    '. .'
+    'footer footer';
+}
+#cover-sheet .cover-page.cover-no-info.cover-no-logo {
+  grid-template-areas:
+    'university university'
+    'title title'
+    'details details'
+    '. .'
+    'footer footer';
+}
+#cover-sheet .cover-page.cover-no-info .submitted-to,
+#cover-sheet .cover-page.cover-no-info .submitted-by {
+  display: none !important;
+}
+
+#cover-sheet .template-bold {
+  background: #fff;
+  font-family: system-ui, sans-serif;
+  padding-top: 0;
+  grid-template-rows: auto auto auto auto auto minmax(60px, 1fr) auto;
+}
+#cover-sheet .template-bold::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  z-index: 0;
+}
+#cover-sheet .template-bold::after {
+  content: '';
+  position: absolute;
+  top: 140px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4f46e5, #9333ea);
+  z-index: 1;
+}
+#cover-sheet .template-bold > * { position: relative; z-index: 1; }
+#cover-sheet .template-bold .logo-section {
+  grid-area: logo;
+  padding-top: 28px;
+  margin-bottom: 0;
+}
+#cover-sheet .template-bold .logo-section img {
+  filter: brightness(0) invert(1);
+  height: 88px;
+}
+#cover-sheet .template-bold .university-name {
+  grid-area: university;
+  color: #fff;
+  margin-top: 0;
+  padding-top: 4px;
+  text-align: center;
+}
+#cover-sheet .template-bold.cover-no-logo .university-name {
+  padding-top: 36px;
+}
+#cover-sheet .template-bold .assignment-title-text {
+  color: #4f46e5;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+}
+#cover-sheet .template-bold .submitted-to,
+#cover-sheet .template-bold .submitted-by {
+  background: #f4f4f8;
+  border-left: 3px solid #4f46e5;
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  max-width: 280px;
+}
+
+#cover-sheet .template-sidebar {
+  display: grid;
+  grid-template-columns: 34% 66%;
+  grid-template-rows: auto;
+  grid-auto-flow: row;
+  grid-template-areas: none;
+  padding: 0;
+  min-height: var(--a4-height);
+  align-items: start;
+  column-gap: 0;
+  row-gap: 14px;
+}
+#cover-sheet .template-sidebar > * {
+  grid-area: auto;
+}
+#cover-sheet .template-sidebar .logo-section {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  background: linear-gradient(165deg, #4f46e5 0%, #312e81 50%, #9333ea 100%);
+  min-height: var(--a4-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 14px;
+  margin: 0;
+}
+#cover-sheet .template-sidebar .logo-section img {
+  filter: brightness(0) invert(1);
+  max-height: 76px;
+}
+#cover-sheet .template-sidebar .university-name,
+#cover-sheet .template-sidebar .assignment-title-text,
+#cover-sheet .template-sidebar .details-section,
+#cover-sheet .template-sidebar .submitted-to,
+#cover-sheet .template-sidebar .submitted-by,
+#cover-sheet .template-sidebar .footer-row {
+  grid-column: 2;
+  text-align: left;
+  padding-left: 32px;
+  padding-right: 28px;
+  width: 100%;
+  max-width: none;
+}
+#cover-sheet .template-sidebar .university-name {
+  padding-top: 44px;
+  color: #312e81;
+  font-size: 1rem;
+}
+#cover-sheet .template-sidebar .assignment-title-text {
+  color: #4f46e5;
+  text-align: left;
+  font-size: 0.75rem;
+}
+#cover-sheet .template-sidebar .details-section {
+  text-align: left;
+}
+#cover-sheet .template-sidebar .info-section {
+  background: #f8f8fc;
+  border-radius: 8px;
+  padding: 10px 14px;
+  max-width: 400px;
+  min-height: 0;
+}
+#cover-sheet .template-sidebar.cover-no-logo .logo-section {
+  display: none !important;
+}
+#cover-sheet .template-sidebar.cover-no-logo .university-name,
+#cover-sheet .template-sidebar.cover-no-logo .assignment-title-text,
+#cover-sheet .template-sidebar.cover-no-logo .details-section,
+#cover-sheet .template-sidebar.cover-no-logo .submitted-to,
+#cover-sheet .template-sidebar.cover-no-logo .submitted-by,
+#cover-sheet .template-sidebar.cover-no-logo .footer-row {
+  grid-column: 1 / -1;
+  padding-left: 32px;
+}
+
+#cover-sheet .template-ledger {
+  background: #fff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  text-align: left;
+  padding: 52px 44px 36px;
+}
+#cover-sheet .template-ledger .university-name {
+  text-align: left;
+  text-transform: none;
+  font-size: 1.3rem;
+  border-bottom: 3px solid #0a0a0a;
+  padding-bottom: 10px;
+  margin-bottom: 6px;
+}
+#cover-sheet .template-ledger .assignment-title-text {
+  text-align: left;
+  color: #4f46e5;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  margin: 14px 0;
+}
+#cover-sheet .template-ledger .details-section {
+  border: 1px solid #d4d4d4;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 14px;
+  display: block;
+  text-align: left;
+}
+#cover-sheet .template-ledger .detail-item {
+  display: block;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 0.9rem;
+}
+#cover-sheet .template-ledger .detail-item:last-child {
+  border-bottom: none;
+}
+#cover-sheet .template-ledger .detail-item:nth-child(odd) {
+  background: #fafafa;
+}
+#cover-sheet .template-ledger .submitted-to,
+#cover-sheet .template-ledger .submitted-by {
+  border: 1px solid #d4d4d4;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 10px;
+  max-width: 100%;
+}
+#cover-sheet .template-ledger .info-section h4 {
+  background: #0a0a0a;
+  color: #fff;
+  padding: 8px 14px;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+#cover-sheet .template-ledger .info-section p {
+  padding: 8px 14px;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+}
+#cover-sheet .template-ledger .info-section p:last-child {
+  border-bottom: none;
+}
+#cover-sheet .template-ledger .footer-row {
+  text-align: left;
+  border-top: 1px dashed #ccc;
+  padding-top: 14px;
+  margin-top: 8px;
+}

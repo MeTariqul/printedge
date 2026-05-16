@@ -1,68 +1,74 @@
 {% extends "base.html" %}
-{% block title %}My Orders — Print-Edge{% endblock %}
+{% block title %}My Orders | PrintEase{% endblock %}
 
 {% block content %}
-<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
-  <div class="flex-between" style="margin-bottom:2rem;">
-    <div>
-      <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back to Dashboard</a>
-      <h1 style="font-size:1.6rem;margin-bottom:.2rem;">Order History</h1>
-      <p class="text-muted" style="font-size:14px;">Track your active orders and view past receipts.</p>
-    </div>
-    <a href="{% url 'user_new_order' %}" class="btn btn-primary btn-pill">
-      <i class="bi bi-plus-circle-fill"></i> New Order
-    </a>
-  </div>
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Order #</th>
-            <th>Document</th>
-            <th>Print Options</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for o in orders %}
-          <tr>
-            <td style="font-weight:600;font-size:13px;white-space:nowrap;">{{ o.order_number }}</td>
-            <td style="font-size:13px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              <i class="bi bi-file-earmark text-muted"></i> {{ o.file_name|default:"Physical Doc" }}
-            </td>
-            <td style="font-size:12px;color:var(--text-muted);">
-              {{ o.get_print_type_display }} · {{ o.get_sides_display }}<br>
-              {{ o.pages }}p × {{ o.copies }}
-            </td>
-            <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
-            <td>
-              <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% else %}warning{% endif %}">
-                {{ o.get_status_display }}
-              </span>
-            </td>
-            <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ o.created_at|date:"M j, Y" }}</td>
-            <td>
-              <a href="{% url 'user_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon" title="View Details">
-                <i class="bi bi-eye"></i>
-              </a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="7" style="text-align:center;padding:3rem;color:var(--text-muted);">
-              <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
-              You haven't placed any orders yet.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-10 animate-fade-in">
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-display font-bold text-white mb-2">My Orders</h1>
+            <p class="text-neutral-500 font-medium">{{ orders|length }} total order{{ orders|length|pluralize }}</p>
+        </div>
+        <a href="{% url 'user_new_order' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <i class="bi bi-plus-lg text-lg"></i> New Order
+        </a>
     </div>
-  </div>
+
+    <div class="premium-card rounded-3xl overflow-hidden relative">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-black/40 text-neutral-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
+                        <th class="p-4 pl-6 md:pl-8">Order ID</th>
+                        <th class="p-4">Document</th>
+                        <th class="p-4">Details</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for o in orders %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="p-4 pl-6 md:pl-8 font-display font-bold text-white text-sm whitespace-nowrap">{{ o.order_number }}</td>
+                        <td class="p-4 text-sm font-medium text-neutral-300 max-w-[200px] truncate" title="{{ o.file_name }}">{{ o.file_name|default:"Physical Doc" }}</td>
+                        <td class="p-4 text-xs font-medium text-neutral-500">{{ o.get_print_type_display }} · {{ o.get_sides_display }} · {{ o.pages }}p × {{ o.copies }}</td>
+                        <td class="p-4 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border
+                                {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                {% elif o.status == 'printing' %}bg-brand-500/10 text-brand-400 border-brand-500/20
+                                {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
+                                {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                {{ o.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 pr-6 md:pr-8 text-right">
+                            <a href="{% url 'user_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-brand-500 transition-colors tooltip" title="View Details">
+                                <i class="bi bi-chevron-right text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-16 text-center">
+                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 text-neutral-500 mb-6 border border-white/10">
+                                <i class="bi bi-inbox text-3xl"></i>
+                            </div>
+                            <h4 class="text-xl font-display font-bold text-white mb-2">No orders yet</h4>
+                            <p class="text-neutral-500 font-medium mb-8 max-w-sm mx-auto">You haven't placed any print orders yet. Get started by uploading your first document.</p>
+                            <a href="{% url 'user_new_order' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-400 transition-colors shadow-lg shadow-brand-500/20">
+                                Create Order <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,57 @@
+{% extends "admin_base.html" %}
+{% block title %}System Status | PrintEase Admin{% endblock %}
+{% block breadcrumb %}System Status{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">System Status</h1>
+        <p class="text-slate-400 text-sm">Database, storage, and retention health</p>
+    </div>
+    <form method="post" class="inline">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="purge_now">
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-bold border border-amber-500/30 hover:bg-amber-500/30">
+            Run file purge now
+        </button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Database</h3>
+        <p class="text-2xl font-bold {% if db_ok %}text-emerald-400{% else %}text-red-400{% endif %}">
+            {% if db_ok %}Connected{% else %}Error{% endif %}
+        </p>
+        <p class="text-xs text-slate-500 mt-2">Latency: {{ db_latency_ms|default:"—" }} ms</p>
+        <p class="text-[10px] text-slate-600 mt-2 break-all">{{ db_version }}</p>
+    </div>
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">File storage</h3>
+        <p class="text-lg font-bold text-white">{{ storage_backend }}</p>
+        <p class="text-xs text-slate-500 mt-2">Orders with files: {{ files_with_attachment }}</p>
+        <p class="text-xs text-amber-400 mt-1">Eligible for purge: {{ pending_purge }}</p>
+        <p class="text-xs text-slate-500 mt-1">Retention: {{ site.auto_delete_files_days }} days after delivery</p>
+    </div>
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Application</h3>
+        <p class="text-sm text-slate-300">Django {{ django_version }} · Python {{ python_version }}</p>
+        <p class="text-sm text-slate-300 mt-1">TZ: {{ timezone }} · DEBUG: {{ debug }}</p>
+        <p class="text-sm text-slate-300 mt-1">Cron secret: {% if cron_configured %}configured{% else %}not set{% endif %}</p>
+    </div>
+</div>
+
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+    <h3 class="text-base font-bold text-white mb-4">Counts</h3>
+    <div class="grid sm:grid-cols-3 gap-4 text-sm">
+        <div><span class="text-slate-500">Users</span><p class="font-bold text-white">{{ user_count }}</p></div>
+        <div><span class="text-slate-500">Orders</span><p class="font-bold text-white">{{ order_count }}</p></div>
+        <div><span class="text-slate-500">Orders today</span><p class="font-bold text-white">{{ orders_today }}</p></div>
+    </div>
+    {% if supabase_url %}
+    <p class="text-xs text-slate-500 mt-4">
+        <a href="{{ supabase_url }}" target="_blank" rel="noopener" class="text-brand-400 hover:underline">Open Supabase dashboard</a>
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

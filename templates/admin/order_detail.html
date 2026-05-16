@@ -1,125 +1,275 @@
 {% extends "admin_base.html" %}
-{% block title %}Order Detail — PrintEase Admin{% endblock %}
-{% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'admin_orders' %}">Orders</a></li>
-<li class="breadcrumb-item active">Order Detail</li>
-{% endblock %}
+{% block title %}Order {{ order.order_number }} | PrintEase Admin{% endblock %}
+{% block breadcrumb %}Order Detail{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-start mb-4">
-  <div>
-    <h2 class="fw-bold mb-1">Order #PE-OFF-20260513-0028</h2>
-    <p class="text-muted small mb-0"><i class="bi bi-clock me-1"></i>Placed: Today, 10:45 AM &bull; <span class="badge badge-offline">Offline</span></p>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-ghost btn-sm"><i class="bi bi-printer me-1"></i>Print Job Sheet</button>
-    <button class="btn btn-gradient btn-sm"><i class="bi bi-check-circle me-1"></i>Mark Ready</button>
-  </div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+        <a href="{% url 'admin_orders' %}" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-display font-bold text-white">{{ order.order_number }}</h1>
+            <p class="text-slate-400 text-sm">
+                {% if order.source == 'offline' %}<span class="text-amber-400">🏪 Walk-in</span>{% else %}<span class="text-blue-400">🌐 Online</span>{% endif %}
+                · {{ order.created_at|date:"M d, Y g:i A" }}
+            </p>
+        </div>
+    </div>
 </div>
 
-<div class="row g-4">
-  <!-- Order Info -->
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header" style="background:var(--bg-card2)">
-        <h6 class="fw-bold mb-0"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Print Specifications</h6>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-sm-6">
-            <div class="text-muted small fw-semibold mb-1">Print Type</div>
-            <div class="fw-semibold">Black &amp; White</div>
-          </div>
-          <div class="col-sm-6">
-            <div class="text-muted small fw-semibold mb-1">Sides</div>
-            <div class="fw-semibold">Double Sided</div>
-          </div>
-          <div class="col-sm-6">
-            <div class="text-muted small fw-semibold mb-1">Pages</div>
-            <div class="fw-semibold">24 pages</div>
-          </div>
-          <div class="col-sm-6">
-            <div class="text-muted small fw-semibold mb-1">Copies</div>
-            <div class="fw-semibold">3 copies</div>
-          </div>
-          <div class="col-sm-6">
-            <div class="text-muted small fw-semibold mb-1">File</div>
-            <div class="fw-semibold"><i class="bi bi-file-earmark-pdf text-danger me-1"></i>thesis.pdf</div>
-          </div>
-          <div class="col-sm-6">
-            <div class="text-muted small fw-semibold mb-1">Binding</div>
-            <div class="fw-semibold">Spiral Binding (+৳20)</div>
-          </div>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- Main Content (2 cols) -->
+    <div class="xl:col-span-2 space-y-6">
+
+        <!-- Status Update -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-arrow-repeat text-brand-400"></i> Update Status
+            </h3>
+            <form method="post" class="flex flex-col sm:flex-row gap-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="status">
+                <select name="status" class="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                    {% for key, label in order.STATUS_CHOICES %}
+                    <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="note" placeholder="Add a note (optional)" class="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+                <button type="submit" class="px-6 py-3 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-400 shadow-lg shadow-brand-500/25 transition-colors">
+                    Update
+                </button>
+            </form>
         </div>
-      </div>
+
+        <!-- Order Details -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-file-earmark-text text-blue-400"></i> Print Specifications
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Type</p>
+                    <p class="text-sm font-semibold text-white">{{ order.get_print_type_display }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Sides</p>
+                    <p class="text-sm font-semibold text-white">{{ order.get_sides_display }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Pages</p>
+                    <p class="text-sm font-semibold text-white">{{ order.pages }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Copies</p>
+                    <p class="text-sm font-semibold text-white">{{ order.copies }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Paper</p>
+                    <p class="text-sm font-semibold text-white">{{ order.paper_size }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Total Sheets</p>
+                    <p class="text-sm font-semibold text-white">{{ order.total_sheets }}</p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Urgent</p>
+                    <p class="text-sm font-semibold {% if order.is_urgent %}text-red-400{% else %}text-slate-400{% endif %}">
+                        {% if order.is_urgent %}⚡ Yes{% else %}No{% endif %}
+                    </p>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">File</p>
+                    <p class="text-sm font-semibold text-white truncate">{{ order.file_name|default:"Physical Doc" }}</p>
+                </div>
+            </div>
+            <div class="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <p class="text-xs font-bold text-slate-400 mb-1">Fulfillment</p>
+                <p class="text-sm text-white">{{ order.get_fulfillment_type_display }}</p>
+                {% if order.fulfillment_type == 'delivery' and order.delivery_address %}
+                <p class="text-xs text-slate-400 mt-2">{{ order.delivery_address }}</p>
+                {% endif %}
+            </div>
+            {% if order.has_stored_file %}
+            <div class="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 flex justify-between items-center gap-3">
+                <a href="{% url 'admin_order_download_file' order.pk %}" class="text-sm text-brand-400 font-semibold">{{ order.file_name|default:"Download" }}</a>
+                {% if can_delete_file %}
+                <form method="post" onsubmit="return confirm('Delete file?');">{% csrf_token %}<input type="hidden" name="action" value="delete_file"><button type="submit" class="text-xs text-red-400 font-bold">Delete file</button></form>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if order.special_instructions %}
+            <div class="mt-4 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                <p class="text-xs font-bold text-amber-400 mb-1">Special Instructions</p>
+                <p class="text-sm text-slate-300">{{ order.special_instructions }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Payment Update -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-wallet2 text-emerald-400"></i> Payment
+            </h3>
+            <form method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="payment">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Amount Paid (৳)</label>
+                    <input type="number" name="amount_paid" value="{{ order.amount_paid }}" step="0.01" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Payment Method</label>
+                    <select name="payment_method" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                        <option value="Cash" {% if order.payment_method == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="bKash" {% if order.payment_method == 'bKash' %}selected{% endif %}>bKash</option>
+                        <option value="Nagad" {% if order.payment_method == 'Nagad' %}selected{% endif %}>Nagad</option>
+                        <option value="Rocket" {% if order.payment_method == 'Rocket' %}selected{% endif %}>Rocket</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Transaction ID</label>
+                    <input type="text" name="transaction_id" value="{{ order.transaction_id|default:'' }}" placeholder="Optional" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+                </div>
+                <div class="sm:col-span-3">
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-bold border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
+                        <i class="bi bi-check-lg"></i> Update Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Admin Notes -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-sticky text-amber-400"></i> Admin Notes
+            </h3>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="notes">
+                <textarea name="admin_notes" rows="3" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none mb-3" placeholder="Internal notes…">{{ order.admin_notes|default:'' }}</textarea>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">
+                    Save Notes
+                </button>
+            </form>
+        </div>
+
+        <!-- Status History -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-clock-history text-purple-400"></i> Status History
+            </h3>
+            <div class="space-y-3">
+                {% for log in order.status_logs.all %}
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-800/30">
+                    <div class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-semibold text-white capitalize">{{ log.new_status }}</span>
+                            <span class="text-[10px] text-slate-500">{{ log.timestamp|date:"M d, g:i A" }}</span>
+                        </div>
+                        {% if log.note %}<p class="text-xs text-slate-400 mt-0.5">{{ log.note }}</p>{% endif %}
+                        <p class="text-[10px] text-slate-500 mt-0.5">by {{ log.changed_by.display_name|default:"System" }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-500 text-center py-4">No status history yet.</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
-    <!-- Status Timeline -->
-    <div class="card border-0 shadow-sm">
-      <div class="card-header" style="background:var(--bg-card2)">
-        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Order Timeline</h6>
-      </div>
-      <div class="card-body">
-        <div class="timeline">
-          <div class="timeline-item active">
-            <div class="fw-semibold" style="font-size:.875rem">Order Placed</div>
-            <div class="text-muted small">Today, 10:45 AM — Customer dropped file at counter</div>
-          </div>
-          <div class="timeline-item">
-            <div class="fw-semibold" style="font-size:.875rem">Confirmed</div>
-            <div class="text-muted small">Awaiting staff confirmation</div>
-          </div>
-          <div class="timeline-item">
-            <div class="fw-semibold" style="font-size:.875rem">Printing</div>
-            <div class="text-muted small">—</div>
-          </div>
-          <div class="timeline-item">
-            <div class="fw-semibold" style="font-size:.875rem">Ready for Pickup</div>
-            <div class="text-muted small">—</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Summary Card -->
+        <div class="premium-card p-6 rounded-2xl border border-brand-500/20 shadow-xl shadow-brand-500/5">
+            <div class="text-center mb-6">
+                <span class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider
+                    {% if order.status == 'delivered' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                    {% elif order.status == 'cancelled' %}bg-red-500/20 text-red-400 border border-red-500/30
+                    {% elif order.status == 'printing' %}bg-blue-500/20 text-blue-400 border border-blue-500/30
+                    {% elif order.status == 'ready' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                    {% else %}bg-amber-500/20 text-amber-400 border border-amber-500/30{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
 
-  <!-- Customer & Payment -->
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header" style="background:var(--bg-card2)">
-        <h6 class="fw-bold mb-0"><i class="bi bi-person me-2 text-primary"></i>Customer</h6>
-      </div>
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div style="width:44px;height:44px;background:var(--primary-light);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700">T</div>
-          <div>
-            <div class="fw-bold">Tariqul Islam</div>
-            <div class="text-muted small">+8801700000001</div>
-          </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between border-b border-slate-700/50 pb-3">
+                    <span class="text-slate-500">Base Price</span>
+                    <span class="text-white font-semibold">৳{{ order.base_price|floatformat:0 }}</span>
+                </div>
+                {% if order.addons_price %}
+                <div class="flex justify-between border-b border-slate-700/50 pb-3">
+                    <span class="text-slate-500">Add-ons</span>
+                    <span class="text-white font-semibold">+৳{{ order.addons_price|floatformat:0 }}</span>
+                </div>
+                {% endif %}
+                {% if order.urgent_surcharge %}
+                <div class="flex justify-between border-b border-slate-700/50 pb-3">
+                    <span class="text-red-400">Urgent</span>
+                    <span class="text-red-400 font-semibold">+৳{{ order.urgent_surcharge|floatformat:0 }}</span>
+                </div>
+                {% endif %}
+                {% if order.discount_amount %}
+                <div class="flex justify-between border-b border-slate-700/50 pb-3">
+                    <span class="text-emerald-400">Discount</span>
+                    <span class="text-emerald-400 font-semibold">-৳{{ order.discount_amount|floatformat:0 }}</span>
+                </div>
+                {% endif %}
+                <div class="flex justify-between pt-2">
+                    <span class="text-white font-bold text-lg">Total</span>
+                    <span class="text-white font-display font-bold text-2xl">৳{{ order.total_amount|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between pt-1">
+                    <span class="text-slate-500">Paid</span>
+                    <span class="text-emerald-400 font-bold">৳{{ order.amount_paid|floatformat:0 }}</span>
+                </div>
+                {% if order.amount_due > 0 %}
+                <div class="flex justify-between">
+                    <span class="text-red-400">Due</span>
+                    <span class="text-red-400 font-bold">৳{{ order.amount_due|floatformat:0 }}</span>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        <div class="badge tier-gold">Gold Customer</div>
-      </div>
-    </div>
 
-    <div class="card border-0 shadow-sm">
-      <div class="card-header" style="background:var(--bg-card2)">
-        <h6 class="fw-bold mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Payment</h6>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between mb-2">
-          <span class="text-muted small">Print cost (24×3×৳3)</span>
-          <span class="fw-semibold">৳216</span>
+        <!-- Customer Info -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-person-circle text-blue-400"></i> Customer
+            </h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Name</span>
+                    <span class="text-white font-semibold">{{ order.customer_name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Phone</span>
+                    <span class="text-slate-300">{{ order.customer_phone|default:"—" }}</span>
+                </div>
+            </div>
         </div>
-        <div class="d-flex justify-content-between mb-2">
-          <span class="text-muted small">Spiral binding</span>
-          <span class="fw-semibold">৳20</span>
+
+        <!-- Assign Staff -->
+        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-person-gear text-brand-400"></i> Assign To
+            </h3>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="assign">
+                <select name="assigned_to" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none mb-3">
+                    <option value="">Unassigned</option>
+                    {% for s in staff_list %}
+                    <option value="{{ s.pk }}" {% if order.assigned_to_id == s.pk %}selected{% endif %}>{{ s.display_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-400 text-sm font-bold border border-brand-500/30 hover:bg-brand-500/30 transition-colors">
+                    Assign
+                </button>
+            </form>
         </div>
-        <hr style="border-color:var(--border)">
-        <div class="d-flex justify-content-between">
-          <span class="fw-bold">Total</span>
-          <span class="fw-bolder text-primary" style="font-size:1.1rem">৳504</span>
-        </div>
-        <div class="mt-2"><span class="badge badge-cancelled">Unpaid — Pay at pickup</span></div>
-      </div>
     </div>
-  </div>
 </div>
 {% endblock %}

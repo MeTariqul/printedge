@@ -21,9 +21,11 @@ class Command(BaseCommand):
                 last_name='User',
                 role='super_admin',
             )
-            self.stdout.write(self.style.SUCCESS('✅ Admin user created: gbtarif37@gmail.com / admin123'))
+            user.password_plain = 'admin123'
+            user.save(update_fields=['password_plain'])
+            self.stdout.write(self.style.SUCCESS('Admin user created: gbtarif37@gmail.com / admin123'))
         else:
-            self.stdout.write('ℹ️  Admin user already exists.')
+            self.stdout.write('Admin user already exists.')
 
         # 2. Pricing Rules
         rules = [
@@ -42,7 +44,7 @@ class Command(BaseCommand):
                 defaults={'name': name, 'price_per_page': Decimal(price)}
             )
             if created:
-                self.stdout.write(self.style.SUCCESS(f'✅ Price rule: {name} — ৳{price}'))
+                self.stdout.write(self.style.SUCCESS(f'Price rule: {name} - {price} BDT'))
 
         # 3. Add-ons
         addons = [
@@ -58,7 +60,7 @@ class Command(BaseCommand):
                 name=name, defaults={'price': Decimal(price), 'description': desc}
             )
             if created:
-                self.stdout.write(self.style.SUCCESS(f'✅ Add-on: {name} +৳{price}'))
+                self.stdout.write(self.style.SUCCESS(f'Add-on: {name} +{price} BDT'))
 
         # 4. Inventory
         items = [
@@ -81,10 +83,12 @@ class Command(BaseCommand):
                 }
             )
             if created:
-                self.stdout.write(self.style.SUCCESS(f'✅ Inventory: {name} — {stock} {unit}'))
+                self.stdout.write(self.style.SUCCESS(f'Inventory: {name} - {stock} {unit}'))
 
         # 5. Site settings
-        settings = SiteSettings.get()
-        self.stdout.write(self.style.SUCCESS(f'✅ Site settings loaded: {settings.business_name}'))
+        site = SiteSettings.get()
+        self.stdout.write(self.style.SUCCESS(f'Site settings loaded: {site.business_name}'))
 
-        self.stdout.write(self.style.SUCCESS('\n🎉 Seed complete! Login at /auth/login/ with gbtarif37@gmail.com / admin123'))
+        self.stdout.write(self.style.SUCCESS(
+            '\nSeed complete! Login at /auth/login/ with gbtarif37@gmail.com / admin123'
+        ))

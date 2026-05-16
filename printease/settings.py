@@ -119,10 +119,36 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        'OPTIONS': {'location': MEDIA_ROOT, 'base_url': MEDIA_URL},
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
+if os.environ.get('AWS_ACCESS_KEY_ID') and os.environ.get('SUPABASE_STORAGE_BUCKET'):
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+    }
+    AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', '')
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('SUPABASE_STORAGE_BUCKET', 'order-files')
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = True
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_ADDRESSING_STYLE = 'path'
+
+CRON_SECRET = os.environ.get('CRON_SECRET', '')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -1,234 +1,317 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Admin — Print-Edge{% endblock %}</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖨️</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-{% block extra_css %}{% endblock %}
-</head>
-<body>
-<div class="admin-layout">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <div class="navbar-logo"><i class="bi bi-printer-fill"></i></div>
-        <span class="text-gradient">Print-Edge</span>
-        <span style="font-size:10px;background:rgba(99,102,241,.15);color:var(--primary);padding:2px 8px;border-radius:999px;margin-left:auto;font-weight:700;">ADMIN</span>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <a href="{% url 'admin_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-        <i class="bi bi-grid-1x2-fill"></i> Dashboard
-      </a>
-
-      <div class="sidebar-section">Orders</div>
-      <a href="{% url 'admin_walkin_order' %}" class="sidebar-link" style="background:rgba(99,102,241,.08);color:var(--primary);font-weight:700;margin-bottom:4px;">
-        <i class="bi bi-plus-circle-fill"></i> New Walk-in Order
-      </a>
-      <a href="{% url 'admin_orders' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %}">
-        <i class="bi bi-list-task"></i> All Orders
-        {% if pending_count %}<span class="badge badge-warning" style="margin-left:auto;font-size:10px;">{{ pending_count }}</span>{% endif %}
-      </a>
-
-      <div class="sidebar-section">Customers</div>
-      <a href="{% url 'admin_users' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
-        <i class="bi bi-person-circle"></i> Online Customers
-      </a>
-      <a href="{% url 'admin_offline_customers' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_offline_customers' %}active{% endif %}">
-        <i class="bi bi-person-lines-fill"></i> Walk-in Customers
-      </a>
-
-      <div class="sidebar-section">Operations</div>
-      <a href="{% url 'admin_services' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_services' %}active{% endif %}">
-        <i class="bi bi-tags-fill"></i> Services & Pricing
-      </a>
-      <a href="{% url 'admin_inventory' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_inventory' %}active{% endif %}">
-        <i class="bi bi-box-seam-fill"></i> Inventory
-      </a>
-      <a href="{% url 'admin_financial' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_financial' %}active{% endif %}">
-        <i class="bi bi-cash-coin"></i> Financial
-      </a>
-
-      <div class="sidebar-section">Analytics</div>
-      <a href="{% url 'admin_reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}">
-        <i class="bi bi-bar-chart-fill"></i> Reports
-      </a>
-      <a href="{% url 'admin_audit_log' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_audit_log' %}active{% endif %}">
-        <i class="bi bi-shield-check"></i> Audit Log
-      </a>
-
-      <div class="sidebar-section">System</div>
-      <a href="{% url 'admin_display_mode' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_display_mode' %}active{% endif %}" target="_blank">
-        <i class="bi bi-display-fill"></i> Shop Display
-      </a>
-      <a href="{% url 'admin_settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}">
-        <i class="bi bi-gear-fill"></i> Settings
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="avatar avatar-sm avatar-primary avatar-circle">{{ request.user.first_name|first|upper }}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ request.user.display_name }}</div>
-          <div style="font-size:11px;color:var(--text-muted);">{{ request.user.role|title }}</div>
-        </div>
-        <a href="{% url 'auth_logout' %}" title="Logout" style="color:var(--text-muted);font-size:16px;"><i class="bi bi-box-arrow-right"></i></a>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <div class="admin-main">
-
-    <!-- TOP BAR -->
-    <div class="admin-topbar">
-      <button class="btn btn-ghost btn-icon" id="sidebarToggle" title="Toggle Sidebar">
-        <i class="bi bi-list" style="font-size:20px;"></i>
-      </button>
-
-      <!-- Breadcrumb -->
-      <div class="breadcrumb">
-        <a href="{% url 'admin_dashboard' %}" style="color:var(--text-muted);">Admin</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>{% block breadcrumb %}Dashboard{% endblock %}</span>
-      </div>
-
-      <!-- Global Search -->
-      <div style="flex:1;max-width:320px;margin:0 1rem;">
-        <div class="input-group-icon">
-          <i class="bi bi-search icon"></i>
-          <input type="text" class="form-control form-control-sm" id="searchTrigger"
-            placeholder="Search orders, customers… (Ctrl+K)" readonly
-            style="cursor:pointer;border-radius:8px;">
-        </div>
-      </div>
-
-      <div style="margin-left:auto;display:flex;align-items:center;gap:.5rem;">
-        <!-- Notifications -->
-        <button class="btn btn-ghost btn-icon" id="notifBtn" title="Notifications" style="position:relative;">
-          <i class="bi bi-bell-fill" style="font-size:17px;"></i>
-          {% if unread_notifications %}<span style="position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--danger);border-radius:50%;"></span>{% endif %}
-        </button>
-        <!-- Theme toggle -->
-        <button class="theme-toggle" id="themeToggle"></button>
-        <!-- View site -->
-        <a href="{% url 'public_index' %}" class="btn btn-outline btn-sm" target="_blank">
-          <i class="bi bi-box-arrow-up-right"></i> View Site
-        </a>
-      </div>
-    </div>
-
-    <!-- MESSAGES -->
-    <div class="toast-container" id="toastContainer">
-    {% for msg in messages %}
-      <div class="toast {{ msg.tags }}">
-        <i class="bi bi-{% if msg.tags == 'error' %}x-circle-fill text-danger{% elif msg.tags == 'success' %}check-circle-fill text-success{% else %}info-circle-fill text-primary{% endif %}"></i>
-        <span>{{ msg }}</span>
-        <button onclick="this.closest('.toast').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);">&times;</button>
-      </div>
-    {% endfor %}
-    </div>
-
-    <!-- PAGE CONTENT -->
-    <div class="admin-content">
-      {% block content %}{% endblock %}
-    </div>
-  </div>
-</div>
-
-<!-- GLOBAL SEARCH OVERLAY -->
-<div class="global-search-overlay" id="searchOverlay">
-  <div class="global-search-box">
-    <div style="display:flex;align-items:center;padding:.5rem .75rem;border-bottom:1px solid var(--border);">
-      <i class="bi bi-search" style="color:var(--text-muted);margin-right:.75rem;font-size:16px;"></i>
-      <input type="text" id="globalSearchInput" class="global-search-input" placeholder="Search orders, customers, inventory…">
-      <kbd style="font-size:11px;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;">ESC</kbd>
-    </div>
-    <div class="global-search-results" id="searchResults">
-      <div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px;">Start typing to search…</div>
-    </div>
-  </div>
-</div>
-
-<!-- FAB: Quick Actions -->
-<div style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:300;display:flex;flex-direction:column;gap:.5rem;align-items:flex-end;">
-  <a href="{% url 'admin_walkin_order' %}" class="btn btn-primary btn-pill" style="box-shadow:0 4px 16px rgba(99,102,241,.5);">
-    <i class="bi bi-plus-lg"></i> Walk-in Order
-  </a>
-</div>
-
-<script>
-// Theme
-const root = document.documentElement;
-const themeBtn = document.getElementById('themeToggle');
-const saved = localStorage.getItem('theme') || 'dark';
-root.setAttribute('data-theme', saved);
-if (saved === 'dark') themeBtn.classList.add('dark');
-themeBtn.addEventListener('click', () => {
-  const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  root.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-  themeBtn.classList.toggle('dark', next === 'dark');
-});
-
-// Sidebar toggle
-document.getElementById('sidebarToggle').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
-});
-
-// Global Search
-const overlay = document.getElementById('searchOverlay');
-const input = document.getElementById('globalSearchInput');
-const results = document.getElementById('searchResults');
-
-function openSearch() { overlay.classList.add('show'); input.focus(); }
-function closeSearch() { overlay.classList.remove('show'); input.value = ''; results.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px;">Start typing to search…</div>'; }
-
-document.getElementById('searchTrigger').addEventListener('click', openSearch);
-overlay.addEventListener('click', e => { if (e.target === overlay) closeSearch(); });
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
-  if (e.key === 'Escape') closeSearch();
-});
-
-let searchTimer;
-input.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  const q = input.value.trim();
-  if (q.length < 2) return;
-  searchTimer = setTimeout(() => {
-    fetch(`/api/search/?q=${encodeURIComponent(q)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (!data.results.length) {
-          results.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted);">No results found.</div>';
-          return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>{% block title %}Admin | PrintEase{% endblock %}</title>
+    
+    <meta name="theme-color" content="#000000">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        },
+                        dark: {
+                            bg: '#000000',
+                            card: '#0a0a0a',
+                            surface: '#121212',
+                            border: '#262626',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
         }
-        results.innerHTML = data.results.map(r =>
-          `<a href="${r.url}" class="search-result-item">
-            <div class="avatar avatar-sm avatar-primary"><i class="bi ${r.icon}"></i></div>
-            <div><div style="font-weight:600;font-size:13px;">${r.title}</div><div style="font-size:12px;color:var(--text-muted);">${r.subtitle}</div></div>
-            <span class="badge badge-secondary" style="margin-left:auto;">${r.type}</span>
-           </a>`
-        ).join('');
-      });
-  }, 300);
-});
+    </script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0"></script>
+    
+    <style>
+        body {
+            background-color: #000000;
+            color: #ededed;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .premium-card {
+            background: linear-gradient(180deg, rgba(24, 24, 27, 0.6) 0%, rgba(10, 10, 10, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
 
-// Auto-dismiss toasts
-setTimeout(() => { document.querySelectorAll('.toast').forEach(t => t.remove()); }, 5000);
-</script>
+        .gradient-text {
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #404040; }
+
+        .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+        .pt-safe { padding-top: calc(1rem + env(safe-area-inset-top)); }
+        [x-cloak] { display: none !important; }
+    </style>
+    {% block extra_css %}{% endblock %}
+    <script>
+        function adminShell() {
+            return {
+                sidebarOpen: false,
+                searchOpen: false,
+                async runSearch(e) {
+                    const q = e.target.value.trim();
+                    const el = document.getElementById('searchResults');
+                    if (!el) return;
+                    if (q.length < 2) {
+                        el.innerHTML = '<div class="p-12 text-center text-neutral-500 font-medium">Type something to search</div>';
+                        return;
+                    }
+                    el.innerHTML = '<div class="p-8 text-center text-neutral-500">Searching…</div>';
+                    try {
+                        const r = await fetch('/api/search/?q=' + encodeURIComponent(q), {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        });
+                        const data = await r.json();
+                        if (!data.results || !data.results.length) {
+                            el.innerHTML = '<div class="p-12 text-center text-neutral-500">No results found</div>';
+                            return;
+                        }
+                        el.innerHTML = data.results.map(function (item) {
+                            return '<a href="' + item.url + '" class="flex items-center gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">' +
+                                '<div class="w-10 h-10 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center"><i class="bi ' + item.icon + '"></i></div>' +
+                                '<div class="flex-1 min-w-0"><p class="font-semibold text-white truncate">' + item.title + '</p>' +
+                                '<p class="text-sm text-neutral-500 truncate">' + item.subtitle + '</p></div>' +
+                                '<i class="bi bi-chevron-right text-neutral-600"></i></a>';
+                        }).join('');
+                    } catch (err) {
+                        el.innerHTML = '<div class="p-12 text-center text-red-400">Search failed. Try again.</div>';
+                    }
+                },
+            };
+        }
+    </script>
+</head>
+<body x-data="adminShell()" @keydown.window.ctrl.k.prevent="searchOpen=true; $nextTick(() => $refs.searchInput?.focus())" @keydown.window.meta.k.prevent="searchOpen=true; $nextTick(() => $refs.searchInput?.focus())" @keydown.window.escape="searchOpen=false; sidebarOpen=false">
+
+<div class="flex h-screen overflow-hidden bg-black selection:bg-brand-500/30 selection:text-white">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div x-show="sidebarOpen" @click="sidebarOpen=false" class="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden" x-cloak
+         x-transition:enter="transition-opacity ease-linear duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"></div>
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
+           class="fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-auto flex flex-col border-r border-white/5 bg-[#050505]">
+        
+        <!-- Brand -->
+        <div class="flex items-center gap-3 px-6 h-20 border-b border-white/5 flex-shrink-0 pt-safe">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
+                <i class="bi bi-printer-fill text-xl"></i>
+            </div>
+            <span class="font-display font-bold text-2xl tracking-tight text-white">Print<span class="gradient-text">Ease</span></span>
+        </div>
+
+        <!-- Nav Links -->
+        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-grid-fill text-lg"></i> Overview
+            </a>
+
+            <div class="pt-6 pb-2 px-4 text-xs font-bold uppercase tracking-wider text-neutral-600">Orders</div>
+            <a href="{% url 'admin_walkin_order' %}" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 shadow-lg shadow-brand-500/20 transition-transform hover:scale-[1.02] active:scale-[0.98] mb-2">
+                <div class="flex items-center gap-3"><i class="bi bi-plus-lg text-lg"></i> Walk-in POS</div>
+                <kbd class="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono bg-black/20 text-white/70">⌘N</kbd>
+            </a>
+            <a href="{% url 'admin_orders' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_orders' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-list-check text-lg"></i> All Orders
+            </a>
+
+            <div class="pt-6 pb-2 px-4 text-xs font-bold uppercase tracking-wider text-neutral-600">Management</div>
+            <a href="{% url 'admin_users' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_users' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-people-fill text-lg"></i> Customers
+            </a>
+            <a href="{% url 'admin_services' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_services' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-tags-fill text-lg"></i> Pricing Rules
+            </a>
+            <a href="{% url 'admin_inventory' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_inventory' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-box-seam-fill text-lg"></i> Inventory
+            </a>
+            <a href="{% url 'admin_financial' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_financial' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-wallet-fill text-lg"></i> Finance
+            </a>
+
+            <div class="pt-6 pb-2 px-4 text-xs font-bold uppercase tracking-wider text-neutral-600">System</div>
+            <a href="{% url 'admin_reports' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_reports' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-bar-chart-line-fill text-lg"></i> Reports
+            </a>
+            <a href="{% url 'admin_offline_customers' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_offline_customers' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-person-badge text-lg"></i> Walk-in Customers
+            </a>
+            <a href="{% url 'admin_audit_log' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_audit_log' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-shield-check text-lg"></i> Audit Log
+            </a>
+            {% if request.user.is_full_admin %}
+            <a href="{% url 'admin_system_status' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_system_status' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-hdd-network text-lg"></i> System Status
+            </a>
+            <a href="{% url 'admin_settings' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_settings' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-gear-fill text-lg"></i> Settings
+            </a>
+            {% endif %}
+            <a href="{% url 'admin_staff' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all {% if request.resolver_match.url_name == 'admin_staff' %}bg-brand-500/10 text-brand-400{% else %}text-neutral-400 hover:text-white hover:bg-white/5{% endif %}">
+                <i class="bi bi-person-gear text-lg"></i> Staff
+            </a>
+            <a href="{% url 'admin_display_mode' %}" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-neutral-400 hover:text-white hover:bg-white/5 transition-all group">
+                <i class="bi bi-tv-fill text-lg"></i> TV Display
+                <i class="bi bi-arrow-up-right text-xs ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+            </a>
+        </nav>
+
+        <!-- User Footer -->
+        <div class="p-4 border-t border-white/5 bg-[#0a0a0a] pb-safe flex-shrink-0">
+            <div class="flex items-center gap-3 p-2 rounded-xl bg-white/5 border border-white/5">
+                <div class="w-10 h-10 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold">
+                    {{ request.user.first_name|first|upper }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-white truncate">{{ request.user.first_name }}</p>
+                    <p class="text-[10px] text-brand-400 uppercase tracking-widest font-bold">{{ request.user.get_role_display }}</p>
+                </div>
+                <a href="{% url 'auth_logout' %}" class="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-500 hover:bg-red-500/10 hover:text-red-400 transition-colors">
+                    <i class="bi bi-power"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Top Bar -->
+        <header class="h-20 flex items-center justify-between px-6 lg:px-8 border-b border-white/5 bg-black/50 backdrop-blur-xl z-30 pt-safe lg:pt-0">
+            <div class="flex items-center gap-4 flex-1">
+                <button @click="sidebarOpen=!sidebarOpen" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white transition-colors">
+                    <i class="bi bi-list text-2xl"></i>
+                </button>
+
+                <!-- Search Bar -->
+                <button @click="searchOpen=true" class="hidden sm:flex items-center gap-3 px-4 py-2.5 w-96 rounded-xl bg-white/5 border border-white/10 text-neutral-500 text-sm hover:border-white/20 hover:text-neutral-400 transition-colors">
+                    <i class="bi bi-search"></i>
+                    <span>Quick Search...</span>
+                    <kbd class="ml-auto px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-neutral-400">⌘K</kbd>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a href="{% url 'public_index' %}" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-neutral-400 border border-white/10 hover:bg-white/10 hover:text-white transition-colors">
+                    <i class="bi bi-box-arrow-up-right"></i> View Site
+                </a>
+                <div class="relative">
+                    <button class="w-10 h-10 flex items-center justify-center rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white transition-colors">
+                        <i class="bi bi-bell-fill text-lg"></i>
+                    </button>
+                    {% if unread_notifications %}
+                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(99,102,241,0.8)]"></span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <!-- Toasts -->
+        <div class="absolute top-24 right-4 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4 md:px-0">
+            {% for msg in messages %}
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 md:translate-y-0 md:translate-x-8"
+                     x-transition:enter-end="opacity-100 translate-y-0 md:translate-x-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="pointer-events-auto flex items-center p-4 rounded-2xl shadow-2xl border premium-card
+                            {% if msg.tags == 'error' %}border-red-500/30{% elif msg.tags == 'success' %}border-emerald-500/30{% else %}border-brand-500/30{% endif %}">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                                {% if msg.tags == 'error' %}bg-red-500/10 text-red-400{% elif msg.tags == 'success' %}bg-emerald-500/10 text-emerald-400{% else %}bg-brand-500/10 text-brand-400{% endif %}">
+                        <i class="bi {% if msg.tags == 'error' %}bi-x-lg{% elif msg.tags == 'success' %}bi-check-lg{% else %}bi-info-lg{% endif %} text-lg"></i>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-semibold text-white">{{ msg }}</p>
+                    </div>
+                    <button @click="show = false" class="ml-4 text-neutral-500 hover:text-white"><i class="bi bi-x-lg"></i></button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 animate-fade-in relative">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- Search Modal -->
+<div x-show="searchOpen" x-cloak
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex justify-center pt-20 px-4"
+     @click.self="searchOpen=false">
+    <div class="w-full max-w-2xl premium-card rounded-2xl shadow-2xl overflow-hidden flex flex-col h-fit max-h-[80vh]">
+        <div class="p-4 border-b border-white/10 flex items-center gap-4">
+            <i class="bi bi-search text-xl text-neutral-500"></i>
+            <input type="text" id="globalSearchInput" x-ref="searchInput"
+                   class="flex-1 bg-transparent text-white text-lg font-display focus:outline-none placeholder-neutral-500"
+                   placeholder="Search orders, customers, or items..."
+                   @input.debounce.300ms="runSearch($event)">
+            <button @click="searchOpen=false" class="p-2 text-neutral-500 hover:text-white bg-white/5 rounded-lg"><kbd>ESC</kbd></button>
+        </div>
+        <div id="searchResults" class="overflow-y-auto p-2">
+            <div class="p-12 text-center text-neutral-500 font-medium">Type something to search</div>
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

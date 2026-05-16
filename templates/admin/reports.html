@@ -1,14 +1,79 @@
 {% extends "admin_base.html" %}
-{% block title %}Reports — PrintEase Admin{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Reports</li>{% endblock %}
+{% block title %}Reports | PrintEase Admin{% endblock %}
+{% block breadcrumb %}Reports{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div><h2 class="fw-bold mb-0">Analytics & Reports</h2><p class="text-muted small mb-0">Deep dive into business performance.</p></div>
-  <button class="btn btn-ghost btn-sm"><i class="bi bi-download me-1"></i>Export All Data</button>
+<div class="mb-8">
+    <h1 class="text-2xl font-display font-bold text-white mb-1">Reports & Analytics</h1>
+    <p class="text-slate-400 text-sm">Export data and generate reports for your business</p>
 </div>
-<div class="card border-0 shadow-sm p-5 text-center">
-  <i class="bi bi-bar-chart-fill text-muted mb-3" style="font-size:3rem"></i>
-  <h5 class="fw-bold">Reports Dashboard Coming Soon</h5>
-  <p class="text-muted">Advanced analytics and custom report builder will be available here.</p>
+
+<!-- Pre-built Reports -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+
+    <!-- Orders Report -->
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50 group hover:border-brand-500/30 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-5">
+            <i class="bi bi-cart-fill text-2xl text-blue-400"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Orders Report</h3>
+        <p class="text-sm text-slate-400 mb-6 leading-relaxed">Complete order history with customer info, amounts, and status breakdown.</p>
+        <a href="{% url 'admin_reports_export' %}?type=orders" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-500/20 border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+    </div>
+
+    <!-- Customer Report -->
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50 group hover:border-brand-500/30 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-5">
+            <i class="bi bi-people-fill text-2xl text-purple-400"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Customers Report</h3>
+        <p class="text-sm text-slate-400 mb-6 leading-relaxed">Customer tiers, spending, and order history for targeted marketing.</p>
+        <a href="{% url 'admin_reports_export' %}?type=customers" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-purple-500/20 border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+    </div>
+
+    <!-- Inventory Report -->
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50 group hover:border-brand-500/30 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-5">
+            <i class="bi bi-box-seam-fill text-2xl text-amber-400"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Inventory Report</h3>
+        <p class="text-sm text-slate-400 mb-6 leading-relaxed">Current stock levels, alerts, and supply costs for inventory planning.</p>
+        <a href="{% url 'admin_reports_export' %}?type=inventory" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30 transition-colors">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+    </div>
+
+    <!-- Financial Report -->
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50 group hover:border-brand-500/30 transition-colors">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-5">
+            <i class="bi bi-cash-coin text-2xl text-emerald-400"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Financial Report</h3>
+        <p class="text-sm text-slate-400 mb-6 leading-relaxed">Expense tracking, revenue summaries, and profit/loss analysis.</p>
+        <a href="{% url 'admin_reports_export' %}?type=financial" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-500/20 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Info Box -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 max-w-2xl">
+    <div class="flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-brand-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i class="bi bi-info-circle-fill text-brand-400 text-lg"></i>
+        </div>
+        <div>
+            <h4 class="text-sm font-bold text-white mb-1">About Reports</h4>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Reports are exported as CSV files which can be opened in Excel, Google Sheets, or any spreadsheet application. 
+                Data exports include up to 500 most recent records. For custom date ranges or advanced analytics, 
+                use the dashboard charts or contact support.
+            </p>
+        </div>
+    </div>
 </div>
 {% endblock %}

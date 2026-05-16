@@ -27,8 +27,8 @@
           <div style="font-size:2rem;color:var(--primary);"><i class="bi bi-file-earmark-pdf-fill"></i></div>
           <div>
             <div style="font-weight:700;font-size:14px;">{{ order.file_name|default:"Physical Document / No File" }}</div>
-            {% if order.file %}
-            <a href="{{ order.file.url }}" target="_blank" class="btn btn-ghost btn-sm" style="padding:0;margin-top:.25rem;font-size:12px;"><i class="bi bi-download"></i> Download</a>
+            {% if order.has_stored_file %}
+            <a href="{% url 'user_order_download_file' order.pk %}" class="btn btn-ghost btn-sm" style="padding:0;margin-top:.25rem;font-size:12px;"><i class="bi bi-download"></i> Download</a>
             {% endif %}
           </div>
         </div>
@@ -74,15 +74,15 @@
       <div class="card" style="padding:1.5rem;">
         <h3 style="font-size:1.1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.75rem;">Status Timeline</h3>
         <div style="display:flex;flex-direction:column;gap:1rem;">
-          {% for log in order.status_logs.all|dictsortreversed:"created_at" %}
+          {% for log in order.status_logs.all|dictsortreversed:"timestamp" %}
           <div style="display:flex;gap:1rem;">
             <div style="display:flex;flex-direction:column;align-items:center;">
               <div style="width:12px;height:12px;border-radius:50%;background:var(--primary);margin-top:4px;"></div>
               {% if not forloop.last %}<div style="width:2px;flex:1;background:var(--border);margin:4px 0;"></div>{% endif %}
             </div>
             <div style="padding-bottom:1rem;">
-              <div style="font-weight:600;font-size:14px;text-transform:capitalize;">{{ log.new_status|replace:"_":" " }}</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-bottom:.2rem;">{{ log.created_at|date:"M j, g:i A" }}</div>
+              <div style="font-weight:600;font-size:14px;text-transform:capitalize;">{{ log.new_status|title }}</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:.2rem;">{{ log.timestamp|date:"M j, g:i A" }}</div>
               {% if log.note %}<div style="font-size:13px;color:var(--text-muted);">{{ log.note }}</div>{% endif %}
             </div>
           </div>

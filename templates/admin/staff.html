@@ -1,44 +1,77 @@
 {% extends "admin_base.html" %}
-{% block title %}Staff Management — PrintEase Admin{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Staff</li>{% endblock %}
+{% block title %}Staff Management | PrintEase Admin{% endblock %}
+{% block breadcrumb %}Staff{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div><h2 class="fw-bold mb-0">Staff & Roles</h2><p class="text-muted small mb-0">Manage team members, roles, and shifts.</p></div>
-  <button class="btn btn-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#addStaffModal"><i class="bi bi-person-plus me-1"></i>Add Staff Member</button>
+<div class="mb-8">
+    <h1 class="text-2xl font-display font-bold text-white mb-1">Staff Management</h1>
+    <p class="text-slate-400 text-sm">Manage team roles and access</p>
 </div>
 
-<!-- Staff List -->
-<div class="table-container card border-0 shadow-sm mb-4">
-  <table class="table mb-0">
-    <thead><tr><th class="ps-4">Staff Member</th><th>Role</th><th>Phone</th><th>Status</th><th>Last Active</th><th class="pe-4">Actions</th></tr></thead>
-    <tbody>
-      <tr>
-        <td class="ps-4">
-          <div class="d-flex align-items-center gap-2">
-            <div style="width:32px;height:32px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700">T</div>
-            <div class="fw-semibold" style="font-size:.85rem">Tariqul Islam</div>
-          </div>
-        </td>
-        <td><span class="badge" style="background:rgba(99,102,241,.15);color:var(--primary)">Super Admin</span></td>
-        <td class="text-muted" style="font-size:.85rem">+8801700000000</td>
-        <td><span class="badge badge-ready">Active</span></td>
-        <td class="text-muted" style="font-size:.8rem">Online</td>
-        <td class="pe-4"><button class="btn btn-icon btn-ghost btn-sm text-muted"><i class="bi bi-three-dots-vertical"></i></button></td>
-      </tr>
-      <tr>
-        <td class="ps-4">
-          <div class="d-flex align-items-center gap-2">
-            <div style="width:32px;height:32px;background:var(--bg-card2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-weight:700;border:1px solid var(--border)">A</div>
-            <div class="fw-semibold" style="font-size:.85rem">Arif Ahmed</div>
-          </div>
-        </td>
-        <td><span class="badge" style="background:var(--bg-card2);color:var(--text);border:1px solid var(--border)">Operator</span></td>
-        <td class="text-muted" style="font-size:.85rem">+8801900000001</td>
-        <td><span class="badge badge-cancelled">Offline</span></td>
-        <td class="text-muted" style="font-size:.8rem">Yesterday, 5:00 PM</td>
-        <td class="pe-4"><button class="btn btn-icon btn-ghost btn-sm text-muted"><i class="bi bi-three-dots-vertical"></i></button></td>
-      </tr>
-    </tbody>
-  </table>
+{% if can_manage %}
+<div class="premium-card p-6 rounded-2xl mb-8 border border-brand-500/20">
+    <h2 class="text-sm font-bold text-white mb-4">Add staff member</h2>
+    <form method="post" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <input type="text" name="first_name" placeholder="First name" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
+        <input type="text" name="last_name" placeholder="Last name" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
+        <input type="email" name="email" placeholder="Email" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
+        <input type="text" name="phone" placeholder="Phone" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
+        <select name="role" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
+            {% for key, label in staff_roles %}
+            <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+        <input type="password" name="password" placeholder="Password" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold">Create staff</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {% for member in staff %}
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-base font-bold text-white">{{ member.display_name }}</h3>
+        <p class="text-xs text-slate-500 mb-3">{{ member.email }}</p>
+        {% if can_manage %}
+        <p class="text-[10px] text-slate-500 mb-1">Password copy</p>
+        <code class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded block mb-3">{{ member.password_plain|default:"—" }}</code>
+        {% endif %}
+        <p class="text-sm text-slate-400 mb-4">Role: <span class="text-white font-semibold">{{ member.get_role_display }}</span>
+            {% if not member.is_active %} · <span class="text-red-400">Inactive</span>{% endif %}
+        </p>
+        {% if can_manage %}
+        <form method="post" class="space-y-2">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ member.pk }}">
+            <div class="flex gap-2">
+                <input type="hidden" name="action" value="update_role">
+                <select name="role" class="flex-1 px-2 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs">
+                    {% for key, label in staff_roles %}
+                    <option value="{{ key }}" {% if member.role == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="px-3 py-2 rounded-lg bg-brand-500/20 text-brand-400 text-xs font-bold">Role</button>
+            </div>
+        </form>
+        <form method="post" class="mt-2 flex gap-1">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="set_password">
+            <input type="hidden" name="user_id" value="{{ member.pk }}">
+            <input type="password" name="password" placeholder="New password" class="flex-1 px-2 py-1 rounded bg-slate-900 border border-slate-700 text-[10px] text-white">
+            <button type="submit" class="text-[10px] text-brand-400 px-2">Set pwd</button>
+        </form>
+        <div class="flex flex-wrap gap-2 mt-2">
+            <form method="post">{% csrf_token %}<input type="hidden" name="action" value="toggle_active"><input type="hidden" name="user_id" value="{{ member.pk }}"><button type="submit" class="text-[10px] text-slate-400 underline">{% if member.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>
+            {% if member.pk != request.user.pk %}
+            <form method="post">{% csrf_token %}<input type="hidden" name="action" value="demote"><input type="hidden" name="user_id" value="{{ member.pk }}"><button type="submit" class="text-[10px] text-amber-400 underline">Demote to customer</button></form>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-slate-500 col-span-full text-center py-12">No staff members yet.</p>
+    {% endfor %}
 </div>
 {% endblock %}

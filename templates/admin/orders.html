@@ -1,98 +1,120 @@
 {% extends "admin_base.html" %}
-{% block title %}All Orders — Print-Edge{% endblock %}
-{% block breadcrumb %}All Orders{% endblock %}
+{% block title %}All Orders | PrintEase Admin{% endblock %}
+{% block breadcrumb %}Orders{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-      <h1 class="page-title">Order Management</h1>
-      <p class="text-muted" style="font-size:13px;">{{ total_count }} total orders</p>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">All Orders</h1>
+        <p class="text-slate-400 text-sm">{{ total_count }} total orders</p>
     </div>
-    <a href="{% url 'admin_walkin_order' %}" class="btn btn-primary btn-pill">
-      <i class="bi bi-plus-circle-fill"></i> New Walk-in Order
+    <a href="{% url 'admin_walkin_order' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white bg-brand-500 hover:bg-brand-400 shadow-lg shadow-brand-500/25 transition-all text-sm">
+        <i class="bi bi-plus-lg"></i> Walk-in Order
     </a>
-  </div>
 </div>
 
-<!-- FILTERS -->
-<div class="card" style="padding:1rem;margin-bottom:1.25rem;">
-  <form method="get" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
-    <div class="input-group-icon" style="flex:1;min-width:200px;">
-      <i class="bi bi-search icon"></i>
-      <input type="text" name="q" class="form-control" placeholder="Search order#, name, email, phone…" value="{{ search_query }}">
-    </div>
-    <select name="status" class="form-select" style="width:160px;">
-      <option value="">All Statuses</option>
-      {% for val, label in status_choices %}<option value="{{ val }}" {% if current_status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
-    </select>
-    <select name="source" class="form-select" style="width:140px;">
-      <option value="">All Sources</option>
-      <option value="online" {% if current_source == 'online' %}selected{% endif %}>🌐 Online</option>
-      <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>🏪 Walk-in</option>
-    </select>
-    <button type="submit" class="btn btn-primary">Filter</button>
-    <a href="{% url 'admin_orders' %}" class="btn btn-outline">Clear</a>
-  </form>
-</div>
-
-<!-- ORDERS TABLE -->
-<div class="card">
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Order</th><th>Customer</th><th>Specs</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for o in orders %}
-        <tr>
-          <td>
-            <div style="font-weight:700;font-size:13px;">{{ o.order_number }}</div>
-            <span style="font-size:11px;">{% if o.source == 'offline' %}🏪 Walk-in{% else %}🌐 Online{% endif %}</span>
-            {% if o.is_urgent %}<span class="badge badge-danger" style="font-size:10px;">URGENT</span>{% endif %}
-          </td>
-          <td>
-            <div style="font-weight:600;font-size:13px;">{{ o.customer_name }}</div>
-            <div style="font-size:11px;color:var(--text-muted);">{{ o.customer_phone }}</div>
-          </td>
-          <td style="font-size:12px;">
-            <div>{{ o.get_print_type_display }} · {{ o.get_sides_display }}</div>
-            <div class="text-muted">{{ o.pages }}p × {{ o.copies }} = {{ o.total_sheets }} sheets</div>
-          </td>
-          <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
-          <td>
-            <span class="badge badge-{% if o.payment_status == 'paid' %}success{% elif o.payment_status == 'partial' %}warning{% else %}secondary{% endif %}">
-              {{ o.get_payment_status_display }}
-            </span>
-          </td>
-          <td>
-            <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% elif o.status == 'pending' %}warning{% else %}secondary{% endif %}">
-              <span class="status-dot status-{{ o.status }}"></span>
-              {{ o.get_status_display }}
-            </span>
-          </td>
-          <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ o.created_at|date:"M j, H:i" }}</td>
-          <td>
-            <div style="display:flex;gap:.35rem;">
-              <a href="{% url 'admin_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon" title="View Details">
-                <i class="bi bi-eye"></i>
-              </a>
-              <button class="btn btn-ghost btn-sm btn-icon" onclick="quickStatus({{ o.pk }})" title="Update Status">
-                <i class="bi bi-arrow-repeat"></i>
-              </button>
+<!-- Filters -->
+<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <i class="bi bi-search text-slate-500 text-sm"></i>
             </div>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text-muted);">
-          <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:1rem;"></i>
-          No orders match your filters.
-        </td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Search by order #, name, phone…"
+                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+        </div>
+        <select name="status" class="px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <option value="">All Status</option>
+            {% for key, label in status_choices %}
+            <option value="{{ key }}" {% if current_status == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="source" class="px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <option value="">All Sources</option>
+            <option value="online" {% if current_source == 'online' %}selected{% endif %}>🌐 Online</option>
+            <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>🏪 Walk-in</option>
+        </select>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">
+            <i class="bi bi-funnel"></i> Filter
+        </button>
+    </form>
+</div>
+
+<!-- Orders Table -->
+<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                    <th class="p-3 pl-5">Order</th>
+                    <th class="p-3">Source</th>
+                    <th class="p-3">Customer</th>
+                    <th class="p-3">Specs</th>
+                    <th class="p-3">Amount</th>
+                    <th class="p-3">Payment</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3 pr-5"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+                {% for o in orders %}
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="p-3 pl-5">
+                        <div class="font-display font-bold text-white text-sm">{{ o.order_number }}</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
+                    </td>
+                    <td class="p-3">
+                        {% if o.source == 'offline' %}
+                        <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 text-[10px] font-bold">Walk-in</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 text-[10px] font-bold">Online</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3">
+                        <div class="text-sm text-white font-medium">{{ o.customer_name }}</div>
+                        <div class="text-[10px] text-slate-500">{{ o.customer_phone }}</div>
+                    </td>
+                    <td class="p-3 text-xs text-slate-400">
+                        {{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}
+                        {% if o.is_urgent %}<span class="text-red-400 font-bold">⚡</span>{% endif %}
+                    </td>
+                    <td class="p-3 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold
+                            {% if o.payment_status == 'paid' %}bg-emerald-500/10 text-emerald-400
+                            {% elif o.payment_status == 'partial' %}bg-amber-500/10 text-amber-400
+                            {% else %}bg-red-500/10 text-red-400{% endif %}">
+                            {{ o.get_payment_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
+                            {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                            {% elif o.status == 'printing' %}bg-blue-500/10 text-blue-400 border border-blue-500/20
+                            {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border border-red-500/20
+                            {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/20{% endif %}">
+                            {{ o.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="p-3 pr-5">
+                        <a href="{% url 'admin_order_detail' o.pk %}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-brand-500 transition-colors">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="p-12 text-center">
+                        <div class="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
+                            <i class="bi bi-inbox text-2xl text-slate-500"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-white mb-2">No orders found</h4>
+                        <p class="text-slate-400 text-sm">Try adjusting your filters or create a new walk-in order.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

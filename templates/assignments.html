@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cover Page Generator | Print Edge{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cover-studio.css' %}">
+<style>
+  .cover-template-grid {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .cover-template-grid::-webkit-scrollbar { width: 6px; }
+  .cover-template-grid::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.15);
+    border-radius: 3px;
+  }
+  #cover-sheet .cover-page.cover-no-logo {
+    grid-template-areas:
+      'university university'
+      'title title'
+      'details details'
+      'to by'
+      '. .'
+      'footer footer';
+  }
+  #cover-sheet .cover-page.cover-no-logo .logo-section {
+    display: none !important;
+  }
+  [x-cloak] { display: none !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-emerald-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 relative z-10"
+     x-data="coverPageGenerator({
+       defaultLogoUrl: '{% static 'img/cover-default-logo.png' %}',
+     })">
+
+  <div class="text-center mb-10 animate-fade-in">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-4">
+      <i class="bi bi-file-earmark-pdf text-emerald-400"></i>
+      <span class="text-xs font-bold text-emerald-300 uppercase tracking-widest">Free · On-site</span>
+    </div>
+    <h1 class="text-3xl md:text-4xl font-display font-bold text-white mb-3">Universal Assignment Cover Studio</h1>
+    <p class="text-neutral-400 max-w-2xl mx-auto">10 layouts · any university · optional fields · PDF, PNG &amp; print</p>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-8 items-start">
+    <div class="premium-card rounded-2xl p-6 md:p-8 space-y-5 animate-slide-up">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <i class="bi bi-pencil-square text-brand-400"></i> Your details
+      </h2>
+      <p class="text-xs text-neutral-500">All fields are optional. Leave blank to omit from the cover page.</p>
+
+      <div>
+        <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Choose design (10 layouts)</label>
+        <div class="cover-template-grid grid grid-cols-2 sm:grid-cols-5 gap-2 pr-1">
+          <template x-for="t in templates" :key="t.id">
+            <button type="button" @click="template = t.id"
+                    :class="template === t.id ? 'bg-brand-500/25 border-brand-500 text-white ring-1 ring-brand-500/50' : 'bg-white/5 border-white/10 text-neutral-400 hover:border-white/25 hover:text-neutral-200'"
+                    class="flex flex-col items-start gap-0.5 p-2 rounded-xl border text-left transition-all">
+              <span class="text-[11px] font-bold leading-tight" x-text="t.label"></span>
+              <span class="text-[9px] text-neutral-500 font-medium leading-tight line-clamp-2" x-text="t.desc"></span>
+            </button>
+          </template>
+        </div>
+        <p class="mt-2 text-xs text-neutral-500">
+          <span class="text-neutral-300 font-semibold" x-text="activeTemplateMeta.label"></span>
+          — <span x-text="activeTemplateMeta.desc"></span>
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">University / Institution <span class="text-neutral-600 font-normal">(optional)</span></label>
+          <input type="text" x-model="university" placeholder="e.g. Your University Name"
+                 class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Department / Faculty <span class="text-neutral-600 font-normal">(optional)</span></label>
+          <input type="text" x-model="department" placeholder="e.g. Department of CSE"
+                 class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer">
+            <input type="checkbox" x-model="sameDept" class="rounded border-white/20 bg-white/5 text-brand-500 focus:ring-brand-500">
+            Same department for instructor and student
+          </label>
+        </div>
+        <div x-show="!sameDept" x-cloak class="sm:col-span-2 grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Instructor department</label>
+            <input type="text" x-model="teacherDept" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Your department</label>
+            <input type="text" x-model="studentDept" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+          </div>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Institution logo</label>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="cover-logo-input" type="file" accept="image/*" @change="onLogoSelected($event)"
+                   class="text-sm text-neutral-400 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-brand-500/20 file:text-brand-200 file:font-semibold">
+            <button type="button" @click="resetLogoToDefault()" x-show="usesCustomLogo || logoHidden"
+                    class="text-xs font-bold text-brand-300 hover:text-brand-200">Use default logo</button>
+            <button type="button" @click="hideLogo()" x-show="displayLogoUrl"
+                    class="text-xs font-bold text-neutral-400 hover:text-white">Remove logo</button>
+          </div>
+          <p class="text-[10px] text-neutral-500 mt-1">Default logo included · upload to replace · max 500 KB</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Course name</label>
+          <input type="text" x-model="courseName" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Course code</label>
+          <input type="text" x-model="courseCode" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Assignment title</label>
+          <input type="text" x-model="assignmentTitle" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Submitted to (instructor)</label>
+          <input type="text" x-model="instructor" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Designation</label>
+          <select x-model="designation" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+            <option value="" class="bg-neutral-900">— Skip —</option>
+            <template x-for="d in designationOptions" :key="d">
+              <option :value="d" x-text="d" class="bg-neutral-900"></option>
+            </template>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Semester / Session</label>
+          <input type="text" x-model="semester" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Your name</label>
+          <input type="text" x-model="studentName" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Student ID</label>
+          <input type="text" x-model="studentId" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Section</label>
+          <input type="text" x-model="section" placeholder="Optional" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-neutral-400 uppercase mb-1">Submission date</label>
+          <input type="date" x-model="submissionDate" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:border-brand-500 outline-none">
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 pt-2">
+        <button type="button" @click="downloadPdf()" :disabled="exportBusy"
+                class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <i class="bi bi-download"></i> <span x-text="exportBusy ? 'Exporting…' : 'PDF'"></span>
+        </button>
+        <button type="button" @click="downloadPng()" :disabled="exportBusy"
+                class="flex-1 min-w-[120px] py-3 rounded-xl font-bold text-white bg-brand-600 hover:bg-brand-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <i class="bi bi-image"></i> PNG
+        </button>
+        <button type="button" @click="printPdf()"
+                class="flex-1 min-w-[100px] py-3 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 border border-white/10 transition-colors flex items-center justify-center gap-2">
+          <i class="bi bi-printer"></i> Print
+        </button>
+        <button type="button" @click="reset()" class="px-4 py-3 rounded-xl font-bold text-neutral-400 hover:text-white hover:bg-white/5 transition-colors" title="Reset form">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="lg:sticky lg:top-24 animate-slide-up" style="animation-delay: 0.1s" id="cover-print-root">
+      <p class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3 text-center">Live preview (A4)</p>
+      <div class="overflow-x-auto flex justify-center pb-4">
+        <div id="cover-sheet" class="transform scale-[0.42] sm:scale-[0.5] md:scale-[0.58] lg:scale-[0.65] origin-top">
+          <div id="cover-page" :class="coverPageClass">
+            <div class="logo-section" x-show="displayLogoUrl">
+              <img :src="displayLogoUrl" alt="Institution logo" id="institutionLogo" decoding="async" crossorigin="anonymous">
+            </div>
+            <div class="university-name" x-show="showUniversity" x-text="universityDisplay"></div>
+            <div class="assignment-title-text" x-show="showAssignmentBanner">ASSIGNMENT</div>
+            <div class="details-section" x-show="showDetailsSection">
+              <div class="detail-item" x-show="showAssignmentTitle" x-text="assignmentTitle"></div>
+              <div class="detail-item" x-show="showCourseName" x-text="courseName"></div>
+              <div class="detail-item" x-show="showCourseCode" x-text="courseCode"></div>
+            </div>
+            <div class="info-section submitted-to" x-show="showSubmittedTo">
+              <h4>Submitted To:</h4>
+              <p x-show="showInstructor"><strong x-text="instructor"></strong></p>
+              <p x-show="showDesignation" x-text="designation"></p>
+              <p x-show="showTeacherDept" x-text="instructorDeptDisplay"></p>
+            </div>
+            <div class="info-section submitted-by" x-show="showSubmittedBy">
+              <h4>Submitted By:</h4>
+              <p x-show="showStudentName"><strong x-text="studentName"></strong></p>
+              <p x-show="showStudentId" x-text="studentIdDisplay"></p>
+              <p x-show="showStudentDept" x-text="studentDeptDisplay"></p>
+              <p x-show="showSemester" x-text="semester"></p>
+              <p x-show="showSection" x-text="sectionDisplay"></p>
+            </div>
+            <div class="footer-row" x-show="showFooterDate">
+              <div class="submission-date-section">
+                <p>Submission Date: <span x-text="dateDisplay"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-neutral-500 text-xs mt-2">Need printing?
+        {% if user.is_authenticated %}
+          <a href="{% url 'user_new_order' %}" class="text-brand-400 font-bold hover:underline">Order with Print Edge</a>
+        {% else %}
+          <a href="{% url 'auth_register_page' %}" class="text-brand-400 font-bold hover:underline">Create an account to print</a>
+        {% endif %}
+      </p>
+      <p class="text-center text-neutral-600 text-[10px] mt-1">Layouts adapted from <a href="https://github.com/MeTariqul/Assignment-Cover-Page" class="underline hover:text-neutral-400" target="_blank" rel="noopener">Assignment-Cover-Page</a> (MIT)</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/cover-generator.js' %}"></script>
+{% endblock %}

@@ -1,149 +1,209 @@
 {% extends "base.html" %}
-{% block title %}My Dashboard — Print-Edge{% endblock %}
+{% block title %}Dashboard | PrintEase{% endblock %}
+
 {% block content %}
-<div style="max-width:1000px;margin:0 auto;padding:2rem 1rem;">
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-  <div class="flex-between" style="margin-bottom:2rem;">
-    <div>
-      <h1 style="font-size:1.6rem;margin-bottom:.2rem;">My Dashboard</h1>
-      <p class="text-muted" style="font-size:14px;">Welcome back, {{ request.user.first_name }}!</p>
-    </div>
-    <a href="{% url 'user_new_order' %}" class="btn btn-primary btn-pill">
-      <i class="bi bi-plus-circle-fill"></i> New Print Order
-    </a>
-  </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-10 animate-fade-in">
 
-  <!-- STATS -->
-  <div class="grid-3" style="margin-bottom:2rem;">
-    <div class="stat-card">
-      <div class="stat-label">Active Orders</div>
-      <div class="stat-value" style="color:var(--primary);">{{ stats.active_count }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Completed</div>
-      <div class="stat-value" style="color:var(--success);">{{ stats.completed_count }}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Spent</div>
-      <div class="stat-value">৳{{ stats.total_spent|floatformat:0 }}</div>
-    </div>
-  </div>
-
-  <!-- ACTIVE ORDER TRACKER -->
-  {% if active_order %}
-  <div class="card" style="padding:1.75rem;margin-bottom:2rem;border-left:4px solid var(--primary);">
-    <div class="flex-between" style="align-items:flex-start;margin-bottom:1.5rem;">
-      <div>
-        <span class="badge badge-primary" style="margin-bottom:.5rem;">Active Order</span>
-        <h3 style="font-size:1.1rem;">{{ active_order.order_number }}</h3>
-        <p class="text-muted" style="font-size:13px;">
-          <i class="bi bi-file-earmark"></i> {{ active_order.file_name|default:"Physical Document" }} &nbsp;·&nbsp;
-          {{ active_order.get_print_type_display }} · {{ active_order.get_sides_display }} · {{ active_order.pages }} pages
-        </p>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:1.75rem;font-weight:800;">৳{{ active_order.total_amount|floatformat:0 }}</div>
-        <span class="badge badge-{% if active_order.payment_status == 'paid' %}success{% elif active_order.payment_status == 'partial' %}warning{% else %}danger{% endif %}">
-          {{ active_order.get_payment_status_display }}
-        </span>
-      </div>
-    </div>
-
-    <!-- STATUS PIPELINE -->
-    <div style="display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:.5rem;">
-      <!-- Pending -->
-      <div style="flex:1;min-width:80px;text-align:center;">
-        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:{% if active_order.status == 'pending' %}var(--primary){% else %}var(--success){% endif %};
-          color:white;">
-          <i class="bi bi-hourglass"></i>
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-display font-bold text-white mb-2">My Dashboard</h1>
+            <p class="text-neutral-500 font-medium">Welcome back, <span class="text-white">{{ request.user.first_name|default:request.user.username }}</span>.</p>
         </div>
-        <div style="font-size:10px;font-weight:{% if active_order.status == 'pending' %}700{% else %}500{% endif %};color:{% if active_order.status == 'pending' %}var(--primary){% else %}var(--text-muted){% endif %};">Pending</div>
-      </div>
-      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
-
-      <!-- Confirmed -->
-      <div style="flex:1;min-width:80px;text-align:center;">
-        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:{% if active_order.status == 'confirmed' %}var(--primary){% elif active_order.status in 'printing,quality_check,ready,delivered' %}var(--success){% else %}var(--border){% endif %};
-          color:{% if active_order.status in 'confirmed,printing,quality_check,ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
-          <i class="bi bi-check"></i>
-        </div>
-        <div style="font-size:10px;font-weight:{% if active_order.status == 'confirmed' %}700{% else %}500{% endif %};color:{% if active_order.status == 'confirmed' %}var(--primary){% else %}var(--text-muted){% endif %};">Confirmed</div>
-      </div>
-      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
-
-      <!-- Printing -->
-      <div style="flex:1;min-width:80px;text-align:center;">
-        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:{% if active_order.status == 'printing' %}var(--primary){% elif active_order.status in 'quality_check,ready,delivered' %}var(--success){% else %}var(--border){% endif %};
-          color:{% if active_order.status in 'printing,quality_check,ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
-          <i class="bi bi-printer"></i>
-        </div>
-        <div style="font-size:10px;font-weight:{% if active_order.status == 'printing' %}700{% else %}500{% endif %};color:{% if active_order.status == 'printing' %}var(--primary){% else %}var(--text-muted){% endif %};">Printing</div>
-      </div>
-      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
-
-      <!-- Quality Check -->
-      <div style="flex:1;min-width:80px;text-align:center;">
-        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:{% if active_order.status == 'quality_check' %}var(--primary){% elif active_order.status in 'ready,delivered' %}var(--success){% else %}var(--border){% endif %};
-          color:{% if active_order.status in 'quality_check,ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
-          <i class="bi bi-eye"></i>
-        </div>
-        <div style="font-size:10px;font-weight:{% if active_order.status == 'quality_check' %}700{% else %}500{% endif %};color:{% if active_order.status == 'quality_check' %}var(--primary){% else %}var(--text-muted){% endif %};">Quality Check</div>
-      </div>
-      <div style="flex:1;height:2px;background:var(--border);margin-bottom:1.5rem;min-width:20px;"></div>
-
-      <!-- Ready -->
-      <div style="flex:1;min-width:80px;text-align:center;">
-        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:{% if active_order.status == 'ready' %}var(--primary){% elif active_order.status == 'delivered' %}var(--success){% else %}var(--border){% endif %};
-          color:{% if active_order.status in 'ready,delivered' %}white{% else %}var(--text-muted){% endif %};">
-          <i class="bi bi-bag-check"></i>
-        </div>
-        <div style="font-size:10px;font-weight:{% if active_order.status == 'ready' %}700{% else %}500{% endif %};color:{% if active_order.status == 'ready' %}var(--primary){% else %}var(--text-muted){% endif %};">Ready</div>
-      </div>
+        <a href="{% url 'user_new_order' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <i class="bi bi-cloud-arrow-up-fill text-lg"></i>
+            New Print Order
+        </a>
     </div>
-  </div>
-  {% endif %}
 
-  <!-- RECENT ORDERS -->
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
-      <h3 style="font-size:1rem;">Order History</h3>
-      <a href="{% url 'user_orders' %}" class="btn btn-ghost btn-sm">View All</a>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative overflow-hidden group border-l-4 border-l-blue-500">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-colors"></div>
+            <div class="relative z-10">
+                <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-3">Active Orders</p>
+                <p class="text-5xl font-display font-bold text-white">{{ stats.active_count }}</p>
+            </div>
+            <div class="absolute bottom-6 right-6 text-blue-500/20 group-hover:text-blue-500/30 transition-colors">
+                <i class="bi bi-file-earmark-text-fill text-6xl"></i>
+            </div>
+        </div>
+
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative overflow-hidden group border-l-4 border-l-emerald-500">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors"></div>
+            <div class="relative z-10">
+                <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-3">Completed</p>
+                <p class="text-5xl font-display font-bold text-white">{{ stats.completed_count }}</p>
+            </div>
+            <div class="absolute bottom-6 right-6 text-emerald-500/20 group-hover:text-emerald-500/30 transition-colors">
+                <i class="bi bi-check-circle-fill text-6xl"></i>
+            </div>
+        </div>
+
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative overflow-hidden group border-l-4 border-l-brand-500">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl group-hover:bg-brand-500/20 transition-colors"></div>
+            <div class="relative z-10">
+                <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-3">Total Spent</p>
+                <p class="text-5xl font-display font-bold text-white"><span class="text-2xl text-neutral-500 mr-1">৳</span>{{ stats.total_spent|floatformat:0 }}</p>
+            </div>
+            <div class="absolute bottom-6 right-6 text-brand-500/20 group-hover:text-brand-500/30 transition-colors">
+                <i class="bi bi-wallet2 text-6xl"></i>
+            </div>
+        </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Order #</th><th>Document</th><th>Specs</th><th>Amount</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-          {% for o in orders %}
-          <tr>
-            <td style="font-weight:600;font-size:13px;white-space:nowrap;">{{ o.order_number }}</td>
-            <td style="font-size:13px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              <i class="bi bi-file-earmark text-muted"></i> {{ o.file_name|default:"Physical Doc" }}
-            </td>
-            <td style="font-size:12px;color:var(--text-muted);">{{ o.get_print_type_display }} · {{ o.get_sides_display }} · {{ o.pages }}p × {{ o.copies }}</td>
-            <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
-            <td>
-              <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% else %}warning{% endif %}">
-                {{ o.get_status_display }}
-              </span>
-            </td>
-            <td><a href="{% url 'user_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon"><i class="bi bi-eye"></i></a></td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted);">
-            <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
-            No orders yet. <a href="{% url 'user_new_order' %}">Place your first order →</a>
-          </td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    <!-- Active Order Tracker -->
+    {% if active_order %}
+    <div class="premium-card p-6 md:p-10 rounded-3xl mb-12 border-brand-500/30 shadow-2xl shadow-brand-500/10 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 relative z-10">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-[10px] font-bold uppercase tracking-widest mb-4">
+                    <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                    Live Tracking
+                </div>
+                <h3 class="text-3xl font-display font-bold text-white mb-2">{{ active_order.order_number }}</h3>
+                <p class="text-neutral-400 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium">
+                    <span class="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg border border-white/10"><i class="bi bi-file-earmark-text text-neutral-500"></i> {{ active_order.file_name|default:"Physical Document" }}</span>
+                    <span>{{ active_order.get_print_type_display }}</span>
+                    <span class="text-neutral-700">•</span>
+                    <span>{{ active_order.get_sides_display }}</span>
+                    <span class="text-neutral-700">•</span>
+                    <span>{{ active_order.pages }} pages</span>
+                </p>
+            </div>
+            <div class="md:text-right">
+                <div class="text-4xl font-display font-bold text-white mb-3">৳{{ active_order.total_amount|floatformat:0 }}</div>
+                <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border
+                    {% if active_order.payment_status == 'paid' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                    {% elif active_order.payment_status == 'partial' %}bg-amber-500/10 text-amber-400 border-amber-500/20
+                    {% else %}bg-red-500/10 text-red-400 border-red-500/20{% endif %}">
+                    {{ active_order.get_payment_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Status Pipeline UI -->
+        <div class="relative z-10 w-full overflow-x-auto pb-4 hide-scrollbar">
+            <div class="flex items-center min-w-[600px] justify-between px-4">
+                
+                {% for status_key, status_label, status_icon in status_steps %}
+                    <!-- Step {{ status_key }} -->
+                    <div class="flex flex-col items-center relative z-10 w-24">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-500
+                            {% if active_order.status == status_key %}
+                                bg-brand-500 text-white shadow-lg shadow-brand-500/40 scale-110 -translate-y-1
+                            {% elif status_key in passed_statuses %}
+                                bg-white/10 text-white border border-white/20
+                            {% else %}
+                                bg-black/40 text-neutral-600 border border-white/5
+                            {% endif %}">
+                            <i class="bi {{ status_icon }} text-xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-center tracking-wide
+                            {% if active_order.status == status_key %}text-brand-400
+                            {% elif status_key in passed_statuses %}text-white
+                            {% else %}text-neutral-600{% endif %}">
+                            {{ status_label }}
+                        </span>
+                    </div>
+
+                    {% if not forloop.last %}
+                        <!-- Connecting Line -->
+                        <div class="flex-1 h-1 mx-4 rounded-full transition-colors duration-500 overflow-hidden bg-black/40 border border-white/5">
+                            <div class="h-full bg-brand-500 transition-all duration-1000" style="width: {% if status_key in passed_statuses %}100%{% else %}0%{% endif %}"></div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+        </div>
+        
     </div>
-  </div>
+    {% endif %}
+
+    <!-- Recent Orders Table -->
+    <div class="premium-card rounded-3xl overflow-hidden relative">
+        <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+            <h3 class="text-xl font-bold text-white">Recent Orders</h3>
+            <a href="{% url 'user_orders' %}" class="text-sm font-bold text-brand-400 hover:text-brand-300 transition-colors">View All &rarr;</a>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-black/40 text-neutral-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
+                        <th class="p-4 pl-6 md:pl-8">Order ID</th>
+                        <th class="p-4">Document</th>
+                        <th class="p-4">Details</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for o in orders %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="p-4 pl-6 md:pl-8 font-display font-bold text-white text-sm whitespace-nowrap">{{ o.order_number }}</td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-3 max-w-[200px]">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10">
+                                    <i class="bi bi-file-earmark-text text-neutral-400"></i>
+                                </div>
+                                <span class="text-neutral-300 text-sm font-medium truncate" title="{{ o.file_name }}">{{ o.file_name|default:"Physical Doc" }}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-xs font-medium text-neutral-500">
+                            {{ o.get_print_type_display }} • {{ o.get_sides_display }}<br>
+                            {{ o.pages }}p × {{ o.copies }}
+                        </td>
+                        <td class="p-4 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5 border
+                                {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                {% elif o.status == 'printing' %}bg-brand-500/10 text-brand-400 border-brand-500/20
+                                {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
+                                {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                {% if o.status == 'delivered' or o.status == 'ready' %}<i class="bi bi-check-lg"></i>
+                                {% elif o.status == 'printing' %}<i class="bi bi-printer"></i>
+                                {% elif o.status == 'cancelled' %}<i class="bi bi-x-lg"></i>
+                                {% else %}<i class="bi bi-hourglass-split"></i>{% endif %}
+                                {{ o.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 pr-6 md:pr-8 text-right">
+                            <a href="{% url 'user_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-brand-500 transition-colors tooltip" title="View Details">
+                                <i class="bi bi-chevron-right text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-16 text-center">
+                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 text-neutral-500 mb-6 border border-white/10">
+                                <i class="bi bi-inbox text-3xl"></i>
+                            </div>
+                            <h4 class="text-xl font-display font-bold text-white mb-2">No orders yet</h4>
+                            <p class="text-neutral-500 font-medium mb-8 max-w-sm mx-auto">You haven't placed any print orders yet. Get started by uploading your first document.</p>
+                            <a href="{% url 'user_new_order' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-400 transition-colors shadow-lg shadow-brand-500/20">
+                                Create Order <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
+
+<style>
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 {% endblock %}

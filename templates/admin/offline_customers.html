@@ -1,141 +1,71 @@
 {% extends "admin_base.html" %}
-{% block title %}Walk-in Customers — PrintEase{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Walk-in Customers</li>{% endblock %}
+{% block title %}Walk-in Customers | PrintEase Admin{% endblock %}
+{% block breadcrumb %}Walk-in Customers{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2 class="fw-bold mb-0">Walk-in Customers</h2>
-    <p class="text-muted small mb-0">Offline customers who visit the shop in person.</p>
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-ghost btn-sm"><i class="bi bi-envelope me-1"></i>Bulk SMS</button>
-    <button class="btn btn-gradient btn-sm" data-bs-toggle="modal" data-bs-target="#addCustModal">
-      <i class="bi bi-person-plus me-1"></i>Add Customer
-    </button>
-  </div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">Walk-in Customers</h1>
+        <p class="text-slate-400 text-sm">Offline customer records and visit history</p>
+    </div>
 </div>
 
-<!-- Stats Row -->
-<div class="row g-3 mb-4">
-  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold" style="font-size:1.6rem">341</div><div class="text-muted small">Total Walk-ins</div></div></div>
-  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold" style="font-size:1.6rem">47</div><div class="text-muted small">Orders This Month</div></div></div>
-  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold" style="font-size:1.6rem">৳12,400</div><div class="text-muted small">Offline Revenue</div></div></div>
-  <div class="col-sm-3"><div class="card border-0 p-3 text-center stat-card"><div class="fw-bold" style="font-size:1.6rem">18</div><div class="text-muted small">Merged to Online</div></div></div>
-</div>
-
-<!-- Search + Filter -->
-<div class="card border-0 shadow-sm mb-3 p-3">
-  <div class="row g-2">
-    <div class="col-md-5">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input type="text" class="form-control" placeholder="Search by name or phone...">
-      </div>
-    </div>
-    <div class="col-md-2">
-      <select class="form-select form-select-sm">
-        <option>All Tiers</option>
-        <option>Bronze</option><option>Silver</option><option>Gold</option><option>Platinum</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select class="form-select form-select-sm">
-        <option>Sort: Recent</option>
-        <option>Most Orders</option>
-        <option>Highest Spend</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <button class="btn btn-primary btn-sm me-1">Filter</button>
-      <button class="btn btn-ghost btn-sm"><i class="bi bi-download me-1"></i>Export</button>
-    </div>
-  </div>
-</div>
-
-<!-- Customers Table -->
-<div class="table-container card border-0 shadow-sm">
-  <table class="table mb-0">
-    <thead><tr>
-      <th class="ps-4">Customer</th>
-      <th>Phone</th>
-      <th>Tier</th>
-      <th>Total Orders</th>
-      <th>Total Spend</th>
-      <th>Last Visit</th>
-      <th>Status</th>
-      <th class="pe-4">Actions</th>
-    </tr></thead>
-    <tbody>
-      {% for c in customers %}
-      <tr>
-        <td class="ps-4">
-          <div class="d-flex align-items-center gap-2">
-            <div style="width:36px;height:36px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700;flex-shrink:0">{{ c.name.0 }}</div>
-            <div>
-              <div class="fw-semibold" style="font-size:.875rem">{{ c.name }}</div>
-              <div class="text-muted" style="font-size:.7rem">Walk-in Customer</div>
-            </div>
-          </div>
-        </td>
-        <td>
-          <a href="tel:+88{{ c.phone }}" style="color:var(--text);font-size:.85rem">{{ c.phone }}</a>
-        </td>
-        <td>
-          <span class="badge tier-{{ c.tier|lower }}">{{ c.tier }}</span>
-        </td>
-        <td class="fw-semibold">{{ c.orders }}</td>
-        <td class="fw-semibold">{{ c.spend }}</td>
-        <td class="text-muted" style="font-size:.82rem">{{ c.last }}</td>
-        <td><span class="badge badge-ready">Active</span></td>
-        <td class="pe-4">
-          <div class="dropdown">
-            <button class="btn btn-icon btn-ghost btn-sm" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
-            <ul class="dropdown-menu dropdown-menu-end border-0 shadow" style="background:var(--bg-card);border:1px solid var(--border)!important;min-width:180px">
-              <li><a class="dropdown-item" href="#" style="color:var(--text);font-size:.85rem"><i class="bi bi-eye me-2 text-muted"></i>View Profile</a></li>
-              <li><a class="dropdown-item" href="{% url 'admin_walkin_order' %}" style="color:var(--text);font-size:.85rem"><i class="bi bi-shop me-2 text-muted"></i>New Order</a></li>
-              <li><a class="dropdown-item" href="#" style="color:var(--text);font-size:.85rem"><i class="bi bi-chat-dots me-2 text-muted"></i>Send SMS</a></li>
-              <li><a class="dropdown-item" href="#" style="color:var(--text);font-size:.85rem"><i class="bi bi-link me-2 text-muted"></i>Merge to Online</a></li>
-              <li><hr class="dropdown-divider" style="border-color:var(--border)"></li>
-              <li><a class="dropdown-item" href="#" style="color:var(--danger);font-size:.85rem"><i class="bi bi-slash-circle me-2"></i>Ban Customer</a></li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="p-3 d-flex justify-content-between align-items-center" style="border-top:1px solid var(--border)">
-    <small class="text-muted">Showing 5 of 341 customers</small>
-    <nav><ul class="pagination pagination-sm mb-0">
-      <li class="page-item disabled"><a class="page-link" href="#">‹</a></li>
-      <li class="page-item active"><a class="page-link" href="#" style="background:var(--primary);border-color:var(--primary)">1</a></li>
-      <li class="page-item"><a class="page-link" href="#" style="color:var(--text);background:var(--bg-card)">2</a></li>
-      <li class="page-item"><a class="page-link" href="#" style="color:var(--text);background:var(--bg-card)">›</a></li>
-    </ul></nav>
-  </div>
-</div>
-
-<!-- Add Customer Modal -->
-<div class="modal fade" id="addCustModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h6 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Add Walk-in Customer</h6>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3"><label class="form-label">Full Name *</label><input type="text" class="form-control" placeholder="Customer's full name"></div>
-        <div class="mb-3"><label class="form-label">Phone Number *</label><input type="text" class="form-control" placeholder="01XXXXXXXXX"></div>
-        <div class="mb-3"><label class="form-label">Notes (optional)</label><textarea class="form-control" rows="2" placeholder="Any notes about this customer..."></textarea></div>
-        <div class="p-2 rounded" style="background:var(--bg-card2);font-size:.78rem;color:var(--text-muted)">
-          <i class="bi bi-info-circle me-1"></i>No email or password needed. Customer can register online later to merge accounts.
+<!-- Search -->
+<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+    <form method="get" class="flex gap-3">
+        <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="bi bi-search text-slate-500 text-sm"></i></div>
+            <input type="text" name="q" value="{{ search }}" placeholder="Search by name or phone…"
+                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-gradient">Add Customer</button>
-      </div>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">Search</button>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                    <th class="p-3 pl-5">Customer</th>
+                    <th class="p-3">Phone</th>
+                    <th class="p-3">Tier</th>
+                    <th class="p-3">Orders</th>
+                    <th class="p-3">Total Spent</th>
+                    <th class="p-3 pr-5">Last Visit</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+                {% for c in customers %}
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="p-3 pl-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm border border-amber-500/30">
+                                {{ c.name|first|upper }}
+                            </div>
+                            <span class="text-sm font-semibold text-white">{{ c.name }}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-sm text-slate-300 font-mono">{{ c.phone }}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase
+                            {% if c.tier == 'platinum' %}bg-purple-500/10 text-purple-400
+                            {% elif c.tier == 'gold' %}bg-amber-500/10 text-amber-400
+                            {% elif c.tier == 'silver' %}bg-slate-500/10 text-slate-300
+                            {% else %}bg-brand-500/10 text-brand-400{% endif %}">
+                            {{ c.tier|title }}
+                        </span>
+                    </td>
+                    <td class="p-3 text-sm font-semibold text-white">{{ c.total_orders }}</td>
+                    <td class="p-3 text-sm font-bold text-white">৳{{ c.total_spent|floatformat:0 }}</td>
+                    <td class="p-3 pr-5 text-xs text-slate-500">{{ c.last_visit|date:"M d, g:i A"|default:"Never" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="p-12 text-center text-slate-500">No walk-in customers yet. They'll appear here after a walk-in order.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-  </div>
 </div>
 {% endblock %}

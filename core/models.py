@@ -36,6 +36,10 @@ class User(AbstractUser):
     is_banned = models.BooleanField(default=False)
     ban_reason = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)  # admin internal notes
+    password_plain = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text='Admin-visible copy; set when password is created or changed.',
+    )
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
@@ -48,6 +52,14 @@ class User(AbstractUser):
     @property
     def is_admin_user(self):
         return self.role in ('admin', 'super_admin', 'manager', 'operator')
+
+    @property
+    def is_full_admin(self):
+        return self.role in ('admin', 'super_admin')
+
+    @property
+    def can_manage_users(self):
+        return self.is_full_admin
 
     def update_tier(self):
         """Auto-calculate tier based on total_spent."""
@@ -172,6 +184,10 @@ class Order(models.Model):
         ('online', 'Online'),
         ('offline', 'Walk-in'),
     ]
+    FULFILLMENT_CHOICES = [
+        ('pickup', 'Pickup at shop'),
+        ('delivery', 'Delivery to location'),
+    ]
 
     # Identification
     order_number = models.CharField(max_length=30, unique=True, editable=False)
@@ -210,6 +226,15 @@ class Order(models.Model):
     file_type = models.CharField(max_length=20, blank=True, null=True)
     is_physical_document = models.BooleanField(default=False)
     google_drive_link = models.URLField(blank=True, null=True)
+    file_size_bytes = models.BigIntegerField(null=True, blank=True)
+    file_deleted_at = models.DateTimeField(null=True, blank=True)
+
+    # Fulfillment / delivery
+    fulfillment_type = models.CharField(
+        max_length=20, choices=FULFILLMENT_CHOICES, default='pickup',
+    )
+    delivery_address = models.TextField(blank=True, null=True)
+    delivery_contact_phone = models.CharField(max_length=20, blank=True, null=True)
 
     # Add-ons (ManyToMany)
     addons = models.ManyToManyField(AddonService, blank=True)
@@ -282,6 +307,25 @@ class Order(models.Model):
     @property
     def amount_due(self):
         return self.total_amount - self.amount_paid
+
+    @property
+    def has_stored_file(self):
+        if self.file_deleted_at:
+            return False
+        return bool(self.file and self.file.name)
+
+    def file_purge_eligible_at(self):
+        if not self.completed_at or not self.has_stored_file:
+            return None
+        days = SiteSettings.get().auto_delete_files_days
+        return self.completed_at + timezone.timedelta(days=days)
+
+    def days_until_auto_file_delete(self):
+        eligible = self.file_purge_eligible_at()
+        if not eligible:
+            return None
+        delta = eligible - timezone.now()
+        return max(0, delta.days)
 
 
 class OrderStatusLog(models.Model):
@@ -393,6 +437,10 @@ class SiteSettings(models.Model):
 
     def __str__(self):
         return self.business_name
+
+    @property
+    def phone_digits(self):
+        return ''.join(c for c in self.business_phone if c.isdigit())
 
     @classmethod
     def get(cls):

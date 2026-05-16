@@ -1,217 +1,263 @@
 {% extends "admin_base.html" %}
-{% block title %}Dashboard — Print-Edge{% endblock %}
-{% block breadcrumb %}Dashboard{% endblock %}
+{% block title %}Dashboard | PrintEase Admin{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
     <div>
-      <h1 class="page-title">Good {% now "G" as h %}{% if h < 12 %}morning{% elif h < 17 %}afternoon{% else %}evening{% endif %}, {{ request.user.first_name }} 👋</h1>
-      <p class="text-muted" style="margin-top:.2rem;">{% now "l, N j, Y \a\t g:i A" %}</p>
+        <h1 class="text-3xl font-display font-bold text-white mb-2 tracking-tight">
+            Welcome back, <span class="gradient-text">{{ request.user.first_name }}</span>
+        </h1>
+        <p class="text-neutral-500 font-medium">Here's what's happening at PrintEase today.</p>
     </div>
-    <div style="display:flex;gap:.75rem;">
-      <a href="{% url 'admin_walkin_order' %}" class="btn btn-primary btn-pill">
-        <i class="bi bi-plus-circle-fill"></i> New Walk-in Order
-      </a>
-    </div>
-  </div>
+    <a href="{% url 'admin_walkin_order' %}" class="hidden md:inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition-all hover:scale-105 active:scale-95 shadow-xl">
+        <i class="bi bi-plus-lg text-brand-400"></i> New Walk-in Order
+    </a>
 </div>
 
-<!-- KPI CARDS -->
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;">
-  <div class="stat-card">
-    <div class="stat-bg"><i class="bi bi-cart"></i></div>
-    <div class="stat-label">Orders Today</div>
-    <div class="stat-value">{{ today_orders_count }}</div>
-    <div class="stat-change {% if revenue_change >= 0 %}up{% else %}down{% endif %}">
-      <i class="bi bi-arrow-{% if revenue_change >= 0 %}up{% else %}down{% endif %}-right"></i>
-      {{ revenue_change }}% vs yesterday
-    </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-bg"><i class="bi bi-cash-stack"></i></div>
-    <div class="stat-label">Revenue Today</div>
-    <div class="stat-value">৳{{ today_revenue|floatformat:0 }}</div>
-    <div class="stat-change up"><i class="bi bi-circle-fill" style="font-size:6px;"></i> Live</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-bg"><i class="bi bi-hourglass-split"></i></div>
-    <div class="stat-label">Pending Action</div>
-    <div class="stat-value" style="color:{% if pending_count > 10 %}var(--danger){% else %}var(--text){% endif %};">{{ pending_count }}</div>
-    {% if pending_count > 0 %}<a href="{% url 'admin_orders' %}?status=pending" class="badge badge-warning" style="margin-top:.4rem;">View Pending →</a>{% endif %}
-  </div>
-  <div class="stat-card">
-    <div class="stat-bg"><i class="bi bi-people"></i></div>
-    <div class="stat-label">Active Customers</div>
-    <div class="stat-value">{{ active_customers }}</div>
-    <div style="color:var(--text-muted);font-size:12px;margin-top:.3rem;">Today</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-bg"><i class="bi bi-file-text"></i></div>
-    <div class="stat-label">Pages Printed</div>
-    <div class="stat-value">{{ pages_today }}</div>
-    <div style="color:var(--text-muted);font-size:12px;margin-top:.3rem;">Today total</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-bg"><i class="bi bi-graph-up"></i></div>
-    <div class="stat-label">Avg Order Value</div>
-    <div class="stat-value">৳{{ avg_order_value|floatformat:0 }}</div>
-    <div style="color:var(--text-muted);font-size:12px;margin-top:.3rem;">Per order</div>
-  </div>
-</div>
-
-<!-- CHARTS ROW -->
-<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.5rem;">
-  <!-- Revenue Trend -->
-  <div class="card" style="padding:1.5rem;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
-      <div>
-        <h3 style="font-size:1rem;margin-bottom:.1rem;">Revenue Trend</h3>
-        <p class="text-muted" style="font-size:12px;">Online vs Offline — Last 7 Days</p>
-      </div>
-    </div>
-    <canvas id="revenueChart" height="80"></canvas>
-  </div>
-  <!-- Order Distribution -->
-  <div class="card" style="padding:1.5rem;">
-    <div style="margin-bottom:1rem;">
-      <h3 style="font-size:1rem;margin-bottom:.1rem;">Order Status</h3>
-      <p class="text-muted" style="font-size:12px;">Current distribution</p>
-    </div>
-    <canvas id="statusChart" height="160"></canvas>
-  </div>
-</div>
-
-<!-- RECENT ORDERS + ACTIVITY -->
-<div style="display:grid;grid-template-columns:3fr 2fr;gap:1.25rem;">
-  <!-- Recent Orders -->
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);">
-      <h3 style="font-size:1rem;">Recent Orders</h3>
-      <a href="{% url 'admin_orders' %}" class="btn btn-ghost btn-sm">View All →</a>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for o in recent_orders %}
-          <tr>
-            <td>
-              <div style="font-weight:600;font-size:13px;">{{ o.order_number }}</div>
-              <div style="font-size:11px;color:var(--text-muted);">
-                {% if o.source == 'offline' %}🏪 Walk-in{% else %}🌐 Online{% endif %}
-              </div>
-            </td>
-            <td>
-              <div style="font-weight:500;">{{ o.customer_name }}</div>
-              <div style="font-size:11px;color:var(--text-muted);">{{ o.customer_phone }}</div>
-            </td>
-            <td style="font-weight:700;">৳{{ o.total_amount|floatformat:0 }}</td>
-            <td>
-              <span class="badge badge-{% if o.status == 'delivered' %}success{% elif o.status == 'ready' %}success{% elif o.status == 'printing' %}info{% elif o.status == 'cancelled' %}danger{% else %}warning{% endif %}">
-                <span class="status-dot status-{{ o.status }}"></span>
-                {{ o.get_status_display }}
-              </span>
-            </td>
-            <td><a href="{% url 'admin_order_detail' o.pk %}" class="btn btn-ghost btn-sm btn-icon"><i class="bi bi-eye"></i></a></td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted);">No orders yet. Create a walk-in order to get started!</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Quick Stats -->
-  <div style="display:flex;flex-direction:column;gap:1rem;">
-    {% if low_stock_count %}
-    <div class="card" style="padding:1.25rem;border-left:4px solid var(--warning);">
-      <div style="display:flex;align-items:center;gap:.75rem;">
-        <div class="avatar avatar-warning"><i class="bi bi-exclamation-triangle-fill"></i></div>
-        <div>
-          <h4 style="font-size:.95rem;">{{ low_stock_count }} Low Stock Alert{{ low_stock_count|pluralize }}</h4>
-          <p class="text-muted" style="font-size:12px;">Inventory needs attention</p>
+<!-- KPI Cards -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6 mb-10">
+    <!-- Orders Today -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Orders Today</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ today_orders_count }}</p>
+        <div class="flex items-center gap-1.5 text-xs font-bold {% if revenue_change >= 0 %}text-emerald-400{% else %}text-red-400{% endif %} relative z-10">
+            <i class="bi bi-arrow-{% if revenue_change >= 0 %}up{% else %}down{% endif %}-right"></i>
+            {{ revenue_change }}% vs yesterday
         </div>
-        <a href="{% url 'admin_inventory' %}" class="btn btn-sm btn-outline" style="margin-left:auto;">View</a>
-      </div>
     </div>
-    {% endif %}
 
-    <div class="card" style="padding:1.25rem;">
-      <h4 style="font-size:.95rem;margin-bottom:1rem;">Status Overview</h4>
-      {% for status, label, _ in order.STATUS_CHOICES|default:'' %}{% endfor %}
-      {% for key, val in status_counts.items %}
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.65rem;">
-        <span style="font-size:12px;color:var(--text-muted);width:90px;text-transform:capitalize;">{{ key|title }}</span>
-        <div class="progress" style="flex:1;">
-          <div class="progress-bar {% if key == 'delivered' %}success{% elif key == 'cancelled' %}danger{% elif key == 'ready' %}success{% elif key == 'printing' %}{% endif %}"
-            style="width:{% widthratio val today_orders_count|add:1 100 %}%"></div>
+    <!-- Revenue -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-500/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Revenue Today</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10"><span class="text-xl text-neutral-500 mr-1">৳</span>{{ today_revenue|floatformat:0 }}</p>
+        <div class="flex items-center gap-1.5 text-xs font-bold text-brand-400 relative z-10">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span> Live updating
         </div>
-        <span style="font-weight:700;font-size:13px;width:24px;text-align:right;">{{ val }}</span>
-      </div>
-      {% endfor %}
     </div>
-  </div>
+
+    <!-- Pending -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pending</p>
+        <p class="text-4xl font-display font-bold {% if pending_count > 10 %}text-amber-400{% else %}text-white{% endif %} mb-2 relative z-10">{{ pending_count }}</p>
+        {% if pending_count > 0 %}
+        <a href="{% url 'admin_orders' %}?status=pending" class="text-xs font-bold text-amber-500 hover:text-amber-400 relative z-10 transition-colors">View Queue →</a>
+        {% else %}
+        <p class="text-xs font-bold text-neutral-600 relative z-10">All caught up!</p>
+        {% endif %}
+    </div>
+
+    <!-- Customers -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Customers</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ active_customers }}</p>
+        <p class="text-xs font-bold text-neutral-500 relative z-10">Active today</p>
+    </div>
+
+    <!-- Pages -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pages Printed</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ pages_today }}</p>
+        <p class="text-xs font-bold text-neutral-500 relative z-10">Today total</p>
+    </div>
+
+    <!-- Avg Value -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Avg Value</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10"><span class="text-xl text-neutral-500 mr-1">৳</span>{{ avg_order_value|floatformat:0 }}</p>
+        <p class="text-xs font-bold text-neutral-500 relative z-10">Per order</p>
+    </div>
 </div>
 
+<!-- Charts Row -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+    <!-- Revenue Trend (takes 2 cols) -->
+    <div class="xl:col-span-2 premium-card p-6 md:p-8 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h3 class="text-xl font-bold text-white">Revenue Trend</h3>
+                <p class="text-sm text-neutral-500 font-medium mt-1">Performance over the last 7 days</p>
+            </div>
+            <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                <i class="bi bi-graph-up-arrow text-brand-400"></i>
+            </div>
+        </div>
+        <div id="revenueChart" style="min-height:300px;"></div>
+    </div>
+
+    <!-- Order Status Distribution -->
+    <div class="premium-card p-6 md:p-8 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h3 class="text-xl font-bold text-white">Status</h3>
+                <p class="text-sm text-neutral-500 font-medium mt-1">Current distribution</p>
+            </div>
+            <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                <i class="bi bi-pie-chart-fill text-purple-400"></i>
+            </div>
+        </div>
+        <div id="statusChart" style="min-height:280px;"></div>
+    </div>
+</div>
+
+<!-- Recent Orders + Actions -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- Recent Orders (2 cols) -->
+    <div class="xl:col-span-2 premium-card rounded-3xl overflow-hidden relative">
+        <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+            <h3 class="text-xl font-bold text-white">Recent Orders</h3>
+            <a href="{% url 'admin_orders' %}" class="text-sm font-bold text-brand-400 hover:text-brand-300 transition-colors">View All →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-black/40 text-neutral-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
+                        <th class="p-4 pl-6 md:pl-8">Order ID</th>
+                        <th class="p-4">Customer</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for o in recent_orders %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="p-4 pl-6 md:pl-8">
+                            <div class="font-display font-bold text-white text-sm">{{ o.order_number }}</div>
+                            <div class="text-[10px] font-bold tracking-widest mt-1">
+                                {% if o.source == 'offline' %}<span class="text-purple-400">Walk-in</span>{% else %}<span class="text-blue-400">Online</span>{% endif %}
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm text-white font-bold">{{ o.customer_name }}</div>
+                            <div class="text-[10px] text-neutral-500 font-medium">{{ o.customer_phone }}</div>
+                        </td>
+                        <td class="p-4 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border
+                                {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                {% elif o.status == 'printing' %}bg-blue-500/10 text-blue-400 border-blue-500/20
+                                {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
+                                {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                {{ o.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 pr-6 md:pr-8 text-right">
+                            <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:bg-brand-500 hover:text-white transition-all shadow-sm">
+                                <i class="bi bi-chevron-right text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center text-neutral-500 font-medium">No orders yet. Create a walk-in order to get started!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right Column: Quick Actions -->
+    <div class="space-y-6">
+        {% if low_stock_count %}
+        <div class="premium-card p-6 rounded-3xl border-l-4 border-l-amber-500 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-exclamation-triangle-fill text-amber-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-base font-bold text-white mb-1">{{ low_stock_count }} Low Stock Alert{{ low_stock_count|pluralize }}</h4>
+                    <p class="text-xs font-medium text-neutral-500">Inventory requires attention</p>
+                </div>
+                <a href="{% url 'admin_inventory' %}" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-amber-400 hover:bg-white/10 transition-colors">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative">
+            <h4 class="text-lg font-bold text-white mb-6">Quick Actions</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{% url 'admin_walkin_order' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/30 hover:bg-brand-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-plus-lg text-xl text-brand-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Walk-in</span>
+                </a>
+                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-list-task text-xl text-blue-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Orders</span>
+                </a>
+                <a href="{% url 'admin_inventory' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/30 hover:bg-purple-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-box-seam text-xl text-purple-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Inventory</span>
+                </a>
+                <a href="{% url 'admin_reports' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-bar-chart text-xl text-emerald-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Reports</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-const textColor = isDark ? '#94a3b8' : '#64748b';
-const gridColor = isDark ? 'rgba(51,65,85,.5)' : 'rgba(226,232,240,.8)';
-Chart.defaults.color = textColor;
-Chart.defaults.font.family = 'Inter, sans-serif';
+// ApexCharts Config
+const chartTextColor = '#737373'; // neutral-500
 
-// Revenue Chart
-const revCtx = document.getElementById('revenueChart').getContext('2d');
-const grad = revCtx.createLinearGradient(0,0,0,200);
-grad.addColorStop(0,'rgba(99,102,241,.35)');
-grad.addColorStop(1,'rgba(99,102,241,.0)');
-new Chart(revCtx, {
-  type:'line',
-  data:{
-    labels: {{ revenue_labels_json|safe }},
-    datasets:[{
-      label:'Revenue (৳)',
-      data: {{ revenue_trend_json|safe }},
-      borderColor:'#6366f1',backgroundColor:grad,
-      borderWidth:2.5,pointBackgroundColor:'#6366f1',
-      pointRadius:4,fill:true,tension:.4
-    }]
-  },
-  options:{
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false}},
-    scales:{
-      x:{grid:{color:gridColor},ticks:{color:textColor}},
-      y:{grid:{color:gridColor},ticks:{color:textColor,callback:v=>'৳'+v}}
-    }
-  }
-});
+// Revenue Trend (Area Chart)
+const revenueOptions = {
+    chart: { type: 'area', height: 300, fontFamily: 'Inter, sans-serif', toolbar: { show: false }, zoom: { enabled: false }, background: 'transparent' },
+    series: [{ name: 'Revenue (৳)', data: {{ revenue_trend_json|safe }} }],
+    xaxis: { 
+        categories: {{ revenue_labels_json|safe }}, 
+        labels: { style: { colors: chartTextColor, fontSize: '12px', fontWeight: 600 } }, 
+        axisBorder: { show: false }, axisTicks: { show: false } 
+    },
+    yaxis: { 
+        labels: { style: { colors: chartTextColor, fontSize: '12px', fontWeight: 600 }, formatter: v => '৳' + v } 
+    },
+    stroke: { curve: 'smooth', width: 3 },
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0.0, stops: [0, 90, 100] } },
+    colors: ['#6366f1'], // brand-500
+    dataLabels: { enabled: false },
+    grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4, padding: { left: 10, right: 10 } },
+    tooltip: { theme: 'dark', style: { fontSize: '13px', fontFamily: 'Inter' }, y: { formatter: v => '৳' + v } },
+    markers: { size: 0, hover: { size: 6 } }
+};
+new ApexCharts(document.querySelector('#revenueChart'), revenueOptions).render();
 
 // Status Donut
-const statusCtx = document.getElementById('statusChart').getContext('2d');
-new Chart(statusCtx, {
-  type:'doughnut',
-  data:{
-    labels:['Pending','Printing','Ready','Delivered','Cancelled','Other'],
-    datasets:[{
-      data: {{ status_counts_json|safe }},
-      backgroundColor:['#f59e0b','#3b82f6','#10b981','#94a3b8','#ef4444','#6366f1'],
-      borderWidth:0,hoverOffset:4
-    }]
-  },
-  options:{
-    responsive:true,maintainAspectRatio:false,cutout:'72%',
-    plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true,font:{size:11}}}}
-  }
-});
+const statusLabels = [{% for key, val in status_counts.items %}'{{ key|title }}',{% endfor %}];
+const statusData = [{% for key, val in status_counts.items %}{{ val }},{% endfor %}];
+const statusColors = {
+    'Pending': '#f59e0b', 'Confirmed': '#8b5cf6', 'Printing': '#3b82f6',
+    'Quality_Check': '#06b6d4', 'Ready': '#10b981', 'Delivered': '#64748b',
+    'Cancelled': '#ef4444', 'On_Hold': '#f97316'
+};
+
+const donutOptions = {
+    chart: { type: 'donut', height: 280, fontFamily: 'Inter, sans-serif', background: 'transparent' },
+    series: statusData,
+    labels: statusLabels,
+    colors: statusLabels.map(l => statusColors[l] || '#6366f1'),
+    stroke: { width: 0 },
+    plotOptions: { pie: { donut: { size: '80%', labels: { show: true, name: { color: '#ededed', fontSize: '14px', fontWeight: 600 }, value: { color: '#737373', fontSize: '24px', fontWeight: 700 }, total: { show: true, label: 'Total', color: '#ededed', fontSize: '14px', fontWeight: 600, formatter: w => w.globals.seriesTotals.reduce((a,b) => a+b, 0) } } } } },
+    dataLabels: { enabled: false },
+    legend: { position: 'bottom', labels: { colors: chartTextColor }, fontSize: '12px', fontWeight: 600, markers: { size: 8, offsetX: -3 }, itemMargin: { horizontal: 10, vertical: 5 } },
+    tooltip: { theme: 'dark', style: { fontSize: '13px' } }
+};
+new ApexCharts(document.querySelector('#statusChart'), donutOptions).render();
 </script>
 {% endblock %}

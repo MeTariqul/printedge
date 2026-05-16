@@ -1,147 +1,213 @@
 {% extends "base.html" %}
-{% block title %}New Print Order — Print-Edge{% endblock %}
+{% block title %}New Print Order | PrintEase{% endblock %}
+
 {% block content %}
-<div style="max-width:860px;margin:0 auto;padding:2rem 1rem;">
-  <div style="margin-bottom:2rem;">
-    <a href="{% url 'user_dashboard' %}" class="btn btn-ghost btn-sm" style="margin-bottom:1rem;">← Back</a>
-    <h1 style="font-size:1.6rem;">New Print Order</h1>
-    <p class="text-muted" style="font-size:14px;">Configure your document and get an instant price quote.</p>
-  </div>
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-  <form method="post" enctype="multipart/form-data" id="orderForm">
-    {% csrf_token %}
-    <div style="display:grid;grid-template-columns:3fr 2fr;gap:1.5rem;">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-10 animate-fade-in">
 
-      <!-- LEFT COLUMN -->
-      <div style="display:flex;flex-direction:column;gap:1.25rem;">
-
-        <!-- File Upload -->
-        <div class="card" style="padding:1.5rem;">
-          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-cloud-upload text-primary"></i> Upload Document</h3>
-          <div id="dropZone" style="border:2px dashed var(--border);border-radius:10px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(99,102,241,.02);">
-            <i class="bi bi-cloud-arrow-up" style="font-size:2.5rem;color:var(--primary);display:block;margin-bottom:.75rem;"></i>
-            <p style="font-weight:600;margin-bottom:.25rem;">Drop file here or click to browse</p>
-            <p class="text-muted" style="font-size:13px;">PDF, DOC, DOCX, PPT, PPTX, JPG, PNG · Max 50MB</p>
-            <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="display:none;">
-          </div>
-          <div id="fileInfo" style="display:none;margin-top:.75rem;padding:.75rem;background:rgba(99,102,241,.06);border-radius:8px;font-size:13px;font-weight:500;"></div>
-        </div>
-
-        <!-- Print Options -->
-        <div class="card" style="padding:1.5rem;">
-          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-sliders text-primary"></i> Print Options</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">Print Type</label>
-              <select name="print_type" class="form-select" id="printType">
-                <option value="bw">⬛ Black & White</option>
-                <option value="color">🎨 Color</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">Sides</label>
-              <select name="sides" class="form-select" id="sides">
-                <option value="single">Single Sided</option>
-                <option value="double">Double Sided</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">Paper Size</label>
-              <select name="paper_size" class="form-select" id="paperSize">
-                <option value="A4">A4 (default)</option>
-                <option value="A3">A3</option>
-                <option value="Letter">Letter</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label class="form-label">Copies</label>
-              <input type="number" name="copies" id="copies" class="form-control" value="1" min="1" max="999">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Page Count</label>
-            <input type="number" name="pages" id="pages" class="form-control" value="1" min="1" max="9999">
-            <div style="font-size:12px;color:var(--text-muted);margin-top:.4rem;">
-              <i class="bi bi-info-circle"></i> The system will auto-count pages for PDFs after upload.
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:rgba(245,158,11,.06);border-radius:8px;border:1px solid rgba(245,158,11,.2);">
-            <input type="checkbox" name="is_urgent" id="isUrgent" style="width:16px;height:16px;accent-color:var(--warning);">
-            <label for="isUrgent" style="cursor:pointer;font-weight:600;font-size:14px;">
-              <i class="bi bi-lightning-fill" style="color:var(--warning);"></i> Urgent Processing (+50% surcharge)
-            </label>
-          </div>
-        </div>
-
-        <!-- Add-ons -->
-        {% if addons %}
-        <div class="card" style="padding:1.5rem;">
-          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-stars text-primary"></i> Finishing Add-ons</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
-            {% for addon in addons %}
-            <label style="display:flex;align-items:center;gap:.75rem;padding:.85rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s;" id="addonLabel{{ addon.id }}">
-              <input type="checkbox" name="addons" value="{{ addon.id }}" onchange="updatePrice()" style="accent-color:var(--primary);">
-              <div>
-                <div style="font-weight:600;font-size:13px;">{{ addon.name }}</div>
-                <div style="font-size:12px;color:var(--text-muted);">+৳{{ addon.price|floatformat:0 }}</div>
-              </div>
-            </label>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
-
-        <!-- Special Instructions -->
-        <div class="card" style="padding:1.5rem;">
-          <h3 style="font-size:1rem;margin-bottom:1rem;"><i class="bi bi-chat-left-text text-primary"></i> Special Instructions</h3>
-          <textarea name="special_instructions" class="form-control" rows="3" placeholder="e.g. Print double-sided, staple top-left corner, use glossy paper..."></textarea>
-        </div>
-      </div>
-
-      <!-- RIGHT COLUMN: Price Card -->
-      <div>
-        <div class="card" style="padding:1.5rem;position:sticky;top:80px;">
-          <h3 style="font-size:1rem;margin-bottom:1.25rem;"><i class="bi bi-receipt text-primary"></i> Price Summary</h3>
-
-          <div id="priceBreakdown" style="font-size:14px;">
-            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
-              <span class="text-muted">Base Price</span>
-              <span id="basePrice" style="font-weight:600;">৳0</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
-              <span class="text-muted">Add-ons</span>
-              <span id="addonsPrice">৳0</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
-              <span class="text-muted">Urgent Surcharge</span>
-              <span id="urgentPrice">৳0</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);color:var(--success);">
-              <span>Discount</span>
-              <span id="discountAmount">-৳0</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.85rem 0;font-size:1.3rem;font-weight:900;">
-              <span>Total</span>
-              <span id="totalPrice" style="color:var(--primary);">৳0</span>
-            </div>
-          </div>
-
-          <div class="form-group" style="margin-bottom:1rem;">
-            <label class="form-label">Promo Code</label>
-            <div style="display:flex;gap:.5rem;">
-              <input type="text" name="promo_code" class="form-control" placeholder="Enter code">
-              <button type="button" class="btn btn-outline btn-sm" onclick="updatePrice()">Apply</button>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-pill" style="width:100%;padding:.85rem;font-size:15px;font-weight:700;">
-            <i class="bi bi-check-circle-fill"></i> Place Order
-          </button>
-          <p class="text-muted" style="font-size:12px;text-align:center;margin-top:.75rem;">Pay at pickup · Files auto-deleted after 7 days</p>
-        </div>
-      </div>
+    <div class="mb-10">
+        <a href="{% url 'user_dashboard' %}" class="inline-flex items-center gap-2 text-neutral-400 hover:text-white font-bold transition-colors mb-4">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+        <h1 class="text-3xl md:text-5xl font-display font-bold text-white mb-2">New Print Order</h1>
+        <p class="text-neutral-500 font-medium text-lg">Configure your document and get an instant price quote.</p>
     </div>
-  </form>
+
+    <form method="post" enctype="multipart/form-data" id="orderForm">
+        {% csrf_token %}
+        <div class="grid lg:grid-cols-3 gap-8 items-start">
+
+            <!-- LEFT COLUMN (2/3 width on LG) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- File Upload -->
+                <div class="premium-card rounded-3xl p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20"><i class="bi bi-cloud-upload-fill"></i></div>
+                        Upload Document
+                    </h3>
+                    
+                    <div id="dropZone" class="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:border-brand-500 hover:bg-brand-500/5 transition-all group relative overflow-hidden">
+                        <div class="absolute inset-0 bg-brand-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <i class="bi bi-cloud-arrow-up text-5xl text-neutral-600 group-hover:text-brand-400 transition-colors block mb-4"></i>
+                        <p class="font-bold text-white text-lg mb-2">Drop file here or click to browse</p>
+                        <p class="text-neutral-500 text-sm font-medium">PDF, DOC, DOCX, PPT, PPTX, JPG, PNG · Max 50MB</p>
+                        <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" class="hidden">
+                    </div>
+                    
+                    <div id="fileInfo" class="hidden mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                        <div class="flex items-center gap-3 text-emerald-400">
+                            <i class="bi bi-file-earmark-check-fill text-xl"></i>
+                            <div>
+                                <p id="fileName" class="font-bold text-white"></p>
+                                <p id="fileSize" class="text-xs font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Options -->
+                <div class="premium-card rounded-3xl p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20"><i class="bi bi-sliders"></i></div>
+                        Print Options
+                    </h3>
+                    
+                    <div class="grid sm:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Print Type</label>
+                            <div class="relative">
+                                <select name="print_type" id="printType" class="w-full appearance-none bg-white/5 border border-white/10 text-white py-3.5 pl-4 pr-10 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none">
+                                    <option value="bw" class="text-black">⬛ Black & White</option>
+                                    <option value="color" class="text-black">🎨 Color</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400"><i class="bi bi-chevron-down text-xs"></i></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Sides</label>
+                            <div class="relative">
+                                <select name="sides" id="sides" class="w-full appearance-none bg-white/5 border border-white/10 text-white py-3.5 pl-4 pr-10 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none">
+                                    <option value="single" class="text-black">Single Sided</option>
+                                    <option value="double" class="text-black">Double Sided</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400"><i class="bi bi-chevron-down text-xs"></i></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Paper Size</label>
+                            <div class="relative">
+                                <select name="paper_size" id="paperSize" class="w-full appearance-none bg-white/5 border border-white/10 text-white py-3.5 pl-4 pr-10 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none">
+                                    <option value="A4" class="text-black">A4 (default)</option>
+                                    <option value="A3" class="text-black">A3</option>
+                                    <option value="Letter" class="text-black">Letter</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-400"><i class="bi bi-chevron-down text-xs"></i></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Copies</label>
+                            <input type="number" name="copies" id="copies" value="1" min="1" max="999" class="w-full bg-white/5 border border-white/10 text-white py-3.5 px-4 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Page Count</label>
+                        <input type="number" name="pages" id="pages" value="1" min="1" max="9999" class="w-full bg-white/5 border border-white/10 text-white py-3.5 px-4 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none">
+                        <p class="text-xs text-neutral-500 mt-2 flex items-center gap-1.5"><i class="bi bi-info-circle text-brand-400"></i> The system will auto-count pages for PDFs after upload.</p>
+                    </div>
+
+                    <label class="flex items-center gap-4 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 cursor-pointer hover:bg-amber-500/10 transition-colors group">
+                        <input type="checkbox" name="is_urgent" id="isUrgent" class="w-5 h-5 rounded border-amber-500/30 bg-amber-500/10 text-amber-500 focus:ring-amber-500 focus:ring-offset-black">
+                        <div>
+                            <span class="font-bold text-white flex items-center gap-2"><i class="bi bi-lightning-fill text-amber-400"></i> Urgent Processing</span>
+                            <span class="text-xs font-medium text-amber-400/80 block">+50% surcharge</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Add-ons -->
+                {% if addons %}
+                <div class="premium-card rounded-3xl p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-stars"></i></div>
+                        Finishing Add-ons
+                    </h3>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        {% for addon in addons %}
+                        <label class="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/10 transition-colors">
+                            <input type="checkbox" name="addons" value="{{ addon.id }}" onchange="updatePrice()" class="w-5 h-5 rounded border-white/10 bg-black/50 text-brand-500 focus:ring-brand-500 focus:ring-offset-black">
+                            <div>
+                                <span class="font-bold text-white block">{{ addon.name }}</span>
+                                <span class="text-xs font-medium text-brand-400">+৳{{ addon.price|floatformat:0 }}</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Fulfillment -->
+                <div class="premium-card rounded-3xl p-6 md:p-8" x-data="{ fulfillment: 'pickup' }">
+                    <h3 class="text-xl font-bold text-white mb-6">Pickup or delivery</h3>
+                    <div class="flex gap-4 mb-4">
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="fulfillment_type" value="pickup" x-model="fulfillment" checked class="text-brand-500"> Pickup at shop</label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="fulfillment_type" value="delivery" x-model="fulfillment" class="text-brand-500"> Delivery</label>
+                    </div>
+                    <div x-show="fulfillment === 'delivery'" x-cloak class="space-y-3">
+                        <textarea name="delivery_address" rows="2" placeholder="Delivery address (building, room, landmark)" class="w-full bg-white/5 border border-white/10 text-white py-3 px-4 rounded-xl outline-none resize-none"></textarea>
+                        <input type="text" name="delivery_contact_phone" placeholder="Contact phone for delivery (optional)" class="w-full bg-white/5 border border-white/10 text-white py-3 px-4 rounded-xl outline-none">
+                    </div>
+                </div>
+
+                <!-- Special Instructions -->
+                <div class="premium-card rounded-3xl p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center border border-pink-500/20"><i class="bi bi-chat-left-text-fill"></i></div>
+                        Special Instructions
+                    </h3>
+                    <textarea name="special_instructions" rows="3" class="w-full bg-white/5 border border-white/10 text-white py-3.5 px-4 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none resize-none placeholder-neutral-600" placeholder="e.g. Print double-sided, staple top-left corner, use glossy paper..."></textarea>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Price Card -->
+            <div class="lg:sticky lg:top-28">
+                <div class="premium-card rounded-3xl p-6 md:p-8 border-brand-500/30 shadow-2xl shadow-brand-500/10 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-48 h-48 bg-brand-500/10 rounded-full blur-[80px]"></div>
+                    
+                    <h3 class="text-xl font-bold text-white mb-8 flex items-center gap-3 relative z-10">
+                        <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-receipt"></i></div>
+                        Price Summary
+                    </h3>
+
+                    <div id="priceBreakdown" class="space-y-4 mb-8 relative z-10">
+                        <div class="flex justify-between items-center text-sm font-medium text-neutral-400">
+                            <span>Base Price</span>
+                            <span id="basePrice" class="text-white font-bold">৳0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-medium text-neutral-400">
+                            <span>Add-ons</span>
+                            <span id="addonsPrice" class="text-white font-bold">৳0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-medium text-amber-500/80">
+                            <span>Urgent Surcharge</span>
+                            <span id="urgentPrice" class="text-amber-400 font-bold">৳0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm font-medium text-emerald-500/80 pb-4 border-b border-white/10">
+                            <span>Discount</span>
+                            <span id="discountAmount" class="text-emerald-400 font-bold">-৳0</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-lg font-bold text-white">Total</span>
+                            <span id="totalPrice" class="text-4xl font-display font-bold gradient-text">৳0</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-8 relative z-10">
+                        <label class="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Promo Code</label>
+                        <div class="flex gap-2">
+                            <input type="text" name="promo_code" class="flex-1 bg-white/5 border border-white/10 text-white py-3 px-4 rounded-xl focus:border-brand-500 focus:bg-white/10 transition-colors font-medium outline-none uppercase placeholder-neutral-600" placeholder="ENTER CODE">
+                            <button type="button" onclick="updatePrice()" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition-colors border border-white/10">Apply</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 relative z-10">
+                        <i class="bi bi-check-circle-fill text-lg"></i>
+                        Place Order
+                    </button>
+                    <p class="text-xs text-neutral-500 text-center font-medium mt-4 relative z-10">Pay at pickup · Files auto-deleted after 7 days</p>
+                </div>
+            </div>
+
+        </div>
+    </form>
+
 </div>
 
 {% block extra_js %}
@@ -151,17 +217,18 @@ const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 
 dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; });
-dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border)');
-dropZone.addEventListener('drop', e => { e.preventDefault(); fileInput.files = e.dataTransfer.files; handleFile(); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-brand-500', 'bg-brand-500/5'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-brand-500', 'bg-brand-500/5'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('border-brand-500', 'bg-brand-500/5'); fileInput.files = e.dataTransfer.files; handleFile(); });
 fileInput.addEventListener('change', handleFile);
 
 function handleFile() {
   const file = fileInput.files[0];
   if (!file) return;
-  fileInfo.style.display = 'block';
-  fileInfo.innerHTML = `<i class="bi bi-file-earmark-check" style="color:var(--success);"></i> <strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
-  dropZone.style.borderColor = 'var(--success)';
+  fileInfo.classList.remove('hidden');
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = (file.size/1024/1024).toFixed(2) + ' MB';
+  dropZone.classList.add('border-emerald-500');
   updatePrice();
 }
 

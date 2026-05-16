@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Upload File | Print Edge{% endblock %}
+
+{% block content %}
+<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+
+<div class="flex-grow flex items-center justify-center px-4 py-12 relative z-10 min-h-[calc(100vh-8rem)]">
+    <div class="w-full max-w-3xl animate-fade-in text-center">
+        
+        <div class="mb-10">
+            <h1 class="text-4xl md:text-5xl font-display font-bold text-white mb-4">Print Online</h1>
+            <p class="text-neutral-400 font-medium">Upload PDF, DOCX, PPTX, JPG, PNG. Choose color, double-sided, binding and more.</p>
+        </div>
+
+        <div class="premium-card p-12 rounded-3xl border border-brand-500/30 border-dashed backdrop-blur-md hover:bg-white/5 transition-colors group cursor-pointer" onclick="window.location.href='{% url 'auth_login_page' %}'">
+            <div class="w-24 h-24 rounded-full bg-brand-500/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <i class="bi bi-cloud-arrow-up-fill text-5xl text-brand-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Drag & Drop or Click to Upload</h2>
+            <p class="text-neutral-500 mb-8 font-medium">Please sign in to upload files and configure your print order.</p>
+            
+            <div class="flex items-center justify-center gap-4">
+                <a href="{% url 'auth_login_page' %}" class="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl transition-all hover:scale-105 active:scale-95">
+                    Sign In to Upload
+                </a>
+                <a href="{% url 'auth_register_page' %}" class="px-8 py-3 rounded-xl font-bold text-black bg-white hover:bg-neutral-200 transition-all hover:scale-105 active:scale-95">
+                    Create Account
+                </a>
+            </div>
+        </div>
+
+        <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="flex flex-col items-center gap-2 opacity-70">
+                <i class="bi bi-file-pdf-fill text-3xl text-red-400"></i>
+                <span class="text-xs font-bold text-white uppercase tracking-wider">PDF Ready</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 opacity-70">
+                <i class="bi bi-file-word-fill text-3xl text-blue-400"></i>
+                <span class="text-xs font-bold text-white uppercase tracking-wider">DOCX Support</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 opacity-70">
+                <i class="bi bi-file-earmark-ppt-fill text-3xl text-orange-400"></i>
+                <span class="text-xs font-bold text-white uppercase tracking-wider">PPTX Prints</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 opacity-70">
+                <i class="bi bi-image-fill text-3xl text-green-400"></i>
+                <span class="text-xs font-bold text-white uppercase tracking-wider">Images (JPG/PNG)</span>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

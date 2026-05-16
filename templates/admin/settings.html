@@ -1,314 +1,66 @@
 {% extends "admin_base.html" %}
-{% block title %}Settings — PrintEase Admin{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Settings</li>{% endblock %}
+{% block title %}Settings | PrintEase Admin{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div><h2 class="fw-bold mb-0">System Settings</h2><p class="text-muted small mb-0">Configure your business and platform preferences.</p></div>
-  <button class="btn btn-gradient" onclick="saveSettings()"><i class="bi bi-save me-1"></i>Save All Changes</button>
+<div class="max-w-3xl mx-auto animate-fade-in">
+    <p class="text-neutral-500 mb-8">Update business details used across the site and receipts.</p>
+
+    <form method="post" class="premium-card rounded-2xl p-8 space-y-6">
+        {% csrf_token %}
+
+        <section>
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-building text-brand-400"></i> Business profile
+            </h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Business name</label>
+                    <input type="text" name="business_name" value="{{ site.business_name }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Phone</label>
+                    <input type="text" name="business_phone" value="{{ site.business_phone }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Email</label>
+                    <input type="email" name="business_email" value="{{ site.business_email }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Address</label>
+                    <input type="text" name="business_address" value="{{ site.business_address }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Business hours</label>
+                    <input type="text" name="business_hours" value="{{ site.business_hours }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+            </div>
+        </section>
+
+        <section class="border-t border-white/5 pt-6">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-sliders text-brand-400"></i> Order settings
+            </h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Urgent surcharge (%)</label>
+                    <input type="number" name="urgent_surcharge_percent" min="0" max="200" value="{{ site.urgent_surcharge_percent }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Auto-delete files (days)</label>
+                    <input type="number" name="auto_delete_files_days" min="1" max="365" value="{{ site.auto_delete_files_days }}"
+                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+                </div>
+            </div>
+        </section>
+
+        <button type="submit" class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 transition-all flex items-center justify-center gap-2">
+            <i class="bi bi-save"></i> Save settings
+        </button>
+    </form>
 </div>
-<div class="row g-4">
-  <!-- Sidebar Nav -->
-  <div class="col-md-3">
-    <div class="card border-0 shadow-sm p-2" style="position:sticky;top:80px">
-      <a href="#business" class="nav-link active mb-1"><i class="bi bi-building me-2"></i>Business Profile</a>
-      <a href="#offline" class="nav-link mb-1"><i class="bi bi-shop me-2"></i>Offline / Receipt</a>
-      <a href="#orders" class="nav-link mb-1"><i class="bi bi-cart me-2"></i>Order Settings</a>
-      <a href="#security" class="nav-link mb-1"><i class="bi bi-shield-lock me-2"></i>Security</a>
-      <a href="#notifications" class="nav-link mb-1"><i class="bi bi-bell me-2"></i>Notifications</a>
-      <a href="#appearance" class="nav-link mb-1"><i class="bi bi-palette me-2"></i>Appearance</a>
-      <a href="#storage" class="nav-link mb-1"><i class="bi bi-hdd me-2"></i>Storage & Files</a>
-    </div>
-  </div>
-  <!-- Content -->
-  <div class="col-md-9">
-    <!-- Business Profile -->
-    <div class="card border-0 shadow-sm mb-4" id="business">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-building me-2 text-primary"></i>Business Profile</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="row g-3">
-          <div class="col-md-6"><label class="form-label">Business Name</label><input type="text" class="form-control" value="PrintEase"></div>
-          <div class="col-md-6"><label class="form-label">Tagline</label><input type="text" class="form-control" value="Your Campus Print Partner"></div>
-          <div class="col-md-6"><label class="form-label">Contact Email</label><input type="email" class="form-control" value="gbtarif37@gmail.com"></div>
-          <div class="col-md-6"><label class="form-label">Support Phone</label><input type="text" class="form-control" value="+8801700000000"></div>
-          <div class="col-12"><label class="form-label">Address</label><input type="text" class="form-control" value="Gono Bishwabidyalay Campus Print Shop"></div>
-          <div class="col-md-6"><label class="form-label">Business Hours</label><input type="text" class="form-control" value="Sat–Thu, 9:00 AM – 6:00 PM"></div>
-          <div class="col-md-6"><label class="form-label">Currency Symbol</label><input type="text" class="form-control" value="৳"></div>
-          <div class="col-md-6">
-            <label class="form-label">Online Order Prefix</label>
-            <input type="text" class="form-control" value="PE-ON">
-            <small class="text-muted">Results in: PE-ON-YYYYMMDD-XXXX</small>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Offline Order Prefix</label>
-            <input type="text" class="form-control" value="PE-OFF">
-            <small class="text-muted">Results in: PE-OFF-YYYYMMDD-XXXX</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Offline / Receipt -->
-    <div class="card border-0 shadow-sm mb-4" id="offline">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-shop me-2 text-warning"></i>Offline & Receipt Settings</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Receipt Printer Width</label>
-            <select class="form-select">
-              <option selected>80mm (Standard Thermal)</option>
-              <option>58mm (Narrow Thermal)</option>
-              <option>A4 (Full Page)</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Receipt Footer Text</label>
-            <input type="text" class="form-control" value="Thank you! Come again.">
-          </div>
-          <div class="col-12">
-            <label class="form-label mb-2">Accepted Payment Methods</label>
-            <div class="d-flex gap-3 flex-wrap">
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="pmCash" checked><label class="form-check-label" for="pmCash">Cash</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="pmBkash" checked><label class="form-check-label" for="pmBkash">bKash</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="pmNagad" checked><label class="form-check-label" for="pmNagad">Nagad</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="pmRocket" checked><label class="form-check-label" for="pmRocket">Rocket</label></div>
-              <div class="form-check"><input class="form-check-input" type="checkbox" id="pmBank"><label class="form-check-label" for="pmBank">Bank Transfer</label></div>
-            </div>
-          </div>
-          <div class="col-12">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="autoPrintReceipt" checked>
-              <label class="form-check-label" for="autoPrintReceipt">Auto-print receipt when walk-in order is created</label>
-            </div>
-          </div>
-          <div class="col-12">
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="partialPayEnabled" checked>
-              <label class="form-check-label" for="partialPayEnabled">Allow partial payments for offline orders</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Order Settings -->
-    <div class="card border-0 shadow-sm mb-4" id="orders">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-cart me-2 text-info"></i>Order Settings</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="row g-3">
-          <div class="col-md-6"><label class="form-label">Max File Size (MB)</label><input type="number" class="form-control" value="50"></div>
-          <div class="col-md-6"><label class="form-label">Auto-delete Files After (Days)</label><input type="number" class="form-control" value="7"></div>
-          <div class="col-md-6"><label class="form-label">Default Delivery Location</label><input type="text" class="form-control" value="Campus Print Shop Counter"></div>
-          <div class="col-md-6"><label class="form-label">Auto-cancel Pending Orders After (Days)</label><input type="number" class="form-control" value="7"></div>
-          <div class="col-12">
-            <label class="form-label">Allowed File Types</label>
-            <input type="text" class="form-control" value=".pdf, .doc, .docx, .ppt, .pptx, .jpg, .jpeg, .png">
-          </div>
-          <div class="col-12">
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="autoEmailReady" checked>
-              <label class="form-check-label" for="autoEmailReady">Auto-email customer when order is ready</label>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="requireReason" checked>
-              <label class="form-check-label" for="requireReason">Require reason for manual price override</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Security -->
-    <div class="card border-0 shadow-sm mb-4" id="security">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-shield-lock me-2 text-danger"></i>Security Settings</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="row g-3">
-          <div class="col-md-6"><label class="form-label">Max Login Attempts</label><input type="number" class="form-control" value="5"></div>
-          <div class="col-md-6"><label class="form-label">Lockout Duration (minutes)</label><input type="number" class="form-control" value="15"></div>
-          <div class="col-md-6"><label class="form-label">Session Timeout (minutes)</label><input type="number" class="form-control" value="30"></div>
-          <div class="col-md-6"><label class="form-label">Password Change Every (days)</label><input type="number" class="form-control" value="90"></div>
-          <div class="col-12"><label class="form-label">Admin IP Whitelist (comma-separated, leave empty to disable)</label><input type="text" class="form-control" placeholder="e.g. 192.168.1.1, 10.0.0.1"></div>
-          <div class="col-12">
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="enable2fa">
-              <label class="form-check-label" for="enable2fa">Enable 2FA (TOTP) for admin accounts</label>
-            </div>
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="auditEnabled" checked>
-              <label class="form-check-label" for="auditEnabled">Enable audit logging for all admin actions</label>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="httpsOnly" checked>
-              <label class="form-check-label" for="httpsOnly">Force HTTPS redirect</label>
-            </div>
-          </div>
-          <div class="col-12">
-            <div class="p-3 rounded" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)">
-              <div class="fw-semibold mb-1" style="color:var(--danger);font-size:.85rem"><i class="bi bi-shield-exclamation me-1"></i>Critical Actions</div>
-              <div class="d-flex gap-2 flex-wrap mt-2">
-                <button class="btn btn-sm btn-ghost" style="border-color:var(--danger);color:var(--danger)">Invalidate All Sessions</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:var(--warning);color:var(--warning)">Reset Rate Limits</button>
-                <button class="btn btn-sm btn-ghost" style="border-color:var(--info);color:var(--info)">View Active Sessions</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notifications -->
-    <div class="card border-0 shadow-sm mb-4" id="notifications">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-bell me-2 text-success"></i>Notification Settings</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="table-responsive">
-          <table class="table table-sm mb-0">
-            <thead><tr><th>Event</th><th class="text-center">Admin</th><th class="text-center">Email</th><th class="text-center">SMS</th></tr></thead>
-            <tbody>
-              <tr>
-                <td style="font-size:.85rem">New Order</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">Order Ready</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">Low Stock</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">Order Cancelled</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">New Registration</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">Order Aging (7d)</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input" checked></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">Daily Summary</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-              </tr>
-              <tr>
-                <td style="font-size:.85rem">Revenue Target</td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-                <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-3 row g-3">
-          <div class="col-md-6"><label class="form-label">DND Start</label><input type="time" class="form-control" value="22:00"></div>
-          <div class="col-md-6"><label class="form-label">DND End</label><input type="time" class="form-control" value="08:00"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Appearance -->
-    <div class="card border-0 shadow-sm mb-4" id="appearance">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-palette me-2" style="color:#8b5cf6"></i>Appearance</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Default Theme</label>
-            <select class="form-select" data-theme-toggle onchange="ThemeManager.apply(this.value)">
-              <option value="dark" selected>Dark</option>
-              <option value="light">Light</option>
-              <option value="system">System Preference</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Accent Color</label>
-            <div class="d-flex gap-2 align-items-center">
-              <div class="d-flex gap-1">
-                <div style="width:28px;height:28px;background:#6366f1;border-radius:50%;cursor:pointer;border:2px solid transparent" onclick="this.style.border='2px solid var(--text)';document.querySelectorAll('[onclick*=onclick]').forEach(e=>e!==this&&(e.style.border='2px solid transparent'))"></div>
-                <div style="width:28px;height:28px;background:#8b5cf6;border-radius:50%;cursor:pointer;border:2px solid transparent" onclick="this.style.border='2px solid var(--text)';document.querySelectorAll('[onclick*=onclick]').forEach(e=>e!==this&&(e.style.border='2px solid transparent'))"></div>
-                <div style="width:28px;height:28px;background:#06b6d4;border-radius:50%;cursor:pointer;border:2px solid transparent" onclick="this.style.border='2px solid var(--text)';document.querySelectorAll('[onclick*=onclick]').forEach(e=>e!==this&&(e.style.border='2px solid transparent'))"></div>
-                <div style="width:28px;height:28px;background:#10b981;border-radius:50%;cursor:pointer;border:2px solid transparent" onclick="this.style.border='2px solid var(--text)';document.querySelectorAll('[onclick*=onclick]').forEach(e=>e!==this&&(e.style.border='2px solid transparent'))"></div>
-                <div style="width:28px;height:28px;background:#f59e0b;border-radius:50%;cursor:pointer;border:2px solid transparent" onclick="this.style.border='2px solid var(--text)';document.querySelectorAll('[onclick*=onclick]').forEach(e=>e!==this&&(e.style.border='2px solid transparent'))"></div>
-                <div style="width:28px;height:28px;background:#ef4444;border-radius:50%;cursor:pointer;border:2px solid transparent" onclick="this.style.border='2px solid var(--text)';document.querySelectorAll('[onclick*=onclick]').forEach(e=>e!==this&&(e.style.border='2px solid transparent'))"></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Sidebar Mode</label>
-            <select class="form-select">
-              <option>Expanded (Default)</option>
-              <option>Collapsed</option>
-              <option>Auto-collapse on mobile</option>
-            </select>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Table Density</label>
-            <select class="form-select">
-              <option>Comfortable (Default)</option>
-              <option>Compact</option>
-              <option>Spacious</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Storage -->
-    <div class="card border-0 shadow-sm mb-4" id="storage">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0"><i class="bi bi-hdd me-2 text-secondary"></i>Storage & File Management</h6></div>
-      <div class="card-body px-4 pb-4">
-        <div class="mb-3">
-          <div class="d-flex justify-content-between mb-1"><span class="text-muted small">Storage Used</span><span class="fw-semibold small">2.4 GB / 10 GB</span></div>
-          <div class="stock-bar"><div class="stock-bar-fill medium" style="width:24%"></div></div>
-        </div>
-        <div class="row g-3">
-          <div class="col-md-6"><label class="form-label">Auto-delete After Delivery (days)</label><input type="number" class="form-control" value="7"></div>
-          <div class="col-md-6"><label class="form-label">Storage Alert Threshold (GB)</label><input type="number" class="form-control" value="8"></div>
-          <div class="col-12">
-            <div class="form-check form-switch mb-2">
-              <input class="form-check-input" type="checkbox" id="autoCleanup" checked>
-              <label class="form-check-label" for="autoCleanup">Enable automatic file cleanup</label>
-            </div>
-          </div>
-          <div class="col-12">
-            <button class="btn btn-ghost btn-sm me-2"><i class="bi bi-broom me-1"></i>Run Manual Cleanup Now</button>
-            <button class="btn btn-ghost btn-sm"><i class="bi bi-clock-history me-1"></i>View Cleanup History</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-{% endblock %}
-{% block scripts %}
-<script>
-function saveSettings() {
-  Toast.show('Settings saved successfully!','success');
-}
-// Smooth scroll for sidebar nav
-document.querySelectorAll('.col-md-3 .nav-link').forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelectorAll('.col-md-3 .nav-link').forEach(l => l.classList.remove('active'));
-    link.classList.add('active');
-    const target = document.querySelector(link.getAttribute('href'));
-    if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
-  });
-});
-</script>
 {% endblock %}

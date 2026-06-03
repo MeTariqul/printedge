@@ -122,16 +122,17 @@
     display: block;
   }
   
-  /* Touch Targets */
-  .mobile-btn,
-  .mobile-link,
-  button,
-  a.btn,
-  input[type="submit"] {
-    min-height: 44px;
-    min-width: 44px;
-    transition: transform 0.1s ease;
-  }
+/* Touch Targets */
+.mobile-btn,
+.mobile-link,
+button,
+a.btn,
+input[type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+  transition: transform 0.1s ease;
+  touch-action: manipulation;
+}
   
   .mobile-btn:active,
   .mobile-link:active,

@@ -216,6 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     fixDropdownParents();
+    
+    // Ensure select elements don't trap focus after selection
+    document.addEventListener('change', (e) => {
+        if (e.target.tagName === 'SELECT') {
+            setTimeout(() => e.target.blur(), 0);
+        }
+    });
 });
 </script>
 

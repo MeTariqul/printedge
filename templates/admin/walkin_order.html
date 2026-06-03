@@ -17,21 +17,21 @@
         <div class="xl:col-span-2 space-y-6">
             <div class="card p-6">
                 <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="bi bi-person-fill text-primary"></i> Customer</h3>
-                <div class="relative mb-4" x-ref="searchContainer" @click.outside="open = false" @keydown.escape="open = false">
-                    <label class="form-label">Customer Name or Phone</label>
-                    <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomer(); open = searchResults.length > 0" @focus="open = searchResults.length > 0" @click="open = searchResults.length > 0" placeholder="Start typing to search or enter new customer…" class="form-input mb-1" autocomplete="off">
-                    <template x-if="open && searchResults.length">
-                        <div class="absolute z-10 w-full mt-1 rounded-lg border border-surface-border bg-surface shadow-lg max-h-60 overflow-y-auto">
-                            <template x-for="c in searchResults" :key="c.id">
-                                <button type="button" @click="selectCustomer(c); open = false" class="w-full text-left px-4 py-3 hover:bg-surface/50 border-b border-surface-border last:border-0 min-h-[44px]">
-                                    <span class="font-semibold" x-text="c.name"></span>
-                                    <span class="text-text-muted text-sm ml-2" x-text="c.phone"></span>
-                                    <span class="text-text-muted text-xs block" x-text="c.orders_count + ' orders'"></span>
-                                </button>
-                            </template>
-                        </div>
-                    </template>
-                </div>
+<div class="relative mb-4" x-ref="searchContainer" @click.outside="open = false" @keydown.escape="open = false">
+                     <label class="form-label">Customer Name or Phone</label>
+                     <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomer(); open = searchResults.length > 0" @focus="open = searchResults.length > 0" @click="open = searchResults.length > 0" placeholder="Start typing to search or enter new customer…" class="form-input mb-1" autocomplete="off">
+                     <template x-if="open && searchResults.length">
+                         <div class="absolute z-10 w-full mt-1 rounded-lg border border-surface-border bg-surface shadow-lg max-h-60 overflow-y-auto" @click="document.activeElement.blur()">
+                             <template x-for="c in searchResults" :key="c.id">
+                                 <button type="button" @click="selectCustomer(c); open = false" class="w-full text-left px-4 py-3 hover:bg-surface/50 border-b border-surface-border last:border-0 min-h-[44px]">
+                                     <span class="font-semibold" x-text="c.name"></span>
+                                     <span class="text-text-muted text-sm ml-2" x-text="c.phone"></span>
+                                     <span class="text-text-muted text-xs block" x-text="c.orders_count + ' orders'"></span>
+                                 </button>
+                             </template>
+                         </div>
+                     </template>
+                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">Name <span class="text-red-500">*</span></label>

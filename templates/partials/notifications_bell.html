@@ -113,16 +113,25 @@
     
     bell.addEventListener('click', (e) => {
         e.stopPropagation();
+        const wasHidden = dropdown.classList.contains('hidden');
         dropdown.classList.toggle('hidden');
         bell.setAttribute('aria-expanded', !dropdown.classList.contains('hidden'));
         if (!dropdown.classList.contains('hidden')) {
             fetchNotifications();
         }
+        if (wasHidden) {
+            setTimeout(() => {
+                if (document.activeElement === bell) bell.blur();
+            }, 0);
+        }
     });
     
-    document.addEventListener('click', () => {
-        dropdown.classList.add('hidden');
-        bell.setAttribute('aria-expanded', 'false');
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
+            dropdown.classList.add('hidden');
+            bell.setAttribute('aria-expanded', 'false');
+            if (document.activeElement === bell) bell.blur();
+        }
     });
     
     dropdown.addEventListener('click', (e) => e.stopPropagation());

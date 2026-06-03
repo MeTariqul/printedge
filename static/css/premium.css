@@ -527,6 +527,20 @@ td.font-bold.text-sm, td.font-medium, td.text-sm {
   box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
 
+/* Prevent double-tap zoom and hover interference on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+}
+
+/* Ensure hover styles don't interfere with active state on touch devices */
+@media (hover: hover) {
+  button:hover, a:hover {
+    cursor: pointer;
+  }
+}
+
 /* Skip link */
 .skip-link {
   position: absolute;

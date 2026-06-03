@@ -137,6 +137,27 @@
   }
 }
 
+/* Active/pressed state feedback - immediate tactile response */
+.btn:active {
+  transform: scale(0.97);
+  transition: transform 50ms ease-out;
+}
+.btn-secondary:active {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+}
+
+/* Mobile touch device overrides - no hover interference */
+@media (hover: none) and (pointer: coarse) {
+  /* Disable all hover-triggered styles on touch devices */
+  [class*="hover:"] {
+    transition: none !important;
+  }
+  /* Remove tap highlight flash */
+  button, .btn, input, select, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* Responsive tables: card layout on mobile */
 @media (max-width: 767px) {
   .responsive-table thead {

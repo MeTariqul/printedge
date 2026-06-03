@@ -10,6 +10,22 @@
   }
 }
 
+/* Remove tap highlight flash on mobile */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Optimize button response - active state for immediate feedback */
+button:active,
+.btn-primary:active,
+.btn-cta:active,
+.btn-secondary:active {
+  transform: scale(0.97);
+  transition: transform 50ms ease-out;
+}
+
 /* Override Tailwind hover classes for touch devices - prevents double-tap issue */
 @media (hover: none) {
   [class*="hover:"] {

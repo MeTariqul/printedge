@@ -110,7 +110,7 @@ body {
 }
 
 /* Form inputs */
-.form-input, .form-select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea, select {
+.form-input, .form-select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"], input[type="date"], textarea, select {
   background: var(--color-surface-input);
   color: var(--color-text-primary);
   border: 1px solid var(--color-surface-border);
@@ -120,6 +120,19 @@ body {
   min-height: 44px;
   transition: all 200ms ease-in-out;
   width: 100%;
+}
+
+/* Date input specific styling - override browser defaults */
+input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(85%) sepia(15%) saturate(1000%) hue-rotate(165deg) brightness(1.1);
+  cursor: pointer;
 }
 
 .form-input:focus, .form-select:focus, input:focus, textarea:focus, select:focus {

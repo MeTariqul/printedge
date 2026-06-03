@@ -4,15 +4,15 @@ Usage: {% include "mobile/card.html" with title="Title" value="৳100" status="p
 {% endcomment %}
 {% load static %}
 
-<div class="mobile-card {% if status %}border-l-4{% endif %} {% if status == 'delivered' or status == 'ready' %}border-l-emerald-500{% elif status == 'printing' %}border-l-brand-500{% elif status == 'cancelled' %}border-l-red-500{% else %}border-l-amber-500{% endif %}">
+<div class="mobile-card {% if status %}border-l-4{% endif %} {% if status == 'delivered' or status == 'ready' %}border-l-success{% elif status == 'printing' %}border-l-primary{% elif status == 'cancelled' %}border-l-danger{% else %}border-l-warning{% endif %}">
     <div class="flex justify-between items-start mb-3">
         <div>
-            <h3 class="text-lg font-bold text-white">{{ title|default:'' }}</h3>
-            {% if subtitle %}<p class="text-sm text-neutral-500">{{ subtitle }}</p>{% endif %}
+            <h3 class="text-lg font-bold text-text-primary">{{ title|default:'' }}</h3>
+            {% if subtitle %}<p class="text-sm text-text-muted">{{ subtitle }}</p>{% endif %}
         </div>
-        {% if value %}<div class="text-xl font-bold text-brand-400">{{ value }}</div>{% endif %}
+        {% if value %}<div class="text-xl font-bold text-primary">{{ value }}</div>{% endif %}
     </div>
-    {% if description %}<p class="text-sm text-neutral-400 mb-3">{{ description }}</p>{% endif %}
+    {% if description %}<p class="text-sm text-text-secondary mb-3">{{ description }}</p>{% endif %}
     {% if actions %}
     <div class="flex gap-2 mt-3">{% for action in actions %}{{ action|safe }}{% endfor %}</div>
     {% endif %}

@@ -1,7 +1,7 @@
 {% load static %}
 {% comment %}Mobile Bottom Navigation Bar - included in base.html{% endcomment %}
 <nav class="mobile-bottom-nav">
-    <div class="flex justify-around h-16 items-center max-w-lg mx-auto">
+    <div class="flex justify-start h-16 items-center px-4 space-x-6 overflow-x-auto">
         <a href="{% url 'public_index' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'public_index' or request.resolver_match.url_name == 'user_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
             <i class="bi bi-house-door-fill nav-icon"></i>Home
         </a>

@@ -41,10 +41,10 @@
 <div class="desktop-only grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6 mb-10">
     <!-- Orders Today -->
     <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
-        <p class="text-text-muted text-[10px] font-bold uppercase tracking-widest mb-2">Orders Today</p>
-        <p class="text-4xl font-bold text-text mb-2" data-counter="{{ today_orders_count }}">0</p>
-        <div class="flex items-center gap-1.5 text-xs font-bold {% if revenue_change >= 0 %}text-emerald-400{% else %}text-red-400{% endif %} relative z-10">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-info-bg rounded-full blur-2xl group-hover:bg-info-border transition-colors"></div>
+        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2">Orders Today</p>
+        <p class="text-4xl font-bold text-text-primary mb-2" data-counter="{{ today_orders_count }}">0</p>
+        <div class="flex items-center gap-1.5 text-xs font-bold {% if revenue_change >= 0 %}text-success-text{% else %}text-danger-text{% endif %} relative z-10">
             <i class="bi bi-arrow-{% if revenue_change >= 0 %}up{% else %}down{% endif %}-right"></i>
             {{ revenue_change }}% vs yesterday
         </div>
@@ -52,9 +52,9 @@
 
     <!-- Revenue -->
     <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-500/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition-colors"></div>
-        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Revenue Today</p>
-        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10"><span class="text-xl text-neutral-500 mr-1">৳</span><span data-counter="{{ today_revenue|floatformat:0 }}">0</span></p>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-400/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition-colors"></div>
+        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Revenue Today</p>
+        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10"><span class="text-xl text-text-secondary mr-1">৳</span><span data-counter="{{ today_revenue|floatformat:0 }}">0</span></p>
         <div class="flex items-center gap-1.5 text-xs font-bold text-brand-400 relative z-10">
             <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span> Live updating
         </div>
@@ -62,38 +62,38 @@
 
     <!-- Pending -->
     <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-colors"></div>
-        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pending</p>
-        <p class="text-4xl font-display font-bold {% if pending_count > 10 %}text-amber-400{% else %}text-white{% endif %} mb-2 relative z-10">{{ pending_count }}</p>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-warning-bg rounded-full blur-2xl group-hover:bg-warning-border transition-colors"></div>
+        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pending</p>
+        <p class="text-4xl font-display font-bold {% if pending_count > 10 %}text-warning-text{% else %}text-text-primary{% endif %} mb-2 relative z-10">{{ pending_count }}</p>
         {% if pending_count > 0 %}
-        <a href="{% url 'admin_orders' %}?status=pending" class="text-xs font-bold text-amber-500 hover:text-amber-400 relative z-10 transition-colors">View Queue →</a>
+        <a href="{% url 'admin_orders' %}?status=pending" class="text-xs font-bold text-warning-text hover:text-warning-text transition-colors">View Queue →</a>
         {% else %}
-        <p class="text-xs font-bold text-neutral-600 relative z-10">All caught up!</p>
+        <p class="text-xs font-bold text-text-muted relative z-10">All caught up!</p>
         {% endif %}
     </div>
 
     <!-- Customers -->
     <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-colors"></div>
-        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Customers</p>
-        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ active_customers }}</p>
-        <p class="text-xs font-bold text-neutral-500 relative z-10">Active today</p>
+        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Customers</p>
+        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10">{{ active_customers }}</p>
+        <p class="text-xs font-bold text-text-muted relative z-10">Active today</p>
     </div>
 
     <!-- Pages -->
     <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors"></div>
-        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pages Printed</p>
-        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ pages_today }}</p>
-        <p class="text-xs font-bold text-neutral-500 relative z-10">Today total</p>
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-success-bg rounded-full blur-2xl group-hover:bg-success-border transition-colors"></div>
+        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pages Printed</p>
+        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10">{{ pages_today }}</p>
+        <p class="text-xs font-bold text-text-muted relative z-10">Today total</p>
     </div>
 
     <!-- Avg Value -->
     <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
         <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-colors"></div>
-        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Avg Value</p>
-        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10"><span class="text-xl text-neutral-500 mr-1">৳</span>{{ avg_order_value|floatformat:0 }}</p>
-        <p class="text-xs font-bold text-neutral-500 relative z-10">Per order</p>
+        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Avg Value</p>
+        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10"><span class="text-xl text-text-secondary mr-1">৳</span>{{ avg_order_value|floatformat:0 }}</p>
+        <p class="text-xs font-bold text-text-muted relative z-10">Per order</p>
     </div>
 </div>
 
@@ -103,12 +103,12 @@
     <div class="xl:col-span-2 premium-card p-6 md:p-8 rounded-3xl relative">
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h3 class="text-xl font-bold text-white">Revenue Trend</h3>
-                <p class="text-sm text-neutral-500 font-medium mt-1">Last {{ chart_range }} days</p>
+                <h3 class="text-xl font-bold text-text-primary">Revenue Trend</h3>
+                <p class="text-sm text-text-muted font-medium mt-1">Last {{ chart_range }} days</p>
             </div>
             <div class="flex gap-2">
-                <a href="?range=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range != '30' %}bg-accent text-white{% else %}bg-white/5 text-neutral-400{% endif %}">7d</a>
-                <a href="?range=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range == '30' %}bg-accent text-white{% else %}bg-white/5 text-neutral-400{% endif %}">30d</a>
+                <a href="?range=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range != '30' %}bg-primary text-canvas-dark{% else %}bg-surface text-text-muted{% endif %}">7d</a>
+                <a href="?range=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range == '30' %}bg-primary text-canvas-dark{% else %}bg-surface text-text-muted{% endif %}">30d</a>
             </div>
         </div>
         <canvas id="revenueChart" height="120"></canvas>
@@ -118,38 +118,42 @@
     <div class="premium-card p-6 md:p-8 rounded-3xl relative">
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h3 class="text-xl font-bold text-white">Status</h3>
-                <p class="text-sm text-neutral-500 font-medium mt-1">Current distribution</p>
+                <h3 class="text-xl font-bold text-text-primary">Status</h3>
+                <p class="text-sm text-text-muted font-medium mt-1">Current distribution</p>
             </div>
-            <div class="p-2 rounded-lg bg-white/5 border border-white/10">
-                <i class="bi bi-pie-chart-fill text-purple-400"></i>
+            <div class="p-2 rounded-lg bg-surface border border-surface-border">
+                <i class="bi bi-pie-chart-fill text-info-text"></i>
             </div>
         </div>
         <canvas id="statusChart" height="200"></canvas>
     </div>
     <div class="premium-card p-6 md:p-8 rounded-3xl xl:col-span-3">
-        <h3 class="text-xl font-bold text-white mb-4">Orders per hour (today)</h3>
+        <h3 class="text-xl font-bold text-text-primary mb-4">Orders per hour (today)</h3>
         <canvas id="hourChart" height="80"></canvas>
     </div>
 </div>
 
 <div class="premium-card p-4 rounded-lg mb-6 flex items-center justify-between" id="systemStatusWidget">
-    <span class="text-sm text-neutral-400"><i class="bi bi-hdd-network"></i> System status</span>
-    <span class="text-sm font-bold text-white" id="systemStatusText">Loading…</span>
+    <span class="text-sm text-text-muted"><i class="bi bi-hdd-network"></i> System status</span>
+    <span class="text-sm font-bold text-text-primary" id="systemStatusText">Loading…</span>
 </div>
 
 <!-- Recent Orders + Actions -->
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <!-- Recent Orders (2 cols) -->
     <div class="xl:col-span-2 premium-card rounded-3xl overflow-hidden relative">
-        <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-            <h3 class="text-xl font-bold text-white">Recent Orders</h3>
-            <a href="{% url 'admin_orders' %}" class="text-sm font-bold text-brand-400 hover:text-brand-300 transition-colors">View All →</a>
+        <div class="p-6 md:p-8 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between bg-surface gap-4">
+            <h3 class="text-xl font-bold text-text-primary">Recent Orders</h3>
+            <a href="{% url 'admin_orders' %}" class="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-dark transition-colors min-h-[44px]">
+                View All <i class="bi bi-arrow-right text-xs"></i>
+            </a>
         </div>
-        <div class="table-scroll">
-            <table class="w-full text-left border-collapse min-w-[640px]">
+        
+        <!-- Desktop Table View -->
+        <div class="hidden md:block table-scroll">
+            <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-black/40 text-neutral-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
+                    <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-widest font-bold border-b border-surface-border">
                         <th class="p-4 pl-6 md:pl-8">Order ID</th>
                         <th class="p-4">Customer</th>
                         <th class="p-4">Amount</th>
@@ -157,59 +161,104 @@
                         <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-white/5">
+                <tbody class="divide-y divide-surface-border">
                     {% for o in recent_orders %}
-                    <tr class="hover:bg-white/[0.02] transition-colors group">
-                        <td class="p-4 pl-6 md:pl-8">
-                            <div class="font-display font-bold text-white text-sm">{{ o.order_number }}</div>
+                    <tr class="hover:bg-surface transition-colors group">
+                        <td class="p-4 pl-6 md:pl-8" data-label="Order">
+                            <div class="font-display font-bold text-text-primary text-sm">{{ o.order_number }}</div>
                             <div class="text-[10px] font-bold tracking-widest mt-1">
-                                {% if o.source == 'offline' %}<span class="text-purple-400">Walk-in</span>{% else %}<span class="text-blue-400">Online</span>{% endif %}
+                                {% if o.source == 'offline' %}<span class="text-info-text">Walk-in</span>{% else %}<span class="text-primary">Online</span>{% endif %}
                             </div>
                         </td>
-                        <td class="p-4">
-                            <div class="text-sm text-white font-bold">{{ o.customer_name }}</div>
-                            <div class="text-[10px] text-neutral-500 font-medium">{{ o.customer_phone }}</div>
+                        <td class="p-4" data-label="Customer">
+                            <div class="text-sm text-text-primary font-bold">{{ o.customer_name }}</div>
+                            <div class="text-[10px] text-text-muted font-medium">{{ o.customer_phone }}</div>
                         </td>
-                        <td class="p-4 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
-                        <td class="p-4">
+                        <td class="p-4 font-bold text-text-primary text-sm" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
+                        <td class="p-4" data-label="Status">
                             <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border
-                                {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
-                                {% elif o.status == 'printing' %}bg-blue-500/10 text-blue-400 border-blue-500/20
-                                {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
-                                {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
+                                {% elif o.status == 'printing' %}status-printing
+                                {% elif o.status == 'cancelled' %}status-cancelled
+                                {% else %}status-pending{% endif %}">
                                 {{ o.get_status_display }}
                             </span>
                         </td>
-                        <td class="p-4 pr-6 md:pr-8 text-right">
-                            <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:bg-brand-500 hover:text-white transition-all shadow-sm">
-                                <i class="bi bi-chevron-right text-xs"></i>
+                        <td class="p-4 pr-6 md:pr-8 text-right" data-label="">
+                            <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-surface text-text-muted hover:bg-primary hover:text-canvas-dark transition-all shadow-sm" aria-label="View order">
+                                <i class="bi bi-eye text-sm"></i>
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="p-12 text-center text-neutral-500 font-medium">No orders yet. Create a walk-in order to get started!</td>
+                        <td colspan="5" class="p-12 text-center text-text-muted font-medium">No orders yet. Create a walk-in order to get started!</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="md:hidden divide-y divide-surface-border">
+            {% for o in recent_orders %}
+            <div class="p-5 hover:bg-surface transition-colors">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <div class="font-display font-bold text-text-primary text-sm">{{ o.order_number }}</div>
+                        <div class="text-[10px] font-bold {% if o.source == 'offline' %}text-info-text{% else %}text-primary{% endif %} uppercase">
+                            {{ o.get_source_display }}
+                        </div>
+                    </div>
+                    <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
+                        {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
+                        {% elif o.status == 'printing' %}status-printing
+                        {% elif o.status == 'cancelled' %}status-cancelled
+                        {% else %}status-pending{% endif %}">
+                        {{ o.get_status_display }}
+                    </span>
+                </div>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Customer</span>
+                        <span class="text-text-primary font-medium">{{ o.customer_name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Amount</span>
+                        <span class="text-text-primary font-bold">৳{{ o.total_amount|floatformat:0 }}</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-surface-border">
+                    <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:text-primary-dark transition-colors min-h-[44px]">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center">
+                <div class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+                    <i class="bi bi-receipt text-2xl text-text-muted"></i>
+                </div>
+                <p class="text-text-muted font-medium">No orders yet. Create a walk-in order to get started!</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
 
     <!-- Right Column: Quick Actions -->
     <div class="space-y-6">
         {% if low_stock_count %}
-        <div class="premium-card p-6 rounded-3xl border-l-4 border-l-amber-500 relative overflow-hidden">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl"></div>
+        <div class="premium-card p-6 rounded-3xl border-l-4 border-l-warning" style="border-color: var(--color-warning-text);">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-warning-bg rounded-full blur-2xl"></div>
             <div class="flex items-center gap-4 relative z-10">
-                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-exclamation-triangle-fill text-amber-500 text-xl"></i>
+                <div class="w-12 h-12 rounded-2xl bg-warning-bg border border-warning-border flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-exclamation-triangle-fill" style="color: var(--color-warning-text);"></i>
                 </div>
                 <div class="flex-1">
-                    <h4 class="text-base font-bold text-white mb-1">{{ low_stock_count }} Low Stock Alert{{ low_stock_count|pluralize }}</h4>
-                    <p class="text-xs font-medium text-neutral-500">Inventory requires attention</p>
+                    <h4 class="text-base font-bold text-text-primary mb-1">{{ low_stock_count }} Low Stock Alert{{ low_stock_count|pluralize }}</h4>
+                    <p class="text-xs font-medium text-text-muted">Inventory requires attention</p>
                 </div>
-                <a href="{% url 'admin_inventory' %}" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-amber-400 hover:bg-white/10 transition-colors">
+                <a href="{% url 'admin_inventory' %}" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface" style="color: var(--color-warning-text);">
                     <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
@@ -218,23 +267,23 @@
 
         <!-- Quick Actions -->
         <div class="premium-card p-6 md:p-8 rounded-3xl relative">
-            <h4 class="text-lg font-bold text-white mb-6">Quick Actions</h4>
+            <h4 class="text-lg font-bold text-text-primary mb-6">Quick Actions</h4>
             <div class="grid grid-cols-2 gap-4">
-                <a href="{% url 'admin_walkin_order' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/30 hover:bg-brand-500/10 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-plus-lg text-xl text-brand-400"></i></div>
-                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Walk-in</span>
+                <a href="{% url 'admin_walkin_order' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-plus-lg text-xl text-primary"></i></div>
+                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Walk-in</span>
                 </a>
-                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-list-task text-xl text-blue-400"></i></div>
-                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Orders</span>
+                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-info-border hover:bg-info-bg transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-list-task text-xl text-info-text"></i></div>
+                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Orders</span>
                 </a>
-                <a href="{% url 'admin_inventory' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/30 hover:bg-purple-500/10 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-box-seam text-xl text-purple-400"></i></div>
-                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Inventory</span>
+                <a href="{% url 'admin_inventory' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-purple-500/30 hover:bg-purple-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-box-seam text-xl text-purple-400"></i></div>
+                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Inventory</span>
                 </a>
-                <a href="{% url 'admin_reports' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-bar-chart text-xl text-emerald-400"></i></div>
-                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Reports</span>
+                <a href="{% url 'admin_reports' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-success-border hover:bg-success-bg transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-bar-chart text-xl text-success-text"></i></div>
+                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Reports</span>
                 </a>
             </div>
         </div>

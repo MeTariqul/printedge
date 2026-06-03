@@ -5,8 +5,8 @@
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-white mb-1">Compose Email</h1>
-        <p class="text-slate-400 text-sm">Send custom emails to users or groups</p>
+        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Compose Email</h1>
+        <p class="text-text-muted text-sm">Send custom emails to users or groups</p>
     </div>
 </div>
 
@@ -14,11 +14,11 @@
     {% csrf_token %}
     <input type="hidden" name="action" value="send">
 
-    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+    <div class="premium-card p-6 rounded-2xl">
         <div class="grid md:grid-cols-2 gap-4 mb-4">
-<div>
-                <label class="block text-xs font-bold text-neutral-300 uppercase mb-2">Recipient Type</label>
-                <select name="recipient_type" id="recipientType" onchange="toggleRecipients()" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none">
+            <div>
+                <label class="block text-xs font-bold text-text-secondary uppercase mb-2">Recipient Type</label>
+                <select name="recipient_type" id="recipientType" onchange="toggleRecipients()" class="w-full px-4 py-3 rounded-xl bg-surface-input border border-surface-border text-text-primary focus:border-primary outline-none">
                     <option value="individual">Individual Users</option>
                     <option value="all_customers">All Customers</option>
                     <option value="all_admins">All Admins</option>
@@ -27,8 +27,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-neutral-300 uppercase mb-2">Template</label>
-                <select name="template_id" id="templateSelect" onchange="loadTemplate()" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none">
+                <label class="block text-xs font-bold text-text-secondary uppercase mb-2">Template</label>
+                <select name="template_id" id="templateSelect" onchange="loadTemplate()" class="w-full px-4 py-3 rounded-xl bg-surface-input border border-surface-border text-text-primary focus:border-primary outline-none">
                     <option value="">-- Select Template --</option>
                     {% for tpl in templates %}
                     <option value="{{ tpl.id }}">{{ tpl.name }}</option>
@@ -38,25 +38,25 @@
         </div>
 
         <div id="individualRecipients" class="mb-4">
-            <label class="block text-xs font-bold text-neutral-300 uppercase mb-2">Recipients (comma-separated IDs)</label>
-            <input type="text" name="recipients" placeholder="Enter user IDs or use the list below" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none placeholder-slate-500">
-            <p class="text-xs text-slate-400 mt-1">Available users: {{ users_list|length }} customers, {{ staff_list|length }} staff</p>
+            <label class="block text-xs font-bold text-text-secondary uppercase mb-2">Recipients (comma-separated IDs)</label>
+            <input type="text" name="recipients" placeholder="Enter user IDs or use the list below" class="w-full px-4 py-3 rounded-xl bg-surface-input border border-surface-border text-text-primary focus:border-primary outline-none placeholder-text-muted">
+            <p class="text-xs text-text-muted mt-1">Available users: {{ users_list|length }} customers, {{ staff_list|length }} staff</p>
         </div>
 
         <div>
-            <label class="block text-xs font-bold text-neutral-300 uppercase mb-2">Subject *</label>
-            <input type="text" name="subject" id="subject" required class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none placeholder-slate-500">
+            <label class="block text-xs font-bold text-text-secondary uppercase mb-2">Subject *</label>
+            <input type="text" name="subject" id="subject" required class="w-full px-4 py-3 rounded-xl bg-surface-input border border-surface-border text-text-primary focus:border-primary outline-none placeholder-text-muted">
         </div>
 
         <div class="mt-4">
-            <label class="block text-xs font-bold text-neutral-300 uppercase mb-2">Body (HTML) *</label>
-            <textarea name="body" id="body" rows="12" required class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none font-mono text-sm placeholder-slate-500"></textarea>
+            <label class="block text-xs font-bold text-text-secondary uppercase mb-2">Body (HTML) *</label>
+            <textarea name="body" id="body" rows="12" required class="w-full px-4 py-3 rounded-xl bg-surface-input border border-surface-border text-text-primary focus:border-primary outline-none font-mono text-sm placeholder-text-muted"></textarea>
         </div>
     </div>
 
     <div class="flex gap-3">
-        <button type="submit" class="px-6 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors">Send Email</button>
-        <button type="submit" name="action" value="test" onclick="document.querySelector('input[name=action]').value='test'" class="px-6 py-3 rounded-xl bg-amber-500/20 text-amber-300 font-semibold hover:bg-amber-500/30 transition-colors">Send Test to Me</button>
+        <button type="submit" class="px-6 py-3 rounded-xl bg-primary text-canvas-dark font-bold hover:bg-primary-dark transition-colors">Send Email</button>
+        <button type="submit" name="action" value="test" onclick="document.querySelector('input[name=action]').value='test'" class="px-6 py-3 rounded-xl bg-warning-bg text-warning-text font-semibold hover:bg-warning-border transition-colors">Send Test to Me</button>
     </div>
 </form>
 

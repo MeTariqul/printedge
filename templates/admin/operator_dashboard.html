@@ -29,37 +29,37 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
   <div class="card p-4">
-    <h3 class="font-semibold text-amber-700 mb-3">Pending</h3>
+    <h3 class="font-semibold text-warning-text mb-3">Pending</h3>
     <div id="col-pending" class="space-y-3 min-h-[120px]">
       {% for o in columns.pending %}
-      <div class="kanban-card p-3 rounded-lg bg-amber-50 border border-amber-200 cursor-grab min-h-[44px]" data-id="{{ o.pk }}">
-        <p class="font-bold text-sm">{{ o.order_number }}</p>
+      <div class="kanban-card p-3 rounded-lg status-pending cursor-grab min-h-[44px]" data-id="{{ o.pk }}">
+        <p class="font-bold text-sm text-text-primary">{{ o.order_number }}</p>
         <p class="text-xs text-text-muted">{{ o.customer_name }}</p>
-        <p class="text-xs mt-1">{{ o.file_count }} file(s) · {{ o.total_pages_all_files }} pg · ৳{{ o.total_amount|floatformat:0 }}</p>
+        <p class="text-xs mt-1 text-text-secondary">{{ o.file_count }} file(s) · {{ o.total_pages_all_files }} pg · ৳{{ o.total_amount|floatformat:0 }}</p>
       </div>
       {% empty %}<p class="text-xs text-text-muted empty-state py-8"><i class="bi bi-inbox empty-state-icon block"></i>No pending orders</p>{% endfor %}
     </div>
   </div>
   <div class="card p-4">
-    <h3 class="font-semibold text-primary mb-3">Printing</h3>
+    <h3 class="font-semibold text-info-text mb-3">Printing</h3>
     <div id="col-printing" class="space-y-3 min-h-[120px]">
       {% for o in columns.printing %}
-      <div class="kanban-card p-3 rounded-lg bg-blue-50 border border-blue-200 cursor-grab" data-id="{{ o.pk }}">
-        <p class="font-bold text-sm">{{ o.order_number }}</p>
+      <div class="kanban-card p-3 rounded-lg status-printing cursor-grab" data-id="{{ o.pk }}">
+        <p class="font-bold text-sm text-text-primary">{{ o.order_number }}</p>
         <p class="text-xs text-text-muted">{{ o.customer_name }}</p>
-        <p class="text-xs mt-1">{{ o.file_count }} file(s) · {{ o.total_pages_all_files }} pg</p>
+        <p class="text-xs mt-1 text-text-secondary">{{ o.file_count }} file(s) · {{ o.total_pages_all_files }} pg</p>
       </div>
       {% empty %}<p class="text-xs text-text-muted">No orders printing</p>{% endfor %}
     </div>
   </div>
   <div class="card p-4">
-    <h3 class="font-semibold text-emerald-700 mb-3">Ready</h3>
+    <h3 class="font-semibold text-success-text mb-3">Ready</h3>
     <div id="col-ready" class="space-y-3 min-h-[120px]">
       {% for o in columns.ready %}
-      <div class="kanban-card p-3 rounded-lg bg-emerald-50 border border-emerald-200 cursor-grab" data-id="{{ o.pk }}">
-        <p class="font-bold text-sm">{{ o.order_number }}</p>
+      <div class="kanban-card p-3 rounded-lg status-delivered cursor-grab" data-id="{{ o.pk }}">
+        <p class="font-bold text-sm text-text-primary">{{ o.order_number }}</p>
         <p class="text-xs text-text-muted">{{ o.customer_name }}</p>
-        <p class="text-xs mt-1">৳{{ o.total_amount|floatformat:0 }}</p>
+        <p class="text-xs mt-1 text-text-secondary">৳{{ o.total_amount|floatformat:0 }}</p>
       </div>
       {% empty %}<p class="text-xs text-text-muted">No ready orders</p>{% endfor %}
     </div>

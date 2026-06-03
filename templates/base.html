@@ -18,8 +18,8 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <div x-show="mobileMenu" @click="mobileMenu = false" class="fixed inset-0 z-[60] bg-black/60 md:hidden" x-cloak x-transition></div>
-    <aside x-cloak :class="mobileMenu ? 'translate-x-0' : 'translate-x-full'"
-           class="fixed inset-y-0 right-0 z-[70] w-80 max-w-[88vw] transform transition-transform duration-300 md:hidden flex flex-col border-l border-surface-border bg-canvas-alt shadow-xl">
+    <aside x-cloak :class="mobileMenu ? 'translate-x-0' : '-translate-x-full'"
+           class="fixed inset-y-0 left-0 z-[70] w-80 max-w-[88vw] transform transition-transform duration-300 md:hidden flex flex-col border-r border-surface-border bg-canvas-alt shadow-xl">
         <div class="flex items-center justify-between px-5 h-16 border-b border-surface-border pt-safe">
             {% include "partials/site_logo.html" %}
             <button type="button" @click="mobileMenu = false" class="w-11 h-11 rounded-lg border border-surface-border text-text" aria-label="Close"><i class="bi bi-x-lg"></i></button>
@@ -33,7 +33,10 @@
             {% if user.is_authenticated %}
             <a href="{% url 'user_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Dashboard</a>
             <a href="{% url 'user_profile' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Profile</a>
-            <a href="{% url 'auth_logout' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-red-400 min-h-[44px]">Logout</a>
+            {% if user.is_admin_user %}
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]"><i class="bi bi-grid-fill"></i> Admin</a>
+            {% endif %}
+            <a href="{% url 'auth_logout' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-danger-text min-h-[44px]">Logout</a>
             {% else %}
             <a href="{% url 'auth_login_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold min-h-[44px]">Login</a>
             {% endif %}
@@ -52,24 +55,10 @@
         {% endfor %}
     </div>
 
-    <main id="main-content" class="flex-grow pb-20 md:pb-8" tabindex="-1">{% block content %}{% endblock %}</main>
-
+    <main id="main-content" class="flex-grow md:pb-8" tabindex="-1">{% block content %}{% endblock %}</main>
+    
     {% include "partials/footer_public.html" %}
-
-    <div class="md:hidden fixed bottom-0 inset-x-0 z-50 bg-canvas-alt border-t border-surface-border pb-safe">
-        <div class="flex justify-around h-16 items-center max-w-lg mx-auto">
-            <a href="{% url 'public_index' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'public_index' %}text-primary{% else %}text-text-muted{% endif %}"><i class="bi bi-house-door-fill text-xl"></i>Home</a>
-            {% if user.is_authenticated and not user.is_admin_user %}
-            <a href="{% url 'user_orders' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_orders' or request.resolver_match.url_name == 'user_order_detail' %}text-primary{% else %}text-text-muted{% endif %}"><i class="bi bi-receipt text-xl"></i>Orders</a>
-            <a href="{% url 'user_new_order' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_new_order' %}text-primary{% else %}text-text-muted{% endif %}"><i class="bi bi-cloud-arrow-up-fill text-xl"></i>Upload</a>
-            <a href="{% url 'user_profile' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_profile' %}text-primary{% else %}text-text-muted{% endif %}"><i class="bi bi-person-fill text-xl"></i>Profile</a>
-            {% else %}
-            <a href="{% url 'public_pricing_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center text-text-muted"><i class="bi bi-tags-fill text-xl"></i>Pricing</a>
-            <a href="{% url 'auth_login_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center text-text-muted"><i class="bi bi-box-arrow-in-right text-xl"></i>Login</a>
-            {% endif %}
-        </div>
-    </div>
-
+    
     {% if SITE.messenger_link or SITE.whatsapp_number %}
     <div class="fixed bottom-24 md:bottom-8 right-4 z-50 flex flex-col gap-3">
         {% if SITE.messenger_link %}<a href="{{ SITE.messenger_link }}" target="_blank" rel="noopener" class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg min-h-[44px] min-w-[44px]" aria-label="Messenger"><i class="bi bi-messenger text-2xl"></i></a>{% endif %}

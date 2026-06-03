@@ -58,10 +58,7 @@
             {% include "partials/site_logo.html" %}
         </div>
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm" style="overflow-y: auto; overflow-x: hidden; position: relative;">
-            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-grid-fill"></i> Overview</a>
-            {% if not request.user.is_readonly_staff %}
-            <a href="{% url 'admin_operator_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_operator_dashboard' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-kanban"></i> Operator Queue</a>
-            {% endif %}
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'admin_operator_dashboard' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-person-gear"></i> Admin / Staff</a>
             <p class="px-4 pt-4 pb-1 text-xs font-bold uppercase text-text-muted">Orders</p>
             <a href="{% url 'admin_walkin_order' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-white bg-primary hover:bg-primary-dark hover:ring-2 hover:ring-primary/40 transition-all mb-1"><i class="bi bi-plus-lg"></i> Walk-in POS</a>
             <a href="{% url 'admin_orders' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_orders' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-list-check"></i> All Orders</a>

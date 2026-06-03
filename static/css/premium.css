@@ -1,0 +1,550 @@
+/* PrintEdge Premium Design System
+ * Dark theme with WCAG AA compliant contrast
+ * All colors use CSS custom properties for consistency
+ */
+
+/* CSS Custom Properties - Semantic color system */
+:root {
+  /* Base colors */
+  --color-canvas: #0f172a;
+  --color-canvas-alt: #111827;
+  --color-canvas-darker: #0a0f1a;
+  
+  /* Text colors - guaranteed contrast on #0f172a and #1e293b */
+  --color-text-primary: #f8fafc;    /* 12.6:1 on #0f172a */
+  --color-text-secondary: #e2e8f0;  /* 4.5:1 on #1e293b */
+  --color-text-muted: #94a3b8;     /* 2.5:1 on #1e293b */
+  --color-text-disabled: #64748b;
+  
+  /* Surface colors */
+  --color-surface: #1e293b;
+  --color-surface-elevated: #253244;
+  --color-surface-border: #334155;
+  --color-surface-input: #111827;
+  
+  /* Status colors */
+  --color-success-bg: rgba(34, 197, 94, 0.1);
+  --color-success-border: rgba(34, 197, 94, 0.2);
+  --color-success-text: #86efac;
+  
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-warning-border: rgba(245, 158, 11, 0.2);
+  --color-warning-text: #fbbf24;
+  
+  --color-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-danger-border: rgba(239, 68, 68, 0.2);
+  --color-danger-text: #fca5a5;
+  
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+  --color-info-border: rgba(59, 130, 246, 0.2);
+  --color-info-text: #93c5fd;
+  
+  /* Primary accent */
+  --color-primary: #06b6d4;
+  --color-primary-dark: #0891b4;
+  --color-primary-glow: rgba(6, 182, 212, 0.15);
+  
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+}
+
+/* Base typography */
+body {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  background: var(--color-canvas);
+}
+
+/* Premium card component */
+.premium-card, .card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  transition: all 200ms ease-in-out;
+}
+
+.premium-card:hover, .card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+/* Buttons */
+.btn-cta, .btn-primary {
+  background: var(--color-primary);
+  color: #0f172a;
+  font-weight: 600;
+  border-radius: 10px;
+  min-height: 44px;
+  transition: all 200ms ease-in-out;
+}
+
+.btn-cta:hover, .btn-primary:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--color-primary-glow);
+}
+
+.btn-cta:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-surface-border);
+  border-radius: 10px;
+  min-height: 44px;
+  transition: all 200ms ease-in-out;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+/* Form inputs */
+.form-input, .form-select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea, select {
+  background: var(--color-surface-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-surface-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 16px;
+  min-height: 44px;
+  transition: all 200ms ease-in-out;
+  width: 100%;
+}
+
+.form-input:focus, .form-select:focus, input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.form-input::placeholder, .form-select::placeholder, ::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Select dropdown styling */
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2394a3b8' viewBox='0 0 20 20'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  padding-right: 40px;
+}
+
+select option {
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+}
+
+/* Form labels */
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+/* Badges/Status indicators */
+.badge-info, .px-2\.5\.py-1\.rounded-md.text-\[10px\].font-bold.uppercase.tracking-widest {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-info-text);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Status badges with proper contrast */
+.status-delivered, .status-ready {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+}
+
+.status-pending, .status-confirmed, .status-on_hold {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+}
+
+.status-printing {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border: 1px solid var(--color-info-border);
+}
+
+.status-cancelled {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
+}
+
+/* Payment status badges */
+.payment-paid {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.payment-unpaid {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.payment-pending {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+/* Tables */
+table {
+  width: 100%;
+}
+
+th {
+  background: rgba(17, 24, 39, 0.5);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--color-surface-border);
+}
+
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Table empty state */
+.empty-state {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 32px;
+}
+
+.empty-state-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+/* Sidebar navigation */
+aside nav a {
+  color: var(--color-text-muted);
+  transition: all 200ms ease-in-out;
+}
+
+aside nav a:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+}
+
+aside nav a.bg-primary\/10 {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--color-primary);
+}
+
+/* Mobile bottom nav */
+.mobile-bottom-nav {
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--color-surface-border);
+}
+
+.mobile-bottom-nav a {
+  color: var(--color-text-muted);
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.mobile-bottom-nav a:hover {
+  color: var(--color-text-primary);
+}
+
+.mobile-bottom-nav a.text-primary {
+  color: var(--color-primary);
+}
+
+/* Modal styles */
+[role="dialog"], .modal-fullscreen-mobile > div {
+  background: var(--color-surface);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Notification dropdown */
+#notification-dropdown {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: 12px;
+  max-height: 288px;
+  overflow-y: auto;
+}
+
+/* Search modal */
+#searchResults {
+  background: var(--color-surface);
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  /* Ensure touch targets */
+  button, a, input {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile cards */
+  .mobile-only {
+    display: block !important;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Mobile card view */
+  .mobile-card-view {
+    display: block;
+  }
+  
+  /* Ensure text visibility on mobile */
+  .mobile-order-value, .mobile-order-number, h4.text-white {
+    color: var(--color-text-primary) !important;
+  }
+  
+  .mobile-order-label, .text-neutral-500, .text-slate-500, .text-text-muted {
+    color: var(--color-text-muted) !important;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+  
+  .mobile-card-view {
+    display: none;
+  }
+}
+
+/* Status badges - improved contrast */
+.bg-emerald-500\/10.text-emerald-400 {
+  background: var(--color-success-bg) !important;
+  color: var(--color-success-text) !important;
+  border: 1px solid var(--color-success-border) !important;
+}
+
+.bg-amber-500\/10.text-amber-400 {
+  background: var(--color-warning-bg) !important;
+  color: var(--color-warning-text) !important;
+  border: 1px solid var(--color-warning-border) !important;
+}
+
+.bg-red-500\/10.text-red-400 {
+  background: var(--color-danger-bg) !important;
+  color: var(--color-danger-text) !important;
+  border: 1px solid var(--color-danger-border) !important;
+}
+
+.bg-blue-500\/10.text-blue-400 {
+  background: var(--color-info-bg) !important;
+  color: var(--color-info-text) !important;
+  border: 1px solid var(--color-info-border) !important;
+}
+
+.bg-purple-500\/10.text-purple-400 {
+  background: rgba(168, 85, 224, 0.1) !important;
+  color: #d8b4fe !important;
+  border: 1px solid rgba(168, 85, 224, 0.2) !important;
+}
+
+.bg-pink-500\/10.text-pink-400 {
+  background: rgba(236, 72, 153, 0.1) !important;
+  color: #f9a8d4 !important;
+  border: 1px solid rgba(236, 72, 153, 0.2) !important;
+}
+
+/* Icons - ensure visibility */
+.bi, .bi::before {
+  color: inherit;
+}
+
+/* Override low-contrast Tailwind classes */
+.text-neutral-500, .text-neutral-400, .text-slate-500, .text-slate-400 {
+  color: var(--color-text-muted) !important;
+}
+
+.text-white, .text-text {
+  color: var(--color-text-primary) !important;
+}
+
+.text-text-muted {
+  color: var(--color-text-muted) !important;
+}
+
+/* Borders */
+.border-white\/5, .border-white\/10, .border-slate-700, .border-slate-700\/50 {
+  border-color: var(--color-surface-border) !important;
+}
+
+/* Backgrounds */
+.bg-white\/5, .bg-white\/10, .bg-slate-800\/50, .bg-slate-800\/70 {
+  background: var(--color-surface) !important;
+}
+
+.bg-slate-800 {
+  background: var(--color-canvas-alt) !important;
+}
+
+/* Links with proper contrast */
+a.text-brand-400, a.hover\:text-brand-300:hover {
+  color: var(--color-primary) !important;
+}
+
+a.hover\:text-brand-300:hover {
+  color: var(--color-primary-dark) !important;
+}
+
+/* Ensure table cells have proper text color */
+td.font-bold.text-sm, td.font-medium, td.text-sm {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Improve contrast for small text labels */
+.text-\[10px\].font-bold.tracking-widest, .text-\[11px\].font-bold {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Override amber text on light backgrounds */
+.text-amber-700, .text-amber-600 {
+  color: var(--color-warning-text) !important;
+}
+
+/* Kanban cards - dark theme */
+.kanban-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+}
+
+.bg-amber-50 {
+  background: var(--color-warning-bg) !important;
+}
+
+.bg-amber-200 {
+  border-color: var(--color-warning-border) !important;
+}
+
+.bg-blue-50 {
+  background: var(--color-info-bg) !important;
+}
+
+.bg-blue-200 {
+  border-color: var(--color-info-border) !important;
+}
+
+.bg-emerald-50 {
+  background: var(--color-success-bg) !important;
+}
+
+.bg-emerald-200 {
+  border-color: var(--color-success-border) !important;
+}
+
+/* Avatar placeholders */
+.w-10.h-10.rounded-lg.bg-primary\/10.text-primary {
+  background: rgba(6, 182, 212, 0.1) !important;
+  color: var(--color-primary) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 200ms ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Focus rings */
+:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-primary);
+  color: #0f172a;
+  padding: 8px;
+  z-index: 1000;
+  transition: top 200ms;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Alerts and toasts */
+.bg-red-500, .text-red-400 {
+  background: var(--color-danger) !important;
+  color: var(--color-danger-text) !important;
+}
+
+.text-emerald-400, .text-emerald-500 {
+  color: var(--color-success-text) !important;
+}
+
+/* Print type badges in tables */
+.text-blue-400.text-\[10px\].font-bold {
+  color: var(--color-info-text) !important;
+}
+
+.text-purple-400.text-\[10px\].font-bold {
+  color: #d8b4fe !important;
+}

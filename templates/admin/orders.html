@@ -5,49 +5,49 @@
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-white mb-1">All Orders</h1>
-        <p class="text-slate-400 text-sm">{{ total_count }} total orders</p>
+        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">All Orders</h1>
+        <p class="text-text-muted text-sm">{{ total_count }} total orders</p>
     </div>
     <div class="flex gap-2">
-    <a href="{% url 'admin_orders_export' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg font-bold border border-surface-border dark:border-dark-border text-sm hover:bg-white/10">
+    <a href="{% url 'admin_orders_export' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg font-bold border border-surface-border text-text-secondary hover:bg-surface transition-colors">
         <i class="bi bi-download"></i> Export CSV
     </a>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+<div class="premium-card p-4 rounded-2xl mb-6">
     <form method="get" class="flex flex-col sm:flex-row gap-3">
         <div class="relative flex-1">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <i class="bi bi-search text-slate-500 text-sm"></i>
+                <i class="bi bi-search text-text-muted text-sm"></i>
             </div>
             <input type="text" name="q" value="{{ search_query }}" placeholder="Search by order #, name, phone…"
-                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary focus:outline-none">
         </div>
-        <select name="status" class="px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+        <select name="status" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
             <option value="">All Status</option>
             {% for key, label in status_choices %}
             <option value="{{ key }}" {% if current_status == key %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
-        <select name="source" class="px-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+        <select name="source" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
             <option value="">All Sources</option>
-            <option value="online" {% if current_source == 'online' %}selected{% endif %}>🌐 Online</option>
-            <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>🏪 Walk-in</option>
+            <option value="online" {% if current_source == 'online' %}selected{% endif %}>Online</option>
+            <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>Walk-in</option>
         </select>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-secondary text-sm font-semibold border border-surface-border hover:bg-surface-elevated transition-colors">
             <i class="bi bi-funnel"></i> Filter
         </button>
     </form>
 </div>
 
 <!-- Orders Table -->
-<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+<div class="premium-card rounded-2xl overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse responsive-table">
             <thead>
-                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-wider font-semibold border-b border-surface-border">
                     <th class="p-3 pl-5">Order</th>
                     <th class="p-3">Source</th>
                     <th class="p-3">Customer</th>
@@ -58,49 +58,49 @@
                     <th class="p-3 pr-5"></th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-700/50">
+            <tbody class="divide-y divide-surface-border">
                 {% for o in orders %}
-                <tr class="hover:bg-slate-800/30 transition-colors">
+                <tr class="hover:bg-surface transition-colors">
                     <td class="p-3 pl-5" data-label="Order">
-                        <div class="font-semibold text-sm">{{ o.order_number }}</div>
-                        <div class="text-[10px] text-slate-500 mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
+                        <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
+                        <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
                     </td>
                     <td class="p-3" data-label="Source">
                         {% if o.source == 'offline' %}
-                        <span class="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 text-[10px] font-bold">Walk-in</span>
+                        <span class="px-2 py-0.5 rounded-md status-delivered text-text-primary text-[10px] font-bold">Walk-in</span>
                         {% else %}
-                        <span class="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 text-[10px] font-bold">Online</span>
+                        <span class="px-2 py-0.5 rounded-md status-printing text-text-primary text-[10px] font-bold">Online</span>
                         {% endif %}
                     </td>
                     <td class="p-3" data-label="Customer">
-                        <div class="text-sm font-medium">{{ o.customer_name }}</div>
-                        <div class="text-[10px] text-slate-500">{{ o.customer_phone }}</div>
+                        <div class="text-sm font-medium text-text-primary">{{ o.customer_name }}</div>
+                        <div class="text-[10px] text-text-muted">{{ o.customer_phone }}</div>
                     </td>
-                    <td class="p-3 text-xs text-text-muted" data-label="Specs">
-                        {% if o.file_count > 1 %}<span class="badge-info mr-1">{{ o.file_count }} files</span>{% endif %}
+                    <td class="p-3 text-xs text-text-secondary" data-label="Specs">
+                        {% if o.file_count > 1 %}<span class="px-2 py-0.5 rounded-md bg-info-bg text-info-text mr-1 text-[10px] font-bold">Multi</span>{% endif %}
                         {{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}
-                        {% if o.is_urgent %}<span class="text-red-400 font-bold">⚡</span>{% endif %}
+                        {% if o.is_urgent %}<span class="text-warning-text font-bold">⚡</span>{% endif %}
                     </td>
-                    <td class="p-3 font-bold text-sm" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
+                    <td class="p-3 font-bold text-sm text-text-primary" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
                     <td class="p-3" data-label="Payment">
                         <span class="px-2 py-0.5 rounded-md text-[10px] font-bold
-                            {% if o.payment_status == 'paid' %}bg-emerald-500/10 text-emerald-400
-                            {% elif o.payment_status == 'partial' %}bg-amber-500/10 text-amber-400
-                            {% else %}bg-red-500/10 text-red-400{% endif %}">
+                            {% if o.payment_status == 'paid' %}status-delivered
+                            {% elif o.payment_status == 'partial' %}status-pending
+                            {% else %}status-cancelled{% endif %}">
                             {{ o.get_payment_status_display }}
                         </span>
                     </td>
                     <td class="p-3" data-label="Status">
                         <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
-                            {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
-                            {% elif o.status == 'printing' %}bg-blue-500/10 text-blue-400 border border-blue-500/20
-                            {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border border-red-500/20
-                            {% else %}bg-amber-500/10 text-amber-400 border border-amber-500/20{% endif %}">
+                            {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
+                            {% elif o.status == 'printing' %}status-printing
+                            {% elif o.status == 'cancelled' %}status-cancelled
+                            {% else %}status-pending{% endif %}">
                             {{ o.get_status_display }}
                         </span>
                     </td>
-                    <td class="p-3 pr-5" data-label="">
-                        <a href="{% url 'admin_order_detail' o.pk %}" class="w-11 h-11 inline-flex items-center justify-center rounded-lg border border-surface-border hover:border-primary text-text-muted hover:text-primary transition-colors" aria-label="View order">
+                    <td class="p-3 pr-5 text-right" data-label="">
+                        <a href="{% url 'admin_order_detail' o.pk %}" class="w-11 h-11 inline-flex items-center justify-center rounded-lg border border-surface-border text-text-muted hover:text-primary transition-colors" aria-label="View order">
                             <i class="bi bi-eye"></i>
                         </a>
                     </td>
@@ -108,11 +108,11 @@
                 {% empty %}
                 <tr>
                     <td colspan="8" class="p-12 text-center">
-                        <div class="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
-                            <i class="bi bi-inbox text-2xl text-slate-500"></i>
+                        <div class="w-16 h-16 rounded-full bg-surface border border-surface-border flex items-center justify-center mx-auto mb-4">
+                            <i class="bi bi-inbox text-2xl text-text-muted"></i>
                         </div>
-                        <h4 class="text-lg font-bold text-white mb-2">No orders found</h4>
-                        <p class="text-slate-400 text-sm">Try adjusting your filters or create a new walk-in order.</p>
+                        <h4 class="text-lg font-bold text-text-primary mb-2">No orders found</h4>
+                        <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
                     </td>
                 </tr>
                 {% endfor %}

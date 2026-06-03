@@ -13,7 +13,7 @@ from .email_utils import send_brevo_email
 logger = logging.getLogger(__name__)
 
 
-def send_notification(recipient: User, verb: str, target_type: str, target_id: Optional[int], target_url: str, actor: Optional[User] = None, description: str = '') -> None:
+def send_notification(recipient: User, verb: str, target_type: str, target_id: Optional[int], target_url: str, actor: Optional[User] = None, description: str = '', send_email: bool = True) -> None:
     """Create a notification and optionally send email via Brevo."""
     if not recipient or recipient.is_anonymous:
         return None
@@ -28,8 +28,8 @@ def send_notification(recipient: User, verb: str, target_type: str, target_id: O
         description=description,
     )
 
-    # Send email if recipient has notifications enabled
-    if getattr(recipient, 'notification_email', True) and recipient.email:
+    # Send email if recipient has notifications enabled and send_email is True
+    if send_email and getattr(recipient, 'notification_email', True) and recipient.email:
         subject = f'PrintEdge - {verb}'
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@printedge.com')
         html_message = render_to_string('emails/notification.html', {

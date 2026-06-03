@@ -3,109 +3,211 @@
 {% block breadcrumb %}Mail Service / Logs{% endblock %}
 
 {% block content %}
+<!-- Header with Stats -->
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-white mb-1">Email Logs</h1>
-        <p class="text-slate-400 text-sm">Track all sent and failed emails</p>
+        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Email Logs</h1>
+        <p class="text-text-muted text-sm">Track all sent and failed emails</p>
     </div>
-    <div class="flex gap-2">
-        <a href="{% url 'admin_mail_logs' %}?{% if current_status %}status={{ current_status }}{% endif %}" class="px-4 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">Refresh</a>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'admin_mail_logs' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface text-text-secondary font-semibold border border-surface-border hover:bg-surface-elevated transition-colors min-h-[44px]">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="premium-card p-4 rounded-2xl text-center">
+        <div class="text-2xl font-bold text-text-primary">{{ stats.total_emails|default:0 }}</div>
+        <div class="text-xs text-text-muted uppercase tracking-widest">Total Emails</div>
+    </div>
+    <div class="premium-card p-4 rounded-2xl text-center">
+        <div class="text-2xl font-bold text-success-text">{{ stats.sent_count|default:0 }}</div>
+        <div class="text-xs text-text-muted uppercase tracking-widest">Sent</div>
+    </div>
+    <div class="premium-card p-4 rounded-2xl text-center">
+        <div class="text-2xl font-bold text-danger-text">{{ stats.failed_count|default:0 }}</div>
+        <div class="text-xs text-text-muted uppercase tracking-widest">Failed</div>
+    </div>
+    <div class="premium-card p-4 rounded-2xl text-center">
+        <div class="text-2xl font-bold text-primary">{{ stats.emails_today|default:0 }}</div>
+        <div class="text-xs text-text-muted uppercase tracking-widest">Today</div>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
-    <form method="get" class="grid md:grid-cols-5 gap-3">
-        <select name="status" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+<div class="premium-card p-4 rounded-2xl mb-6">
+    <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+        <select name="status" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
             <option value="">All Statuses</option>
             <option value="sent" {% if current_status == 'sent' %}selected{% endif %}>Sent</option>
             <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
         </select>
-        <input type="text" name="recipient" value="{{ current_recipient }}" placeholder="Recipient email" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
-        <input type="text" name="subject" value="{{ current_subject }}" placeholder="Subject" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
-        <input type="date" name="date_from" value="{{ date_from }}" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
-        <input type="date" name="date_to" value="{{ date_to }}" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
-        <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold">Filter</button>
+        <input type="text" name="recipient" value="{{ current_recipient }}" placeholder="Recipient email" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary outline-none">
+        <input type="text" name="subject" value="{{ current_subject }}" placeholder="Subject contains" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary outline-none">
+        <input type="date" name="date_from" value="{{ date_from }}" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
+        <input type="date" name="date_to" value="{{ date_to }}" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-canvas-dark font-bold hover:bg-primary-dark transition-colors min-h-[44px] sm:col-span-2 md:col-span-1">Filter</button>
     </form>
 </div>
 
 <!-- Logs Table -->
 <form method="post" id="bulkForm">
     {% csrf_token %}
-    <div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+    
+    <!-- Desktop Table View -->
+    <div class="hidden md:block premium-card rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
-                        <th class="p-3 pl-5"><input type="checkbox" onclick="toggleAll(this)"></th>
-                        <th class="p-3">ID</th>
+                    <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-widest font-bold border-b border-surface-border">
+                        <th class="p-3 pl-5"><input type="checkbox" onclick="toggleAll(this)" aria-label="Select all"></th>
+                        <th class="p-3">#</th>
                         <th class="p-3">Recipient</th>
                         <th class="p-3">Subject</th>
                         <th class="p-3">Status</th>
                         <th class="p-3">Error</th>
-                        <th class="p-3">Date</th>
+                        <th class="p-3">Created</th>
                         <th class="p-3 pr-5">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-700/50">
+                <tbody class="divide-y divide-surface-border">
                     {% for log in logs %}
-                    <tr class="hover:bg-slate-800/30 transition-colors">
+                    <tr class="hover:bg-surface transition-colors">
                         <td class="p-3 pl-5"><input type="checkbox" name="log_ids" value="{{ log.id }}"></td>
-                        <td class="p-3 text-sm text-slate-300">{{ log.id }}</td>
-                        <td class="p-3 text-sm text-white">{{ log.recipient }}</td>
-                        <td class="p-3 text-sm text-slate-300">{{ log.subject|truncatechars:40 }}</td>
+                        <td class="p-3 text-xs text-text-muted">#{{ log.id }}</td>
+                        <td class="p-3 text-sm text-text-primary">{{ log.recipient }}</td>
+                        <td class="p-3 text-sm text-text-secondary" title="{{ log.subject }}">{{ log.subject|truncatechars:40 }}</td>
                         <td class="p-3">
-                            <span class="px-2 py-1 text-[10px] rounded-full {% if log.status == 'sent' %}bg-emerald-500/20 text-emerald-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+                            <span class="px-2.5 py-1 text-[10px] font-bold rounded-full {% if log.status == 'sent' %}status-delivered{% else %}status-cancelled{% endif %}">
                                 {{ log.status|title }}
                             </span>
                         </td>
-                        <td class="p-3 text-xs text-red-400 max-w-xs truncate">{{ log.error_message|truncatechars:40|default:"—" }}</td>
-                        <td class="p-3 text-xs text-slate-500">{{ log.created_at|date:"M d, Y g:i A" }}</td>
+                        <td class="p-3 text-xs text-danger-text max-w-xs truncate" title="{{ log.error_message }}">{{ log.error_message|truncatechars:40|default:"—" }}</td>
+                        <td class="p-3 text-xs text-text-muted">{{ log.created_at|date:"M d, Y g:i A" }}</td>
                         <td class="p-3 pr-5">
-                            <button type="button" onclick="viewEmail({{ log.id }}, '{{ log.subject|escapejs }}', `{{ log.body|escapejs }}`)" class="text-[10px] text-brand-400 hover:underline">View</button>
-                            <button type="submit" name="action" value="resend" onclick="setResend({{ log.id }})" class="text-[10px] text-emerald-400 hover:underline ml-2">Resend</button>
+                            <div class="flex gap-3">
+                                <button type="button" onclick="viewEmail('{{ log.subject|escapejs }}', `{{ log.body|escapejs }}`)" class="text-xs font-medium text-primary hover:underline" aria-label="View email content">View</button>
+                                <button type="submit" name="action" value="resend" onclick="setResend({{ log.id }})" class="text-xs font-medium text-success-text hover:underline" aria-label="Resend email">Resend</button>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="8" class="p-12 text-center text-slate-500">No email logs found.</td></tr>
+                    <tr>
+                        <td colspan="8" class="p-12 text-center">
+                            <div class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+                                <i class="bi bi-envelope text-2xl text-text-muted"></i>
+                            </div>
+                            <p class="text-text-muted font-medium">No email logs found.</p>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- Mobile Card View -->
+    <div class="md:hidden space-y-3">
+        {% for log in logs %}
+        <div class="premium-card p-4 rounded-2xl">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold text-text-primary truncate">{{ log.subject|truncatechars:40 }}</div>
+                    <div class="text-xs text-text-muted truncate">{{ log.recipient }}</div>
+                </div>
+                <span class="px-2.5 py-1 text-[10px] font-bold rounded-full {% if log.status == 'sent' %}status-delivered{% else %}status-cancelled{% endif %}">
+                    {{ log.status|title }}
+                </span>
+            </div>
+            <div class="space-y-2 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-text-muted">ID</span>
+                    <span class="text-text-secondary">#{{ log.id }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-text-muted">Created</span>
+                    <span class="text-text-secondary">{{ log.created_at|date:"M d, Y g:i A" }}</span>
+                </div>
+                {% if log.error_message %}
+                <div class="flex justify-between">
+                    <span class="text-text-muted">Error</span>
+                    <span class="text-danger-text truncate max-w-[200px]" title="{{ log.error_message }}">{{ log.error_message|truncatechars:30 }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mt-4 pt-3 border-t border-surface-border flex gap-4">
+                <button type="button" onclick="viewEmail('{{ log.subject|escapejs }}', `{{ log.body|escapejs }}`)" class="flex-1 text-center py-2 rounded-lg bg-surface text-primary font-medium text-sm min-h-[44px]">
+                    View
+                </button>
+                <button type="submit" name="action" value="resend" onclick="setResend({{ log.id }})" class="flex-1 text-center py-2 rounded-lg bg-success-bg text-success-text font-medium text-sm min-h-[44px]">
+                    Resend
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="premium-card p-8 rounded-2xl text-center">
+            <div class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-envelope text-2xl text-text-muted"></i>
+            </div>
+            <p class="text-text-muted font-medium">No email logs found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
     <!-- Bulk Actions -->
-    <div class="flex items-center gap-3 mt-4">
-        <select name="action" onchange="runBulkAction(this.value)" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
-            <option value="">Bulk Actions</option>
-            <option value="bulk_resend">Resend Selected</option>
-            <option value="bulk_delete">Delete Selected</option>
-            <option value="export_csv">Export as CSV</option>
-        </select>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-4">
+        <div class="flex items-center gap-3">
+            <select name="action" onchange="runBulkAction(this.value)" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none min-h-[44px]">
+                <option value="">Bulk Actions</option>
+                <option value="bulk_resend">Resend Selected</option>
+                <option value="bulk_delete">Delete Selected</option>
+                <option value="export_csv">Export as CSV</option>
+            </select>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-canvas-dark font-bold hover:bg-primary-dark transition-colors min-h-[44px]">Apply</button>
+        </div>
+        <div class="text-sm text-text-muted">
+            {{ logs|length }} log{{ logs|pluralize }} shown
+        </div>
     </div>
 </form>
 
-<!-- View Modal -->
-<div x-show="viewModalOpen" x-cloak class="fixed inset-0 z-[100] bg-black/40 flex items-center justify-center p-4" id="viewModal" style="display: none;">
-    <div class="card max-w-2xl w-full p-6 rounded-2xl">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-white" id="modalSubject"></h3>
-            <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+<!-- View Email Modal -->
+<div id="viewModal" class="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4" style="display: none;">
+    <div class="premium-card max-w-2xl w-full p-6 rounded-2xl max-h-[80vh] flex flex-col">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-surface-border">
+            <h3 class="text-lg font-bold text-text-primary" id="modalSubject">Email Subject</h3>
+            <button type="button" onclick="closeModal()" class="w-9 h-9 flex items-center justify-center rounded-lg text-text-muted hover:bg-surface min-h-[44px] min-w-[44px]" aria-label="Close modal">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
-        <div id="modalBody" class="max-h-96 overflow-y-auto bg-slate-800/50 p-4 rounded-xl text-white text-sm"></div>
+        <div id="modalBody" class="flex-1 overflow-y-auto bg-surface p-4 rounded-xl text-sm text-text-secondary max-h-96"></div>
     </div>
 </div>
 
 <script>
-function viewEmail(id, subject, body) {
+function viewEmail(subject, body) {
     document.getElementById('modalSubject').textContent = subject;
-    document.getElementById('modalBody').innerHTML = body || 'No content';
+    document.getElementById('modalBody').innerHTML = body || '<em class="text-text-muted">No content available</em>';
     document.getElementById('viewModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
-function closeModal() { document.getElementById('viewModal').style.display = 'none'; }
-function toggleAll(cb) { document.querySelectorAll('input[name="log_ids"]').forEach(i => i.checked = cb.checked); }
+function closeModal() {
+    document.getElementById('viewModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.getElementById('viewModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+function toggleAll(cb) {
+    document.querySelectorAll('input[name="log_ids"]').forEach(i => i.checked = cb.checked);
+}
 function setResend(id) {
-    const input = document.createElement('input'); input.type = 'hidden'; input.name = 'log_id'; input.value = id;
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'log_id';
+    input.value = id;
     document.getElementById('bulkForm').appendChild(input);
 }
 function runBulkAction(action) {

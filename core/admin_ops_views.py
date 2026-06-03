@@ -565,7 +565,7 @@ def admin_mail_compose(request):
                 )
                 if success:
                     sent_count += 1
-                    # Create in-app notification
+                    # Create in-app notification (without sending another email)
                     user = User.objects.filter(email=email_addr).first()
                     if user:
                         from .notifications import send_notification
@@ -576,6 +576,7 @@ def admin_mail_compose(request):
                             target_id=None,
                             target_url=reverse('user_dashboard'),
                             description=subject,
+                            send_email=False,
                         )
                 else:
                     failed_count += 1
@@ -617,6 +618,8 @@ def admin_mail_compose(request):
 
 @admin_required
 def admin_mail_logs(request):
+    from .models import EmailLog
+    
     status_filter = request.GET.get('status', '')
     recipient_filter = request.GET.get('recipient', '').strip()
     subject_filter = request.GET.get('subject', '').strip()
@@ -683,8 +686,19 @@ def admin_mail_logs(request):
                 writer.writerow([log.id, log.recipient, log.subject, log.status, log.error_message, log.created_at])
             return response
 
+    # Calculate statistics
+    from datetime import date
+    today = date.today()
+    stats = {
+        'total_emails': EmailLog.objects.count(),
+        'sent_count': EmailLog.objects.filter(status='sent').count(),
+        'failed_count': EmailLog.objects.filter(status='failed').count(),
+        'emails_today': EmailLog.objects.filter(created_at__date=today).count(),
+    }
+
     return render(request, 'admin/mail_logs.html', {
         'logs': logs_qs[:100],
+        'stats': stats,
         'current_status': status_filter,
         'current_recipient': recipient_filter,
         'current_subject': subject_filter,

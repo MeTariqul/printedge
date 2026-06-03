@@ -187,10 +187,6 @@ select option {
     background-color: #111827 !important;
     color: #e5e7eb !important;
 }
-select option:hover {
-    background-color: #06b6d4 !important;
-    color: #111827 !important;
-}
 select:focus, .form-select:focus {
     border-color: #06b6d4 !important;
     box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2) !important;
@@ -216,34 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     fixDropdownParents();
-    
-    // Ensure select elements don't trap focus after selection
-    document.addEventListener('change', (e) => {
-        if (e.target.tagName === 'SELECT') {
-            setTimeout(() => e.target.blur(), 0);
-        }
-    });
-    
-    // Prevent double-click issue: blur active element when clicking outside dropdowns
-    document.addEventListener('click', (e) => {
-        const active = document.activeElement;
-        if (active && active.tagName === 'SELECT') {
-            setTimeout(() => active.blur(), 0);
-        }
-    });
 });
-
-// Global utility to close dropdowns and release focus
-window.closeDropdown = function(dropdownEl) {
-    if (dropdownEl) {
-        dropdownEl.classList.add('hidden');
-    }
-    const active = document.activeElement;
-    if (active && (active.tagName === 'BUTTON' || active.tagName === 'SELECT')) {
-        active.blur();
-    }
-};
-</script>
 </script>
 
 {% block extra_js %}{% endblock %}

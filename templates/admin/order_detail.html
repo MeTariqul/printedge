@@ -39,7 +39,7 @@
             <form method="post" class="flex flex-col sm:flex-row gap-3">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="status">
-                <select name="status" onchange="this.form.dispatchEvent(new Event('submit')); this.blur()" class="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                <select name="status" onchange="this.form.dispatchEvent(new Event('submit'))" class="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
                     {% for key, label in order.STATUS_CHOICES %}
                     <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}

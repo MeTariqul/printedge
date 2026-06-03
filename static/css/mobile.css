@@ -108,11 +108,6 @@
     transition: all 0.3s ease;
   }
   
-  .mobile-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  }
-  
   /* Mobile Tables -> Cards */
   .mobile-table-view {
     display: none;
@@ -168,10 +163,6 @@ input[type="submit"] {
   
   .mobile-fab:active {
     transform: scale(0.9);
-  }
-  
-  .mobile-fab:hover {
-    box-shadow: 0 4px 25px rgba(6, 182, 212, 0.6);
   }
   
   /* Forms */

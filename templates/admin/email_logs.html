@@ -12,7 +12,7 @@
 
 <div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
     <form method="get" class="flex gap-3">
-        <select name="status" onchange="this.form.submit(); this.blur()" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+        <select name="status" onchange="this.form.submit()" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
             <option value="" {% if not current_status %}selected{% endif %}>All Statuses</option>
             <option value="sent" {% if current_status == 'sent' %}selected{% endif %}>Sent</option>
             <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>

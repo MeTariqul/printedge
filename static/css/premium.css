@@ -3,6 +3,33 @@
  * All colors use CSS custom properties for consistency
  */
 
+/* Prevent double-tap zoom and hover interference on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+}
+
+/* Override Tailwind hover classes for touch devices - prevents double-tap issue */
+@media (hover: none) {
+  [class*="hover:"] {
+    background-color: inherit !important;
+    color: inherit !important;
+    transform: none !important;
+    box-shadow: inherit !important;
+    border-color: inherit !important;
+  }
+  a:hover,
+  button:hover,
+  tr:hover,
+  .nav-item:hover,
+  .mobile-card:hover,
+  .mobile-fab:hover {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+}
+
 /* CSS Custom Properties - Semantic color system */
 :root {
   /* Base colors */
@@ -62,6 +89,13 @@ body {
   background: var(--color-canvas);
 }
 
+/* Prevent double-tap zoom and hover interference on touch devices - must be FIRST */
+@media (hover: none) and (pointer: coarse) {
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+}
+
 /* Premium card component */
 .premium-card, .card {
   background: var(--color-surface);
@@ -69,10 +103,6 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   transition: all 200ms ease-in-out;
-}
-
-.premium-card:hover, .card:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 /* Buttons */
@@ -83,12 +113,6 @@ body {
   border-radius: 10px;
   min-height: 44px;
   transition: all 200ms ease-in-out;
-}
-
-.btn-cta:hover, .btn-primary:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--color-primary-glow);
 }
 
 .btn-cta:active {
@@ -102,11 +126,6 @@ body {
   border-radius: 10px;
   min-height: 44px;
   transition: all 200ms ease-in-out;
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-text-primary);
 }
 
 /* Form inputs */
@@ -240,8 +259,30 @@ td {
   color: var(--color-text-secondary);
 }
 
-tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+/* Hover styles - only apply to devices that support hover */
+@media (hover: hover) {
+  .premium-card:hover, .card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  }
+  .btn-cta:hover, .btn-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--color-primary-glow);
+  }
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+  }
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+  aside nav a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+  }
+  .mobile-bottom-nav a:hover {
+    color: var(--color-text-primary);
+  }
 }
 
 /* Table empty state */
@@ -262,11 +303,6 @@ aside nav a {
   transition: all 200ms ease-in-out;
 }
 
-aside nav a:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-primary);
-}
-
 aside nav a.bg-primary\/10 {
   background: rgba(6, 182, 212, 0.1);
   color: var(--color-primary);
@@ -283,10 +319,6 @@ aside nav a.bg-primary\/10 {
   color: var(--color-text-muted);
   min-height: 44px;
   min-width: 44px;
-}
-
-.mobile-bottom-nav a:hover {
-  color: var(--color-text-primary);
 }
 
 .mobile-bottom-nav a.text-primary {
@@ -427,12 +459,10 @@ aside nav a.bg-primary\/10 {
 }
 
 /* Links with proper contrast */
-a.text-brand-400, a.hover\:text-brand-300:hover {
-  color: var(--color-primary) !important;
-}
-
-a.hover\:text-brand-300:hover {
-  color: var(--color-primary-dark) !important;
+@media (hover: hover) {
+  a.text-brand-400:hover, a.hover\:text-brand-300:hover {
+    color: var(--color-primary-dark) !important;
+  }
 }
 
 /* Ensure table cells have proper text color */
@@ -519,26 +549,6 @@ td.font-bold.text-sm, td.font-medium, td.text-sm {
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
-}
-
-/* Focus rings */
-:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--color-primary-glow);
-}
-
-/* Prevent double-tap zoom and hover interference on touch devices */
-@media (hover: none) and (pointer: coarse) {
-  button, a, input, select, textarea {
-    touch-action: manipulation;
-  }
-}
-
-/* Ensure hover styles don't interfere with active state on touch devices */
-@media (hover: hover) {
-  button:hover, a:hover {
-    cursor: pointer;
-  }
 }
 
 /* Skip link */

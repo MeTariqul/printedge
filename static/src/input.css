@@ -13,9 +13,6 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold text-text;
   }
-  a {
-    @apply text-primary hover:text-primary-light transition-colors;
-  }
 }
 
 @layer components {
@@ -30,19 +27,19 @@
     @apply inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-canvas disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-primary {
-    @apply btn bg-primary text-canvas hover:bg-primary-light focus:ring-primary;
+    @apply btn bg-primary text-canvas focus:ring-primary;
   }
   .btn-secondary {
-    @apply btn border-2 border-primary text-primary bg-transparent hover:bg-primary/10 focus:ring-primary;
+    @apply btn border-2 border-primary text-primary bg-transparent focus:ring-primary;
   }
   .btn-success {
-    @apply btn bg-emerald-600 text-white hover:bg-emerald-500 focus:ring-emerald-500;
+    @apply btn bg-emerald-600 text-white focus:ring-emerald-500;
   }
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-500 focus:ring-red-500;
+    @apply btn bg-red-600 text-white focus:ring-red-600;
   }
   .btn-cta {
-    @apply btn bg-accent text-white hover:bg-accent-light focus:ring-accent;
+    @apply btn bg-accent text-white focus:ring-accent;
   }
   .form-input,
   .form-select {
@@ -66,7 +63,6 @@
   .tooltip-text {
     @apply invisible opacity-0 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs font-medium text-text bg-surface border border-surface-border rounded-lg whitespace-nowrap z-50 transition-opacity;
   }
-  .tooltip-wrap:hover .tooltip-text,
   .tooltip-wrap:focus-within .tooltip-text {
     @apply visible opacity-100;
   }
@@ -111,6 +107,34 @@
   .alert-warning {
     @apply p-4 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300;
 }
+}
+
+/* Hover styles - only apply to devices that support hover */
+@media (hover: hover) {
+  a {
+    @apply text-primary hover:text-primary-light transition-colors;
+  }
+  .btn-primary:hover {
+    @apply bg-primary-light;
+  }
+  .btn-secondary:hover {
+    @apply bg-primary/10;
+  }
+  .btn-success:hover {
+    @apply bg-emerald-500;
+  }
+  .btn-danger:hover {
+    @apply bg-red-500;
+  }
+  .btn-cta:hover {
+    @apply bg-accent-light;
+  }
+  .tooltip-wrap:hover .tooltip-text {
+    @apply visible opacity-100;
+  }
+  .hover\:text-white:hover {
+    color: #ffffff !important;
+  }
 }
 
 /* Responsive tables: card layout on mobile */
@@ -312,10 +336,6 @@ select, select:focus, select:active {
 select option, option {
     background-color: #111827 !important;
     color: #e5e7eb !important;
-}
-select option:hover, option:hover {
-    background-color: #06b6d4 !important;
-    color: #111827 !important;
 }
 
 /* Focus/hover states for select elements */

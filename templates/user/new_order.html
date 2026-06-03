@@ -63,14 +63,14 @@
                   <label class="form-label">Print type
                     <span class="tooltip-wrap ml-1"><i class="bi bi-question-circle text-gray-400"></i><span class="tooltip-text">Color costs more per page</span></span>
                   </label>
-                  <select class="form-input" x-model="f.print_type" @change="updatePrice()">
+<select class="form-input" x-model="f.print_type" @change="updatePrice(); $el.blur()">
                     <option value="bw">Black & White</option>
                     <option value="color">Color</option>
                   </select>
-                </div>
-                <div>
-                  <label class="form-label">Sides</label>
-                  <select class="form-input" x-model="f.sides" @change="updatePrice()">
+                  </div>
+                  <div>
+                    <label class="form-label">Sides</label>
+                    <select class="form-input" x-model="f.sides" @change="updatePrice(); $el.blur()">
                     <option value="single">Single sided</option>
                     <option value="double">Double sided</option>
                   </select>
@@ -94,10 +94,10 @@
                             <td class="py-1 pr-2"><input type="number" min="1" class="form-input w-20" x-model.number="r.start_page" @input="updatePrice()"></td>
                             <td class="py-1 pr-2"><input type="number" min="1" class="form-input w-20" x-model.number="r.end_page" @input="updatePrice()"></td>
                             <td class="py-1 pr-2">
-                              <select class="form-input w-28" x-model="r.print_type" @change="updatePrice()"><option value="bw">B&W</option><option value="color">Color</option></select>
+                              <select class="form-input w-28" x-model="r.print_type" @change="updatePrice(); $el.blur()"><option value="bw">B&W</option><option value="color">Color</option></select>
                             </td>
                             <td class="py-1 pr-2">
-                              <select class="form-input w-28" x-model="r.sides" @change="updatePrice()"><option value="single">Single</option><option value="double">Double</option></select>
+                              <select class="form-input w-28" x-model="r.sides" @change="updatePrice(); $el.blur()"><option value="single">Single</option><option value="double">Double</option></select>
                             </td>
                             <td><button type="button" @click="f.ranges.splice(ri,1); updatePrice()" class="text-red-600 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button></td>
                           </tr>

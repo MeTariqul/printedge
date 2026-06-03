@@ -12,13 +12,13 @@
                 {% if user.is_authenticated %}
                     {% include "partials/notifications_bell.html" %}
                     <div class="relative" x-data="{ open: false }">
-                        <button type="button" @click="open = !open" class="flex items-center gap-2 min-h-[44px] px-3 rounded-lg hover:bg-surface">
+                        <button type="button" @click="open = !open; $nextTick(() => { if(open) { $el.blur(); } })" class="flex items-center gap-2 min-h-[44px] px-3 rounded-lg hover:bg-surface">
                             <span class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden">
                                 {% if user_avatar_url %}<img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">{% else %}{{ user.first_name|default:user.email|first|upper }}{% endif %}
                             </span>
                             <i class="bi bi-chevron-down text-xs text-text-muted"></i>
                         </button>
-                        <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 mt-2 w-48 py-2 rounded-lg card shadow-lg z-50">
+                        <div x-show="open" @click.outside="open = false; $nextTick(() => document.activeElement.blur())" x-cloak class="absolute right-0 mt-2 w-48 py-2 rounded-lg card shadow-lg z-50" @click.stop="open = false">
                             {% if user.is_admin_user %}
                             <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Admin</a>
                             {% else %}

@@ -25,13 +25,13 @@
             <input type="text" name="q" value="{{ search_query }}" placeholder="Search by order #, name, phone…"
                    class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary focus:outline-none">
         </div>
-        <select name="status" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
+        <select name="status" onchange="this.form.submit(); this.blur()" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
             <option value="">All Status</option>
             {% for key, label in status_choices %}
             <option value="{{ key }}" {% if current_status == key %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
-        <select name="source" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
+        <select name="source" onchange="this.form.submit(); this.blur()" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
             <option value="">All Sources</option>
             <option value="online" {% if current_source == 'online' %}selected{% endif %}>Online</option>
             <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>Walk-in</option>

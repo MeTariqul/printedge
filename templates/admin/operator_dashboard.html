@@ -15,12 +15,12 @@
 
 <form method="get" class="flex flex-wrap gap-3 mb-6">
   {% if mine %}<input type="hidden" name="mine" value="1">{% endif %}
-  <select name="print_type" class="form-input w-auto text-sm min-h-[44px]" onchange="this.form.submit()">
+  <select name="print_type" class="form-input w-auto text-sm min-h-[44px]" onchange="this.form.submit(); this.blur()">
     <option value="">All print types</option>
     <option value="bw" {% if print_type == 'bw' %}selected{% endif %}>B&W</option>
     <option value="color" {% if print_type == 'color' %}selected{% endif %}>Color</option>
   </select>
-  <select name="fulfillment" class="form-input w-auto text-sm min-h-[44px]" onchange="this.form.submit()">
+  <select name="fulfillment" class="form-input w-auto text-sm min-h-[44px]" onchange="this.form.submit(); this.blur()">
     <option value="">All fulfillment</option>
     <option value="pickup" {% if fulfillment == 'pickup' %}selected{% endif %}>Pickup</option>
     <option value="delivery" {% if fulfillment == 'delivery' %}selected{% endif %}>Delivery</option>

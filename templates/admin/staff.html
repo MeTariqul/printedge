@@ -112,7 +112,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_role">
                     <input type="hidden" name="user_id" value="{{ member.pk }}">
-                    <select name="role" class="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:border-brand-500 outline-none">
+                    <select name="role" onchange="this.blur()" class="flex-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:border-brand-500 outline-none">
                         {% for key, label in staff_roles %}
                         <option value="{{ key }}" {% if member.role == key %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -199,7 +199,7 @@
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
                     <i class="bi bi-person-plus-fill text-brand-400"></i> Add New Staff Member
                 </h3>
-                <button @click="open = false" class="text-neutral-500 hover:text-white"><i class="bi bi-x-lg"></i></button>
+                <button @click="open = false" class="text-neutral-500 hover:text-white" @click.stop="open = false"><i class="bi bi-x-lg"></i></button>
             </div>
             <form method="post" class="p-6 space-y-4">
                 {% csrf_token %}
@@ -228,7 +228,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-1.5">Role & Access *</label>
-                    <select name="role" class="w-full px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white text-sm focus:border-brand-500 outline-none">
+                    <select name="role" onchange="this.blur()" class="w-full px-3 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white text-sm focus:border-brand-500 outline-none">
                         {% for key, label in staff_roles %}
                         <option value="{{ key }}">{{ label }}</option>
                         {% endfor %}

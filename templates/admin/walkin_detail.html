@@ -23,7 +23,7 @@
   <form method="post" class="premium-card p-6 rounded-lg">
     {% csrf_token %}
     <h3 class="font-bold text-white mb-3">Merge with online account</h3>
-    <select name="user_id" class="form-input mb-3" required>
+    <select name="user_id" class="form-input mb-3" onchange="this.blur()" required>
       <option value="">Select customer…</option>
       {% for u in online_users %}<option value="{{ u.pk }}">{{ u.email }} — {{ u.display_name }}</option>{% endfor %}
     </select>

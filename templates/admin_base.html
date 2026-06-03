@@ -223,7 +223,27 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => e.target.blur(), 0);
         }
     });
+    
+    // Prevent double-click issue: blur active element when clicking outside dropdowns
+    document.addEventListener('click', (e) => {
+        const active = document.activeElement;
+        if (active && active.tagName === 'SELECT') {
+            setTimeout(() => active.blur(), 0);
+        }
+    });
 });
+
+// Global utility to close dropdowns and release focus
+window.closeDropdown = function(dropdownEl) {
+    if (dropdownEl) {
+        dropdownEl.classList.add('hidden');
+    }
+    const active = document.activeElement;
+    if (active && (active.tagName === 'BUTTON' || active.tagName === 'SELECT')) {
+        active.blur();
+    }
+};
+</script>
 </script>
 
 {% block extra_js %}{% endblock %}

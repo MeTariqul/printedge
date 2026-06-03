@@ -39,7 +39,7 @@
 <!-- Filters -->
 <div class="premium-card p-4 rounded-2xl mb-6">
     <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-        <select name="status" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
+        <select name="status" onchange="this.blur()" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
             <option value="">All Statuses</option>
             <option value="sent" {% if current_status == 'sent' %}selected{% endif %}>Sent</option>
             <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
@@ -159,7 +159,7 @@
     <!-- Bulk Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-4">
         <div class="flex items-center gap-3">
-            <select name="action" onchange="runBulkAction(this.value)" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none min-h-[44px]">
+            <select name="action" onchange="runBulkAction(this.value); this.blur()" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none min-h-[44px]">
                 <option value="">Bulk Actions</option>
                 <option value="bulk_resend">Resend Selected</option>
                 <option value="bulk_delete">Delete Selected</option>

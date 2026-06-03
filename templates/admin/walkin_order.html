@@ -15,23 +15,23 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-2 space-y-6">
-            <div class="card p-6">
+<div class="card p-6">
                 <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="bi bi-person-fill text-primary"></i> Customer</h3>
-<div class="relative mb-4" x-ref="searchContainer" @click.outside="open = false" @keydown.escape="open = false">
-                     <label class="form-label">Customer Name or Phone</label>
-                     <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomer(); open = searchResults.length > 0" @focus="open = searchResults.length > 0" @click="open = searchResults.length > 0" placeholder="Start typing to search or enter new customer…" class="form-input mb-1" autocomplete="off">
-                     <template x-if="open && searchResults.length">
-                         <div class="absolute z-10 w-full mt-1 rounded-lg border border-surface-border bg-surface shadow-lg max-h-60 overflow-y-auto" @click="document.activeElement.blur()">
-                             <template x-for="c in searchResults" :key="c.id">
-                                 <button type="button" @click="selectCustomer(c); open = false" class="w-full text-left px-4 py-3 hover:bg-surface/50 border-b border-surface-border last:border-0 min-h-[44px]">
-                                     <span class="font-semibold" x-text="c.name"></span>
-                                     <span class="text-text-muted text-sm ml-2" x-text="c.phone"></span>
-                                     <span class="text-text-muted text-xs block" x-text="c.orders_count + ' orders'"></span>
-                                 </button>
-                             </template>
-                         </div>
-                     </template>
-                 </div>
+                <div class="relative mb-4" x-ref="searchContainer" @click.outside="open = false" @keydown.escape="open = false">
+                    <label class="form-label">Customer Name or Phone</label>
+                    <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomer(); open = searchResults.length > 0" @focus="open = searchResults.length > 0" @click="open = searchResults.length > 0" placeholder="Start typing to search or enter new customer…" class="form-input mb-1" autocomplete="off">
+                    <template x-if="open && searchResults.length">
+                        <div class="absolute z-10 w-full mt-1 rounded-lg border border-surface-border bg-surface shadow-lg max-h-60 overflow-y-auto" @click.away="open = false">
+                            <template x-for="c in searchResults" :key="c.id">
+                                <button type="button" @click="selectCustomer(c); open = false" class="w-full text-left px-4 py-3 hover:bg-surface/50 border-b border-surface-border last:border-0 min-h-[44px]">
+                                    <span class="font-semibold" x-text="c.name"></span>
+                                    <span class="text-text-muted text-sm ml-2" x-text="c.phone"></span>
+                                    <span class="text-text-muted text-xs block" x-text="c.orders_count + ' orders'"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">Name <span class="text-red-500">*</span></label>
@@ -67,14 +67,14 @@
                     <div class="grid sm:grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">Print type</label>
-                            <select name="physical_print_type" class="form-select" x-model="physicalPrintType" @change="updatePrice()">
+                            <select name="physical_print_type" class="form-select" x-model="physicalPrintType" @change="updatePrice(); $el.blur()">
                                 <option value="bw">Black & White</option>
                                 <option value="color">Color</option>
                             </select>
                         </div>
                         <div>
                             <label class="form-label">Sides</label>
-                            <select name="physical_sides" class="form-select" x-model="physicalSides" @change="updatePrice()">
+                            <select name="physical_sides" class="form-select" x-model="physicalSides" @change="updatePrice(); $el.blur()">
                                 <option value="single">Single</option>
                                 <option value="double">Double</option>
                             </select>
@@ -106,14 +106,14 @@
                             <div x-show="f.expanded" class="grid md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="form-label">Print type</label>
-                                    <select class="form-select" x-model="f.print_type" @change="updatePrice()">
+                                    <select class="form-select" x-model="f.print_type" @change="updatePrice(); $el.blur()">
                                         <option value="bw">Black & White</option>
                                         <option value="color">Color</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="form-label">Sides</label>
-                                    <select class="form-select" x-model="f.sides" @change="updatePrice()">
+                                    <select class="form-select" x-model="f.sides" @change="updatePrice(); $el.blur()">
                                         <option value="single">Single</option>
                                         <option value="double">Double</option>
                                     </select>
@@ -134,8 +134,8 @@
                                             <input type="number" min="1" class="form-input w-20" x-model.number="r.start_page" @change="updatePrice()">
                                             <span class="text-text-muted">–</span>
                                             <input type="number" min="1" class="form-input w-20" x-model.number="r.end_page" @change="updatePrice()">
-                                            <select class="form-select w-28" x-model="r.print_type"><option value="bw">B&W</option><option value="color">Color</option></select>
-                                            <select class="form-select w-28" x-model="r.sides"><option value="single">Single</option><option value="double">Double</option></select>
+                                            <select class="form-select w-28" x-model="r.print_type" @change="updatePrice(); $el.blur()"><option value="bw">B&W</option><option value="color">Color</option></select>
+                                            <select class="form-select w-28" x-model="r.sides" @change="updatePrice(); $el.blur()"><option value="single">Single</option><option value="double">Double</option></select>
                                             <button type="button" @click="f.ranges.splice(ri,1); updatePrice()" class="text-red-400 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
                                         </div>
                                     </template>

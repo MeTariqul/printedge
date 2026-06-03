@@ -93,7 +93,7 @@
         </div>
         <div>
             <label class="block text-xs font-semibold text-slate-400 mb-1.5">Category</label>
-            <select name="category" class="w-full px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <select name="category" onchange="this.form.submit(); this.blur()" class="w-full px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
                 <option value="paper">Paper</option>
                 <option value="toner">Toner/Ink</option>
                 <option value="binding">Binding</option>

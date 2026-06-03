@@ -168,7 +168,7 @@
             <div class="grid sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-neutral-300 uppercase mb-2">Provider</label>
-                    <select name="chat_provider" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none">
+                    <select name="chat_provider" onchange="this.blur()" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-brand-500 outline-none">
                         <option value="" {% if not site.chat_provider %}selected{% endif %}>None</option>
                         <option value="tawk" {% if site.chat_provider == 'tawk' %}selected{% endif %}>Tawk.to</option>
                         <option value="crisp" {% if site.chat_provider == 'crisp' %}selected{% endif %}>Crisp</option>

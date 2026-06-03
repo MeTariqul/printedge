@@ -1,88 +1,81 @@
 {% extends "base.html" %}
-{% block title %}Login — Print-Edge{% endblock %}
+{% block title %}Sign In | Print-Edge{% endblock %}
 
 {% block content %}
-<div class="auth-page-wrapper" style="background:var(--bg)">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-5 col-lg-4">
-        <!-- Logo -->
-        <div class="text-center mb-4">
-          <div class="avatar avatar-xl bg-gradient-primary mx-auto mb-3 shadow-lg">
-            <i class="bi bi-printer-fill" style="font-size:1.8rem"></i>
-          </div>
-          <h1 class="fw-bolder mb-1" style="font-size:1.6rem">Welcome back!</h1>
-          <p class="text-muted small">Sign in to your Print-Edge account</p>
-        </div>
-
-        <div class="auth-card p-4 p-md-5">
-          <form id="loginForm" method="post" action="{% url 'auth_login_page' %}">
-            {% csrf_token %}
-            <div class="mb-3">
-              <label class="form-label">Email Address</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <input type="email" name="email" class="form-control" required placeholder="you@example.com" autofocus>
-              </div>
-            </div>
-            <div class="mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="form-label mb-0">Password</label>
-                <a href="#" class="small" style="color:var(--primary)">Forgot password?</a>
-              </div>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <input type="password" name="password" id="loginPwd" class="form-control" required placeholder="••••••••">
-                <button class="btn btn-ghost" type="button" onclick="togglePwd('loginPwd',this)" tabindex="-1">
-                  <i class="bi bi-eye"></i>
-                </button>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold mb-3" id="loginBtn">
-              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
-            </button>
-          </form>
-          <div id="loginAlert" class="alert alert-danger rounded d-none mt-2 py-2 small"></div>
-          <p class="text-center text-muted small mb-0">
-            Don't have an account?
-            <a href="{% url 'auth_register_page' %}" style="color:var(--primary);font-weight:600">Create one free</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="fixed inset-0 overflow-hidden pointer-events-none mix-blend-screen z-[-1]">
+    <div class="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px]"></div>
+    <div class="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px]"></div>
 </div>
 
-{% block scripts %}
-<script>
-function togglePwd(id, btn) {
-  const el = document.getElementById(id);
-  const isText = el.type === 'text';
-  el.type = isText ? 'password' : 'text';
-  btn.querySelector('i').className = isText ? 'bi bi-eye' : 'bi bi-eye-slash';
-}
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('loginBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
-  const data = { email: e.target.email.value, password: e.target.password.value };
-  try {
-    const res = await fetch('/auth/login/', { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}, body: JSON.stringify(data) });
-    const result = await res.json();
-    if (result.success) { window.location.href = result.redirect || '/admin/dashboard/'; }
-    else {
-      const al = document.getElementById('loginAlert');
-      al.textContent = result.message || 'Invalid email or password.';
-      al.classList.remove('d-none');
-    }
-  } catch {
-    document.getElementById('loginAlert').textContent = 'Connection error. Please try again.';
-    document.getElementById('loginAlert').classList.remove('d-none');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Sign In';
-});
-</script>
-{% endblock %}
+<div class="flex-grow flex items-center justify-center px-4 py-12 relative z-10 min-h-[calc(100vh-8rem)]">
+    <div class="w-full max-w-md animate-fade-in">
+        
+        <div class="text-center mb-8">
+            <div class="mx-auto mb-6 flex justify-center">
+                {% include "partials/site_logo.html" %}
+            </div>
+            <h1 class="text-3xl font-display font-bold text-white mb-2">Welcome Back</h1>
+            <p class="text-neutral-500 font-medium">Enter your credentials to access your account</p>
+        </div>
+
+        <div class="premium-card rounded-3xl p-8 shadow-2xl">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <i class="bi bi-envelope text-neutral-500"></i>
+                        </div>
+                        <input type="email" name="email" required autocomplete="email" autofocus
+                               class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium"
+                               placeholder="student@g.bracu.ac.bd">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider">Password</label>
+                        <a href="{% url 'password_reset' %}" class="text-xs font-bold text-brand-400 hover:text-brand-300">Forgot password?</a>
+                    </div>
+                    <div class="relative" x-data="{ show: false }">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <i class="bi bi-lock text-neutral-500"></i>
+                        </div>
+                        <input :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password"
+                               class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium"
+                               placeholder="••••••••">
+                        <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-500 hover:text-white transition-colors">
+                            <i class="bi" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-white/20 bg-white/10 text-brand-500 focus:ring-brand-500 focus:ring-offset-black">
+                        <span class="text-sm font-medium text-neutral-300 group-hover:text-white transition-colors">Keep me signed in</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i class="bi bi-box-arrow-in-right text-lg"></i>
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-8 text-center border-t border-white/5 pt-6">
+                <p class="text-sm text-neutral-500 font-medium">
+                    Don't have an account? 
+                    <a href="{% url 'auth_register_page' %}" class="text-brand-400 hover:text-brand-300 font-bold ml-1">Create one →</a>
+                </p>
+                <p class="text-xs text-neutral-600 mt-4">
+                    <a href="{% url 'auth_verify_pending' %}" class="text-neutral-500 hover:text-brand-400">Resend verification email</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,366 @@
+{% extends "admin_base.html" %}
+{% block title %}System Status | Print-Edge Admin{% endblock %}
+{% block breadcrumb %}System Status{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6" x-data="statusPage()" x-init="startAutoRefresh()">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">System Status</h1>
+        <p class="text-slate-400 text-sm">Real-time monitoring dashboard</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <span class="text-sm text-slate-500">Last updated: <span x-text="countdown"></span></span>
+        <button @click="refreshNow()" class="px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-300 text-sm font-bold border border-brand-500/30 hover:bg-brand-500/30">
+            <i class="bi bi-arrow-clockwise"></i> Refresh Now
+        </button>
+        <form method="post" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="purge_now">
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-bold border border-amber-500/30 hover:bg-amber-500/30">
+                Run file purge now
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Overall Health -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <div class="flex items-center gap-4">
+        <span class="text-5xl">{{ health_emoji }}</span>
+        <div>
+            <h2 class="text-xl font-bold text-white mb-1">Overall Health</h2>
+            <p class="text-lg font-semibold {% if health_status == 'operational' %}text-emerald-400{% elif health_status == 'degraded' %}text-amber-400{% else %}text-red-400{% endif %}">
+                {% if health_status == 'operational' %}All systems operational{% elif health_status == 'degraded' %}Degraded performance{% else %}Outage{% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Health Indicators Row -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <i class="bi bi-hdd-network text-2xl {% if db_status.default.connected %}text-emerald-400{% else %}text-red-400{% endif %} mb-2"></i>
+        <div class="text-xs text-slate-400">Database</div>
+        <div class="{% if db_status.default.connected %}text-emerald-400{% else %}text-red-400{% endif %} text-sm font-bold">{{ db_status.default.vendor|default:"N/A" }}</div>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <i class="bi bi-cloud text-2xl {% if db_status.supabase.connected %}text-emerald-400{% else %}text-amber-400{% endif %} mb-2"></i>
+        <div class="text-xs text-slate-400">Supabase</div>
+        <div class="{% if db_status.supabase.connected %}text-emerald-400{% else %}text-amber-400{% endif %} text-sm font-bold">{% if db_status.supabase.connected %}Connected{% else %}Not configured{% endif %}</div>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <i class="bi bi-cloud-upload text-2xl {% if storage_status.connected %}text-emerald-400{% else %}text-red-400{% endif %} mb-2"></i>
+        <div class="text-xs text-slate-400">Storage</div>
+        <div class="{% if storage_status.connected %}text-emerald-400{% else %}text-red-400{% endif %} text-sm font-bold">{{ storage_backend }}</div>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <i class="bi bi-envelope-paper text-2xl {% if email_status.connected %}text-emerald-400{% else %}text-amber-400{% endif %} mb-2"></i>
+        <div class="text-xs text-slate-400">Email</div>
+        <div class="{% if email_status.connected %}text-emerald-400{% else %}text-amber-400{% endif %} text-sm font-bold">{% if email_status.connected %}Connected{% else %}{{ email_status.status|default:"Not configured" }}{% endif %}</div>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <i class="bi bi-memory text-2xl {% if cache_status.connected %}text-emerald-400{% else %}text-red-400{% endif %} mb-2"></i>
+        <div class="text-xs text-slate-400">Cache</div>
+        <div class="{% if cache_status.connected %}text-emerald-400{% else %}text-red-400{% endif %} text-sm font-bold">{{ cache_status.backend|default:"LocMem" }}</div>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <i class="bi bi-shield-check text-2xl {% if not security_status.debug %}text-emerald-400{% else %}text-red-400{% endif %} mb-2"></i>
+        <div class="text-xs text-slate-400">Security</div>
+        <div class="{% if not security_status.debug %}text-emerald-400{% else %}text-red-400{% endif %} text-sm font-bold">{% if security_status.debug %}DEBUG ON{% else %}Secure{% endif %}</div>
+    </div>
+</div>
+
+<!-- Database Details -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-hdd-stack"></i> Database Connections
+    </h3>
+    <div class="grid md:grid-cols-2 gap-4">
+        {% for db_name, db_info in db_status.items %}
+        <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-bold text-white">{{ db_name|title }} {% if db_name == 'default' %}(Primary){% elif db_name == 'supabase' %}(API){% endif %}</h4>
+                <span class="px-2 py-1 text-xs rounded-full {% if db_info.connected %}bg-emerald-500/20 text-emerald-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+                    {% if db_info.connected %}Connected{% else %}Error{% endif %}
+                </span>
+            </div>
+            <div class="text-sm space-y-1">
+                <p><span class="text-slate-400">Type:</span> <span class="text-white">{{ db_info.vendor|capfirst }}</span></p>
+                <p><span class="text-slate-400">Version:</span> <span class="text-white text-xs break-all">{{ db_info.version|truncatechars:50 }}</span></p>
+                <p><span class="text-slate-400">Latency:</span> <span class="text-white">{{ db_info.latency_ms|default:"—" }} ms</span></p>
+                <p><span class="text-slate-400">Tables:</span> <span class="text-white">{{ db_info.table_count|default:"—" }}</span></p>
+                <p><span class="text-slate-400">Size:</span> <span class="text-white">{{ db_info.size_mb|default:"—" }} MB</span></p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Server & Environment -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-pc-horizontal"></i> Server & Environment
+    </h3>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+            <p class="text-slate-400">Hostname</p>
+            <p class="text-white font-semibold">{{ server_info.hostname|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">IP Address</p>
+            <p class="text-white font-semibold">{{ server_info.ip_address|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Operating System</p>
+            <p class="text-white font-semibold text-xs break-all">{{ server_info.os|default:"N/A"|truncatechars:40 }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Python Version</p>
+            <p class="text-white font-semibold">{{ server_info.python_version|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Django Version</p>
+            <p class="text-white font-semibold">{{ django_version|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Environment</p>
+            <p class="text-white font-semibold {% if server_info.debug %}text-red-400{% else %}text-emerald-400{% endif %}">{{ server_info.environment|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Timezone</p>
+            <p class="text-white font-semibold">{{ timezone|default:"N/A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Server Time</p>
+            <p class="text-white font-semibold">{{ server_info.server_time|date:"M d, Y g:i A" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">DEBUG Mode</p>
+            <p class="{% if server_info.debug %}text-red-400{% else %}text-emerald-400{% endif %} font-semibold">{{ server_info.debug|yesno:"Yes,No" }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Application Metrics -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-graph-up-arrow"></i> Application Metrics
+    </h3>
+    <div class="grid md:grid-cols-4 gap-4">
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Total Users</p>
+            <p class="text-2xl font-bold text-white">{{ app_metrics.total_users|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Total Orders</p>
+            <p class="text-2xl font-bold text-white">{{ app_metrics.total_orders|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Orders Today</p>
+            <p class="text-2xl font-bold text-white">{{ app_metrics.orders_today|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Pending Orders</p>
+            <p class="{% if app_metrics.pending_orders > 0 %}text-amber-400{% else %}text-emerald-400{% endif %} text-2xl font-bold">{{ app_metrics.pending_orders|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Total Revenue</p>
+            <p class="text-2xl font-bold text-emerald-400">৳{{ app_metrics.total_revenue|floatformat:0|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Avg Order Value</p>
+            <p class="text-2xl font-bold text-white">৳{{ app_metrics.avg_order_value|floatformat:0|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Online Orders</p>
+            <p class="text-2xl font-bold text-blue-400">{{ app_metrics.online_orders|default:0 }}</p>
+        </div>
+        <div class="text-center p-3 rounded-xl bg-slate-800/50">
+            <p class="text-slate-400 text-xs">Walk-in Orders</p>
+            <p class="text-2xl font-bold text-amber-400">{{ app_metrics.walkin_orders|default:0 }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- File Storage -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-cloud-upload"></i> File Storage (Supabase)
+    </h3>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+            <p class="text-slate-400">Bucket</p>
+            <p class="text-white font-mono">{{ storage_bucket|default:"—" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Connection</p>
+            <p class="{% if storage_status.connected %}text-emerald-400{% else %}text-red-400{% endif %} font-semibold">
+                {% if storage_status.connected %}Connected{% else %}{{ storage_status.status_detail|default:"Error" }}{% endif %}
+            </p>
+        </div>
+        <div>
+            <p class="text-slate-400">Files in Bucket</p>
+            <p class="text-white font-semibold">{{ storage_status.total_files|default:"—" }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Orders with Attachments</p>
+            <p class="text-white font-semibold">{{ files_with_attachment|default:0 }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">S3 Total Size</p>
+            <p class="text-white font-semibold">{{ storage_status.total_size_bytes|default:0|filesizeformat }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Retention Policy</p>
+            <p class="text-white font-semibold">{{ site.auto_delete_files_days }} days</p>
+        </div>
+    </div>
+</div>
+
+<!-- Security Status -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-shield-lock"></i> Security Status
+    </h3>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div class="flex items-center gap-2">
+            <i class="bi {% if security_status.debug %}bi-exclamation-triangle text-red-400{% else %}bi-check-circle text-emerald-400{% endif %}"></i>
+            <span class="{% if security_status.debug %}text-red-400{% else %}text-emerald-400{% endif %} font-semibold">DEBUG Mode</span>
+            <span class="text-slate-400">: {{ security_status.debug|yesno:"ON,OFF" }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <i class="bi bi-check-circle text-emerald-400"></i>
+            <span class="text-emerald-400 font-semibold">CSRF Protection</span>
+            <span class="text-slate-400">: Enabled</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <i class="bi {% if security_status.ssl_secured %}bi-check-circle text-emerald-400{% else %}bi-exclamation-triangle text-amber-400{% endif %}"></i>
+            <span class="{% if security_status.ssl_secured %}text-emerald-400{% else %}text-amber-400{% endif %} font-semibold">SSL/HTTPS</span>
+            <span class="text-slate-400">: {{ security_status.ssl_secured|yesno:"Secured,Not secured" }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <i class="bi bi-check-circle text-emerald-400"></i>
+            <span class="text-emerald-400 font-semibold">X-Frame-Options</span>
+            <span class="text-slate-400">: DENY</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <i class="bi bi-clock text-white"></i>
+            <span class="text-white font-semibold">Session Timeout</span>
+            <span class="text-slate-400">: {{ security_status.session_timeout }} seconds</span>
+        </div>
+        <div>
+            <p class="text-slate-400 mb-1">Allowed Hosts</p>
+            <p class="text-white text-xs break-all">{{ security_status.allowed_hosts|join:", "|default:"N/A" }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Cache Status -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-memory"></i> Cache Status
+    </h3>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+            <p class="text-slate-400">Backend</p>
+            <p class="text-white font-mono">{{ cache_status.backend|default:"LocMem"|truncatechars:30 }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Status</p>
+            <p class="{% if cache_status.connected %}text-emerald-400{% else %}text-red-400{% endif %} font-semibold">
+                {% if cache_status.connected %}Connected{% else %}Error{% endif %}
+            </p>
+        </div>
+        <div>
+            <p class="text-slate-400">Memory (Redis)</p>
+            <p class="text-white font-semibold">{% if cache_status.memory_mb %}{{ cache_status.memory_mb }} MB{% else %}N/A{% endif %}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Email Delivery Status -->
+<div class="premium-card p-6 rounded-2xl border border-slate-700/50 mb-6">
+    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <i class="bi bi-envelope-exclamation"></i> Email Delivery Status
+    </h3>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+            <p class="text-slate-400">Failed (24h)</p>
+            <p class="{% if failed_emails_24h > 0 %}text-red-400{% else %}text-emerald-400{% endif %} text-2xl font-bold">{{ failed_emails_24h|default:0 }}</p>
+        </div>
+        <div>
+            <p class="text-slate-400">Total Logs</p>
+            <p class="text-white font-semibold">{{ failed_emails_24h|default:0 }}</p>
+            <a href="{% url 'admin_email_logs' %}" class="text-xs text-brand-400 hover:underline">View all logs</a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="grid md:grid-cols-2 gap-6 mb-6">
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="bi bi-clock-history"></i> Recent Orders
+        </h3>
+        {% if recent_orders %}
+        <div class="space-y-3">
+            {% for order in recent_orders %}
+            <div class="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
+                <div>
+                    <p class="text-sm font-semibold text-white">{{ order.order_number }}</p>
+                    <p class="text-xs text-slate-400">{{ order.customer_name|truncatechars:25 }}</p>
+                </div>
+                <span class="px-2 py-1 text-xs rounded-full {% if order.status == 'delivered' %}bg-emerald-500/20 text-emerald-400{% else %}bg-amber-500/20 text-amber-400{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-slate-500">No recent orders</p>
+        {% endif %}
+    </div>
+
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="bi bi-journal-text"></i> Recent Activity
+        </h3>
+        {% if recent_audits %}
+        <div class="space-y-3">
+            {% for log in recent_audits %}
+            <div class="p-3 rounded-lg bg-slate-800/50">
+                <p class="text-sm font-semibold text-white">{{ log.action }}</p>
+                <p class="text-xs text-slate-400">{{ log.user.display_name|default:"System" }} · {{ log.timestamp|date:"M d, g:i A" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-slate-500">No recent activity</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('statusPage', () => ({
+        countdown: '30s',
+        timer: null,
+        startAutoRefresh() {
+            let count = 30;
+            this.countdown = count + 's';
+            this.timer = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    count = 30;
+                    window.location.reload();
+                }
+                this.countdown = count + 's';
+            }, 1000);
+        },
+        refreshNow() {
+            window.location.reload();
+        }
+    }));
+});
+</script>
+{% endblock %}

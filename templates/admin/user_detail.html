@@ -1,0 +1,83 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ customer.display_name }} | PrintEdge Admin{% endblock %}
+{% block breadcrumb %}Customer orders{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+    <div>
+        <a href="{% url 'admin_users' %}" class="text-sm text-text-muted hover:text-primary mb-2 inline-flex items-center gap-1"><i class="bi bi-arrow-left"></i> All customers</a>
+        <h1 class="text-2xl font-semibold">{{ customer.display_name }}</h1>
+        <p class="text-text-muted text-sm">{{ customer.email }}{% if customer.phone %} · {{ customer.phone }}{% endif %}</p>
+        <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent">{{ customer.tier|title }}</span>
+    </div>
+    <a href="{% url 'admin_orders' %}?q={{ customer.email|urlencode }}" class="btn-secondary text-sm min-h-[44px]">
+        <i class="bi bi-list-check"></i> View in orders list
+    </a>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="card p-4 text-center">
+        <p class="text-2xl font-bold text-primary">{{ customer.total_orders }}</p>
+        <p class="text-xs text-text-muted">Orders</p>
+    </div>
+    <div class="card p-4 text-center">
+        <p class="text-2xl font-bold">৳{{ customer.total_spent|floatformat:0 }}</p>
+        <p class="text-xs text-text-muted">Total spent</p>
+    </div>
+    <div class="card p-4 text-center col-span-2 sm:col-span-2">
+        <p class="text-sm font-semibold">Joined {{ customer.date_joined|date:"M d, Y" }}</p>
+        <p class="text-xs text-text-muted">{% if customer.is_banned %}Banned{% elif customer.is_active %}Active{% else %}Inactive{% endif %}</p>
+    </div>
+</div>
+
+<div class="card overflow-hidden">
+    <div class="p-4 border-b border-surface-border">
+        <h2 class="font-semibold">Order history</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="responsive-table w-full text-left text-sm">
+            <thead>
+                <tr class="text-text-muted text-xs uppercase border-b border-surface-border">
+                    <th class="p-3 pl-4">Order</th>
+                    <th class="p-3">Source</th>
+                    <th class="p-3">Specs</th>
+                    <th class="p-3">Amount</th>
+                    <th class="p-3">Payment</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3 pr-4"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-border">
+                {% for o in orders %}
+                <tr class="hover:bg-surface/50">
+                    <td class="p-3 pl-4" data-label="Order">
+                        <div class="font-semibold">{{ o.order_number }}</div>
+                        <div class="text-xs text-text-muted">{{ o.created_at|date:"M d, g:i A" }}</div>
+                    </td>
+                    <td class="p-3" data-label="Source">
+                        {% if o.source == 'offline' %}
+                        <span class="text-xs font-bold text-amber-400">Walk-in</span>
+                        {% else %}
+                        <span class="text-xs font-bold text-primary">Online</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-xs text-text-muted" data-label="Specs">
+                        {{ o.get_print_type_display }} · {{ o.get_sides_display }} · {{ o.pages }} pg
+                    </td>
+                    <td class="p-3 font-semibold" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
+                    <td class="p-3 text-xs" data-label="Payment">{{ o.get_payment_status_display }}</td>
+                    <td class="p-3" data-label="Status">
+                        <span class="text-xs font-bold">{{ o.get_status_display }}</span>
+                    </td>
+                    <td class="p-3 pr-4" data-label="">
+                        <a href="{% url 'admin_order_detail' o.pk %}" class="btn-secondary text-xs py-2 px-3 min-h-[44px]">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="p-12 text-center text-text-muted">No orders yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "admin_base.html" %}
+{% block title %}Mail Dashboard | Print-Edge Admin{% endblock %}
+{% block breadcrumb %}Mail Service / Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">Mail Dashboard</h1>
+        <p class="text-slate-400 text-sm">Email communication metrics and analytics</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{% url 'admin_mail_compose' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition-colors">
+            <i class="bi bi-envelope-plus"></i> Compose Email
+        </a>
+        <a href="{% url 'admin_mail_logs' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">
+            <i class="bi bi-list"></i> View All Logs
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <p class="text-slate-400 text-xs">Total Emails Sent</p>
+        <p class="text-2xl font-bold text-white">{{ total_emails|default:0 }}</p>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <p class="text-slate-400 text-xs">Sent Today</p>
+        <p class="text-2xl font-bold text-emerald-400">{{ emails_today|default:0 }}</p>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <p class="text-slate-400 text-xs">Failed Today</p>
+        <p class="text-2xl font-bold {% if failed_today > 0 %}text-red-400{% else %}text-emerald-400{% endif %}">{{ failed_today|default:0 }}</p>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <p class="text-slate-400 text-xs">Open Rate</p>
+        <p class="text-2xl font-bold text-amber-400">N/A</p>
+    </div>
+    <div class="premium-card p-4 rounded-xl border border-slate-700/50 text-center">
+        <p class="text-slate-400 text-xs">Click Rate</p>
+        <p class="text-2xl font-bold text-amber-400">N/A</p>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid lg:grid-cols-3 gap-6 mb-6">
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50 lg:col-span-2">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="bi bi-bar-chart-line"></i> Daily Email Volume (30 days)
+        </h3>
+        <canvas id="emailVolumeChart" height="120"></canvas>
+    </div>
+    <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="bi bi-pie-chart"></i> Delivery Status
+        </h3>
+        <canvas id="deliveryStatusChart" height="160"></canvas>
+    </div>
+</div>
+
+<!-- Recent Emails -->
+<div class="premium-card rounded-2xl border border-slate-700/50 mb-6">
+    <div class="p-6 border-b border-slate-700/50">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="bi bi-envelope"></i> Recent Emails
+        </h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                    <th class="p-3 pl-5">Recipient</th>
+                    <th class="p-3">Subject</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3">Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+                {% for email in recent_emails %}
+                <tr class="hover:bg-slate-800/30 transition-colors cursor-pointer" onclick="location.href='{% url 'admin_mail_logs' %}?log_id={{ email.id }}'">
+                    <td class="p-3 pl-5 text-sm text-white">{{ email.recipient }}</td>
+                    <td class="p-3 text-sm text-slate-300">{{ email.subject|truncatechars:50 }}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 text-[10px] rounded-full {% if email.status == 'sent' %}bg-emerald-500/20 text-emerald-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+                            {{ email.status|title }}
+                        </span>
+                    </td>
+                    <td class="p-3 text-xs text-slate-500">{{ email.created_at|date:"M d, Y g:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="p-12 text-center text-slate-500">No emails logged.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    const volumeCtx = document.getElementById('emailVolumeChart').getContext('2d');
+    new Chart(volumeCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [
+                { label: 'Sent', data: {{ chart_sent|safe }}, backgroundColor: '#10b981' },
+                { label: 'Failed', data: {{ chart_failed|safe }}, backgroundColor: '#ef4444' }
+            ]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#e2e8f0' } } } }
+    });
+
+    const statusCtx = document.getElementById('deliveryStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Sent', 'Failed'],
+            datasets: [{ data: [{{ sent_count }}, {{ failed_count }}], backgroundColor: ['#10b981', '#ef4444'] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#e2e8f0' } } } }
+    });
+});
+</script>
+{% endblock %}

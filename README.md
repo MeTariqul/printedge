@@ -1,6 +1,6 @@
-# Print-Edge (PrintEase) - Enterprise Printing Business App
+# Print-Edge - Enterprise Printing Business App
 
-A comprehensive, production-ready Django web application built for a university-based print shop at Gono Bishwabidyalay.
+A comprehensive, production-ready Django web application for a campus print shop. Default delivery convenience point: Gono Bishwabidyalay (not affiliated with the university).
 
 ## Features
 
@@ -54,23 +54,35 @@ pip install -r requirements.txt
 ```
 
 4. **Environment Variables**
-Create a `.env` file in the root directory:
-```env
-SECRET_KEY=your-django-secret
-DEBUG=True
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-service-key
+Copy `.env.example` to `.env` and configure:
+- `DATABASE_URL` — Supabase Postgres connection string
+- `AWS_*` + `SUPABASE_STORAGE_BUCKET` — Supabase Storage S3 credentials (private `order-files` bucket)
+- `CRON_SECRET` — secures `/api/cron/purge-files/` for Vercel Cron
+
+5. **Migrate & seed**
+```bash
+python manage.py migrate
+python manage.py seed_data
 ```
 
-5. **Run the Application**
+6. **Run the Application**
 ```bash
 python manage.py runserver
 ```
 
+### File retention (7 days after delivery)
+- Configured in **Admin → Settings** (`auto_delete_files_days`, default 7).
+- Run manually: `python manage.py purge_order_files`
+- On Vercel: schedule daily `GET https://your-app.vercel.app/api/cron/purge-files/` with header `Authorization: Bearer YOUR_CRON_SECRET`.
+
+### Admin capabilities
+- **Admin / Super Admin**: create customers & staff, view password copies, ban users, delete order files early, system status page.
+- **Operator / Manager**: orders, inventory, pricing, walk-in POS (no user management or settings).
+
 ## System Architecture
 *   `core/`: Core business logic, models, and user views.
-*   `printease/`: Django project settings and root routing.
+*   `print_edge/`: Django project settings and root routing.
 *   `templates/`: Master layout files containing the UI system.
 *   `static/css/`: Advanced CSS variables and dynamic dark-mode configuration.
 
-*Developed for Gono Bishwabidyalay.*
+*Delivery convenience point: Gono Bishwabidyalay (not affiliated).*

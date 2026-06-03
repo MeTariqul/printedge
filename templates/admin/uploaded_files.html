@@ -1,0 +1,87 @@
+{% extends "admin_base.html" %}
+{% block title %}Uploaded Files | PrintEdge Admin{% endblock %}
+{% block breadcrumb %}Uploaded Files{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-display font-bold text-white mb-1">Uploaded Files</h1>
+    <p class="text-slate-400 text-sm">All order attachments across online and walk-in orders</p>
+</div>
+
+<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50 mb-6">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse responsive-table">
+            <thead>
+                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                    <th class="px-4 py-3">File</th>
+                    <th class="px-4 py-3">Size</th>
+                    <th class="px-4 py-3">Uploaded by</th>
+                    <th class="px-4 py-3">Order</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3">Uploaded</th>
+                    <th class="px-4 py-3 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+                {% for f in order_files %}
+                <tr class="hover:bg-slate-800/30">
+                    <td class="px-4 py-3 text-sm font-medium text-white max-w-[200px] truncate" title="{{ f.file_name }}">{{ f.file_name|default:"—" }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-400">
+                        {% if f.file_size_bytes %}{{ f.file_size_bytes|filesizeformat }}{% else %}—{% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-300">
+                        {% if f.order.customer %}
+                            {{ f.order.customer.email }}
+                        {% elif f.order.walkin_customer %}
+                            Walk-in: {{ f.order.walkin_customer.name }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{% url 'admin_order_detail' f.order.pk %}" class="text-brand-400 hover:underline font-semibold">{{ f.order.order_number }}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-400">{{ f.order.get_status_display }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-400">{{ f.created_at|date:"M d, Y H:i" }}</td>
+                    <td class="px-4 py-3 text-right">
+                        {% if not request.user.is_readonly_staff %}
+                        <form method="post" class="inline" onsubmit="return confirm('Delete this file from storage? The order will be kept.');">
+                            {% csrf_token %}
+                            <input type="hidden" name="file_id" value="{{ f.pk }}">
+                            <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold min-h-[44px] px-2">Delete</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% for o in legacy_orders %}
+                <tr class="hover:bg-slate-800/30">
+                    <td class="px-4 py-3 text-sm font-medium text-white max-w-[200px] truncate">{{ o.file_name|default:"—" }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-400">{% if o.file_size_bytes %}{{ o.file_size_bytes|filesizeformat }}{% else %}—{% endif %}</td>
+                    <td class="px-4 py-3 text-sm text-slate-300">
+                        {% if o.customer %}{{ o.customer.email }}{% elif o.walkin_customer %}Walk-in: {{ o.walkin_customer.name }}{% else %}—{% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm"><a href="{% url 'admin_order_detail' o.pk %}" class="text-brand-400 hover:underline font-semibold">{{ o.order_number }}</a></td>
+                    <td class="px-4 py-3 text-sm text-slate-400">{{ o.get_status_display }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-400">{{ o.created_at|date:"M d, Y H:i" }}</td>
+                    <td class="px-4 py-3 text-right">
+                        {% if not request.user.is_readonly_staff %}
+                        <form method="post" class="inline" onsubmit="return confirm('Delete this file from storage?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="order_id" value="{{ o.pk }}">
+                            <button type="submit" class="text-red-400 hover:text-red-300 text-sm font-semibold min-h-[44px] px-2">Delete</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not order_files and not legacy_orders %}
+                <tr>
+                    <td colspan="7" class="px-4 py-12 text-center text-slate-500">No uploaded files found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

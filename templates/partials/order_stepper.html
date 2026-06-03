@@ -1,0 +1,16 @@
+<nav class="flex items-center justify-center gap-2 md:gap-4 mb-8" aria-label="Order progress">
+  <div class="flex items-center gap-2" :class="step >= 1 ? 'text-primary' : 'text-text-muted'">
+    <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2" :class="step >= 1 ? 'border-primary bg-primary text-white' : 'border-surface-border'">1</span>
+    <span class="text-sm font-semibold hidden sm:inline">Upload</span>
+  </div>
+  <div class="w-8 h-0.5 bg-surface-border"></div>
+  <div class="flex items-center gap-2" :class="step >= 2 ? 'text-primary' : 'text-text-muted'">
+    <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2" :class="step >= 2 ? 'border-primary bg-primary text-white' : 'border-surface-border'">2</span>
+    <span class="text-sm font-semibold hidden sm:inline">Configure</span>
+  </div>
+  <div class="w-8 h-0.5 bg-surface-border"></div>
+  <div class="flex items-center gap-2" :class="step >= 3 ? 'text-primary' : 'text-text-muted'">
+    <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2" :class="step >= 3 ? 'border-primary bg-primary text-white' : 'border-surface-border'">3</span>
+    <span class="text-sm font-semibold hidden sm:inline">Review</span>
+  </div>
+</nav>

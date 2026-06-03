@@ -1,0 +1,370 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 16px;
+    @apply bg-canvas text-text;
+  }
+  body {
+    @apply font-sans font-normal text-text bg-canvas antialiased min-h-screen;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-text;
+  }
+  a {
+    @apply text-primary hover:text-primary-light transition-colors;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-card-gradient border border-surface-border rounded-card shadow-card;
+    background-color: #111827;
+  }
+  .premium-card {
+    @apply card;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-canvas disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-canvas hover:bg-primary-light focus:ring-primary;
+  }
+  .btn-secondary {
+    @apply btn border-2 border-primary text-primary bg-transparent hover:bg-primary/10 focus:ring-primary;
+  }
+  .btn-success {
+    @apply btn bg-emerald-600 text-white hover:bg-emerald-500 focus:ring-emerald-500;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-500 focus:ring-red-500;
+  }
+  .btn-cta {
+    @apply btn bg-accent text-white hover:bg-accent-light focus:ring-accent;
+  }
+  .form-input,
+  .form-select {
+    @apply w-full px-3 py-2.5 rounded-lg bg-canvas-alt border border-surface-border text-text placeholder:text-text-muted focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors min-h-[44px];
+  }
+  .form-label {
+    @apply block text-sm font-semibold text-text mb-1;
+  }
+  .form-error {
+    @apply text-sm text-red-400 mt-1;
+  }
+  .navbar {
+    @apply sticky top-0 z-50 bg-canvas/95 backdrop-blur-md border-b border-surface-border;
+  }
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-canvas focus:rounded-lg;
+  }
+  .tooltip-wrap {
+    @apply relative inline-flex items-center;
+  }
+  .tooltip-text {
+    @apply invisible opacity-0 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs font-medium text-text bg-surface border border-surface-border rounded-lg whitespace-nowrap z-50 transition-opacity;
+  }
+  .tooltip-wrap:hover .tooltip-text,
+  .tooltip-wrap:focus-within .tooltip-text {
+    @apply visible opacity-100;
+  }
+  .skeleton {
+    @apply animate-pulse bg-surface rounded;
+  }
+  .empty-state {
+    @apply text-center py-16 px-6;
+  }
+  .empty-state-icon {
+    @apply text-6xl text-surface-muted mb-4;
+  }
+  .modal-backdrop {
+    @apply fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4;
+  }
+  .modal-panel {
+    @apply card w-full max-w-lg max-h-[90vh] overflow-y-auto p-6;
+  }
+  @media (max-width: 767px) {
+    .modal-panel.modal-fullscreen-mobile {
+      @apply fixed inset-0 max-w-none max-h-none rounded-none m-0;
+    }
+  }
+  .table-wrap {
+    @apply overflow-x-auto w-full;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-info {
+    @apply badge bg-primary/20 text-primary;
+  }
+  .alert-warning {
+    @apply p-4 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300;
+}
+}
+
+/* Responsive tables: card layout on mobile */
+@media (max-width: 767px) {
+  .responsive-table thead {
+    display: none;
+  }
+  .responsive-table tbody tr {
+    display: block;
+    @apply mb-4 p-4 rounded-card border border-surface-border bg-canvas-alt;
+    background-color: #111827;
+  }
+  .responsive-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border: none;
+    text-align: right;
+  }
+  .responsive-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: left;
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+  .responsive-table tbody td:last-child {
+    border-bottom: none;
+  }
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@media (max-width: 639px) {
+  .modal-fullscreen-mobile > .card,
+  .modal-fullscreen-mobile > div {
+    max-height: 100vh;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+.card input[type="password"],
+.card input[type="text"]:not([class*="form-"]),
+.card input[type="email"]:not([class*="form-"]) {
+  @apply form-input;
+}
+
+/* === Dropdown Fixes === */
+.dropdown-container, .relative[x-data], .relative[x-ref] {
+    position: relative !important;
+}
+
+.dropdown-menu, .absolute[x-show], .absolute.z-10, [x-show] > .absolute {
+    position: absolute !important;
+    z-index: 1050 !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    min-width: 200px !important;
+    max-width: 90vw !important;
+}
+
+/* Prevent parent overflow clipping - critical fix */
+.card, .premium-card {
+    overflow: visible !important;
+}
+
+/* Ensure dropdowns can escape rounded containers */
+[x-show]:not([x-cloak]) {
+    overflow: visible !important;
+}
+
+/* Notification dropdown specific */
+#notification-dropdown {
+    z-index: 1050 !important;
+    max-height: 288px !important;
+}
+
+/* Search results dropdown */
+#searchResults {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+}
+
+/* Select dropdowns - force proper sizing */
+select, .form-select {
+    max-height: none !important;
+    overflow-y: auto !important;
+}
+
+/* === Contrast Fixes - WCAG 2.1 AA Minimum === */
+
+/* Form inputs - ensure text is visible on bg-white/5 */
+.bg-white\/5, .bg-white\/5\.input {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Placeholder text - ensure proper contrast (WCAG 2.1: 4.5:1) */
+::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+placeholder, .placeholder-neutral-600::placeholder, .placeholder-slate-500::placeholder, .placeholder-slate-600::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Disabled states - ensure text remains readable */
+.opacity-50, .opacity-60 {
+    opacity: 0.7 !important;
+}
+
+/* Disabled inputs - maintain contrast */
+input:disabled, select:disabled, textarea:disabled, .form-input:disabled {
+    opacity: 0.7 !important;
+    cursor: not-allowed;
+}
+
+/* Disabled checkboxes - visible indicator */
+input:disabled[type="checkbox"] {
+    opacity: 0.7 !important;
+}
+
+/* Label text on dark backgrounds - ensure visibility */
+.text-neutral-400, .text-neutral-600 {
+    color: #cbd5e1 !important;
+}
+
+/* Muted text that needs to be visible */
+.text-slate-500, .text-slate-600, .text-neutral-500, .text-neutral-600, .text-neutral-700 {
+    color: #94a3b8 !important;
+}
+
+/* Status badges - ensure text contrasts with background */
+.bg-amber-500\/20 {
+    background-color: rgba(245, 158, 11, 0.25) !important;
+}
+.text-amber-300 {
+    color: #fcd34d !important;
+}
+.text-amber-400 {
+    color: #fbbf24 !important;
+}
+
+/* Payment tab disabled state */
+.text-slate-600.cursor-not-allowed {
+    color: #fbbf24 !important;
+}
+
+/* Hover states for disabled elements */
+.hover\:text-white:hover {
+    color: #ffffff !important;
+}
+
+/* Ensure select options are readable */
+select option {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+select option:disabled {
+    color: #94a3b8 !important;
+    opacity: 0.7;
+}
+
+/* === Select/Dropdown Global Styling - Dark Theme === */
+/* All select elements must have dark background with light text */
+select {
+    background-color: #111827 !important;
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+}
+
+/* Force dropdown menu styling for all contexts */
+select, select:focus, select:active {
+    background-color: #111827 !important;
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+}
+
+/* Override for select elements inside dark cards/forms */
+.premium-card select, .card select, [x-data] select, .form-select, .bg-white\/5 select {
+    background-color: #111827 !important;
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+}
+
+/* Dark theme for option elements */
+select option, option {
+    background-color: #111827 !important;
+    color: #e5e7eb !important;
+}
+select option:hover, option:hover {
+    background-color: #06b6d4 !important;
+    color: #111827 !important;
+}
+
+/* Focus/hover states for select elements */
+select:focus, .form-select:focus {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2) !important;
+}
+
+/* Mobile dropdown fix - ensure background on iOS */
+@supports (-webkit-touch-callout: none) {
+    select {
+        background-color: #111827 !important;
+        color: #e5e7eb !important;
+    }
+}
+
+/* Form select specific fixes */
+.form-select, select[class*="form-select"] {
+    background-color: #111827 !important;
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+}
+
+/* Override any inline light backgrounds on selects */
+.bg-white\/5, .bg-white\/10, .bg-slate-800\/50, .bg-slate-800\/70 {
+    background-color: #111827 !important;
+}
+
+/* Force dark theme for any slate-800/50 or white/5 backgrounds */
+.bg-slate-800\/50 {
+    background-color: rgba(17, 24, 39, 0.85) !important;
+}
+.bg-white\/5 {
+    background-color: rgba(17, 24, 39, 0.85) !important;
+}
+.bg-white\/10 {
+    background-color: rgba(17, 24, 39, 0.9) !important;
+}
+
+/* Ensure text contrast in dropdowns with light backgrounds */
+.text-white, .text-slate-400, .text-neutral-300 {
+    color: #f9fafb !important;
+}
+
+/* Select dropdown arrow icon fixes */
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2394a3b8' viewBox='0 0 20 20'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
+    background-position: right 0.75rem center !important;
+    background-repeat: no-repeat !important;
+    background-size: 1.25em 1.25em !important;
+    padding-right: 2.5rem !important;
+}

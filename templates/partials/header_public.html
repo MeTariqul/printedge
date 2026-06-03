@@ -1,0 +1,50 @@
+{% load static %}
+<nav class="navbar hidden md:block">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            {% include "partials/site_logo.html" %}
+            <div class="flex items-center gap-6">
+                <a href="{% url 'public_index' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_index' %}text-primary{% else %}text-text-muted{% endif %}">Home</a>
+                <a href="{% url 'public_services_page' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_services_page' %}text-primary{% else %}text-text-muted{% endif %}">Services</a>
+                <a href="{% url 'public_upload_page' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_upload_page' %}text-primary{% else %}text-text-muted{% endif %}">Upload</a>
+                <a href="{% url 'public_pricing_page' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_pricing_page' %}text-primary{% else %}text-text-muted{% endif %}">Pricing</a>
+                <a href="{% url 'public_contact_page' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_contact_page' %}text-primary{% else %}text-text-muted{% endif %}">Contact</a>
+                {% if user.is_authenticated %}
+                    {% include "partials/notifications_bell.html" %}
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" @click="open = !open" class="flex items-center gap-2 min-h-[44px] px-3 rounded-lg hover:bg-surface">
+                            <span class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden">
+                                {% if user_avatar_url %}<img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">{% else %}{{ user.first_name|default:user.email|first|upper }}{% endif %}
+                            </span>
+                            <i class="bi bi-chevron-down text-xs text-text-muted"></i>
+                        </button>
+                        <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 mt-2 w-48 py-2 rounded-lg card shadow-lg z-50">
+                            {% if user.is_admin_user %}
+                            <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Admin</a>
+                            {% else %}
+                            <a href="{% url 'user_dashboard' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Dashboard</a>
+                            {% endif %}
+                            <a href="{% url 'user_profile' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Profile</a>
+                            <a href="{% url 'auth_logout' %}" class="block px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10 min-h-[44px]">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'auth_login_page' %}" class="text-sm font-semibold text-text-muted hover:text-primary min-h-[44px] inline-flex items-center">Login</a>
+                    <a href="{% url 'auth_register_page' %}" class="btn-primary text-sm py-2 px-5">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<header class="navbar md:hidden pt-safe">
+    <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 h-14">
+        <button type="button" @click="mobileMenu = true" class="w-11 h-11 flex items-center justify-center rounded-lg border border-surface-border" aria-label="Open menu">
+            <i class="bi bi-list text-xl"></i>
+        </button>
+        <div class="flex justify-center min-w-0">{% include "partials/site_logo.html" %}</div>
+        <div class="flex items-center gap-1">
+            {% if user.is_authenticated %}{% include "partials/notifications_bell.html" %}{% endif %}
+        </div>
+    </div>
+</header>

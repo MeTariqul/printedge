@@ -68,3 +68,10 @@ htmlcov/
 
 # Node modules (if any)
 node_modules/
+
+# Django collectstatic output (regenerate with manage.py collectstatic)
+staticfiles/
+
+# Local database and uploads
+db.sqlite3
+media/

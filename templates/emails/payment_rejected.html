@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Issue - PrintEdge</title>
+    <!--[if mso]>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: Arial, Helvetica, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <!-- Header -->
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #1e293b, #111827); padding: 30px 20px;">
+                <a href="https://printedge.vercel.app" style="text-decoration: none;">
+                    <img src="https://printedge.vercel.app/static/icons/logo.png" alt="PrintEdge Logo" width="120" style="display: block; margin: 0 auto;">
+                </a>
+                <h1 style="color: #ffffff; font-size: 24px; font-weight: 600; margin: 20px 0 0 0;">Payment Issue</h1>
+            </td>
+        </tr>
+        
+        <!-- Body -->
+        <tr>
+            <td style="padding: 40px 30px 30px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td>
+                            <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 16px;">
+                                Hello {{ user.first_name|default:user.email }},
+                            </p>
+                            
+                            <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 24px;">
+                                We encountered an issue with your payment for order <strong>#{{ order.order_number }}</strong>.
+                            </p>
+                            
+                            <!-- Reason Card -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="font-size: 14px; color: #ef4444; font-weight: 600; margin: 0 0 8px;">Reason:</p>
+                                        <p style="font-size: 14px; color: #333333; margin: 0;">{{ order.payment_rejection_reason|default:"Please contact us for details." }}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 24px;">
+                                To complete your order, please try again with the correct payment details.
+                            </p>
+                            
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center">
+                                        <a href="https://printedge.vercel.app/user/orders/{{ order.pk }}/" style="display: inline-block; background: linear-gradient(135deg, #f97316, #fb923c); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 14px 32px; border-radius: 12px;">
+                                            Repay Now
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- Footer -->
+        <tr>
+            <td style="background-color: #111827; padding: 30px; text-align: center;">
+                <p style="font-size: 14px; color: #94a3b8; margin: 0 0 8px;">PrintEdge &copy; 2026</p>
+                <p style="font-size: 12px; color: #64748b; margin: 0;">This is an automated message. Please do not reply to this email.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

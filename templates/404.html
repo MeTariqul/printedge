@@ -1,2 +1,12 @@
-"{% extends \"base.html\" %}\n{% block title %}Page Not Found — Print-Edge{% endblock %}\n\n{% block content %}\n<div class=\"container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center py-5\">\n  <div class=\"mb-4\" styl
-<truncated 902 bytes>
+{% extends "base.html" %}
+{% block title %}Page Not Found | Print-Edge{% endblock %}
+{% block content %}
+<div class="flex-grow flex items-center justify-center px-4 py-16">
+    <div class="text-center max-w-lg empty-state">
+        <p class="text-8xl font-bold text-primary mb-4">404</p>
+        <h1 class="text-2xl font-semibold mb-2">Page not found</h1>
+        <p class="text-text-muted mb-8">We couldn't find the page you were looking for.</p>
+        <a href="{% url 'public_index' %}" class="btn-primary"><i class="bi bi-house-door-fill"></i> Back to Home</a>
+    </div>
+</div>
+{% endblock %}

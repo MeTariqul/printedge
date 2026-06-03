@@ -1,0 +1,41 @@
+<footer class="hidden md:block border-t border-surface-border bg-canvas-alt mt-auto py-12">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+            <div>
+                <div class="mb-4">{% include "partials/site_logo.html" %}</div>
+                <p class="text-text-muted text-sm">Affordable campus printing. Delivery convenience point: Gono Bishwabidyalay (not affiliated).</p>
+            </div>
+            <div>
+                <h4 class="font-semibold text-primary mb-3">Services</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><a href="{% url 'public_services_page' %}" class="hover:text-primary">Print Services</a></li>
+                    <li><a href="{% url 'public_pricing_page' %}" class="hover:text-primary">Price List</a></li>
+                    <li><a href="{% url 'public_upload_page' %}" class="hover:text-primary">Upload Files</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold text-primary mb-3">Contact</h4>
+                <ul class="space-y-2 text-sm text-text-muted">
+                    <li><i class="bi bi-telephone mr-1"></i> {{ SITE.business_phone }}</li>
+                    <li><i class="bi bi-envelope mr-1"></i> {{ SITE.business_email }}</li>
+                    <li><i class="bi bi-geo-alt mr-1"></i> {{ SITE.business_address|truncatewords:8 }}</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold text-primary mb-3">Follow</h4>
+                <div class="flex gap-3">
+                    {% if SITE.facebook_page %}
+                    <a href="{{ SITE.facebook_page }}" target="_blank" rel="noopener" class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    {% endif %}
+                    {% if SITE.whatsapp_number %}
+                    <a href="https://wa.me/{{ SITE.whatsapp_number }}" target="_blank" rel="noopener" class="w-10 h-10 rounded-lg bg-green-500/10 text-green-600 flex items-center justify-center hover:bg-green-500 hover:text-white transition-colors" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    {% endif %}
+                    {% if SITE.messenger_link %}
+                    <a href="{{ SITE.messenger_link }}" target="_blank" rel="noopener" class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-colors" aria-label="Messenger"><i class="bi bi-messenger"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-text-muted text-sm">&copy; {% now "Y" %} PrintEdge. All rights reserved.</p>
+    </div>
+</footer>

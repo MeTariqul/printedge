@@ -1,0 +1,19 @@
+{% comment %}
+Mobile Modal Component
+Usage:
+{% include "mobile/modal.html" with modal_id="myModal" title="Title" %}
+Content goes here
+{% endcomment %}
+{% load static %}
+
+<div x-show="open" x-cloak class="mobile-modal" @click.self="open=false">
+    <div class="mobile-modal-header">
+        <h3 class="mobile-modal-title">{{ title|default:'Modal Title' }}</h3>
+        <button type="button" @click="open=false" class="mobile-modal-close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    <div class="mobile-modal-content">
+        {{ content|safe }}
+    </div>
+</div>

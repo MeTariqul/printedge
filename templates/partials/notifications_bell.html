@@ -1,0 +1,167 @@
+{% if user.is_authenticated %}
+<div class="relative" id="notification-wrapper" style="position: relative !important;">
+    <button type="button" id="notification-bell"
+        class="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+        aria-label="Notifications" aria-expanded="false" aria-haspopup="true">
+        <i class="bi bi-bell text-xl"></i>
+        <span id="notification-badge" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center hidden">0</span>
+    </button>
+    <div id="notification-dropdown"
+        class="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] premium-card rounded-2xl border border-slate-700/50 shadow-2xl z-[100] hidden"
+        style="position: absolute !important; z-index: 1050 !important; max-height: 288px !important; overflow-y: auto !important; width: min(100vw-2rem, 22rem) !important;">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700/50">
+            <span class="text-sm font-bold text-white">Notifications</span>
+            <button type="button" id="mark-all-read-btn" class="text-xs text-brand-400 hover:underline min-h-[44px] px-2">Mark all read</button>
+        </div>
+        <ul id="notification-list" class="max-h-72 overflow-y-auto divide-y divide-slate-800/80 text-sm" style="max-height: 18rem !important; overflow-y: auto !important;">
+            <li class="px-4 py-6 text-slate-500 text-center">Loading…</li>
+        </ul>
+        <div class="border-t border-slate-700/50 px-4 py-2">
+            <a href="{% url 'user_notifications' %}" class="text-xs text-brand-400 hover:underline min-h-[44px] px-2 block text-center">View all</a>
+        </div>
+    </div>
+</div>
+<script>
+(function() {
+    function getCookie(name) {
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    return decodeURIComponent(cookie.substring(name.length + 1));
+                }
+            }
+        }
+        return '';
+    }
+
+    function csrfToken() {
+        let token = getCookie('csrftoken');
+        if (!token) {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta) token = meta.getAttribute('content') || '';
+        }
+        return token;
+    }
+
+    const bell = document.getElementById('notification-bell');
+    const badge = document.getElementById('notification-badge');
+    const dropdown = document.getElementById('notification-dropdown');
+    const list = document.getElementById('notification-list');
+    const markAllBtn = document.getElementById('mark-all-read-btn');
+    
+    if (!bell) return;
+    
+    function timeAgo(iso) {
+        const d = new Date(iso);
+        const now = new Date();
+        const diff = Math.floor((now - d) / 1000);
+        if (diff < 60) return diff + 's ago';
+        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+        return Math.floor(diff / 86400) + 'd ago';
+    }
+    
+    function updateBadge(count) {
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+    
+    function renderNotifications(data) {
+        const items = data.notifications || [];
+        updateBadge(data.unread_count || 0);
+        
+        if (!items.length) {
+            list.innerHTML = '<li class="px-4 py-6 text-slate-500 text-center">No notifications</li>';
+            return;
+        }
+        
+        list.innerHTML = items.map(n => {
+            const unreadClass = n.is_read ? '' : ' bg-brand-500/5';
+            const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></span>';
+            return '<li class="px-4 py-3 hover:bg-white/5 transition-colors' + unreadClass + '">' +
+                '<a href="' + (n.target_url || '#') + '" class="block notif-link" data-id="' + n.id + '">' +
+                '<div class="flex items-start gap-2">' + unreadDot +
+                '<div class="flex-1 min-w-0">' +
+                '<p class="font-semibold text-white text-sm break-words">' + n.verb + '</p>' +
+                '<p class="text-xs text-slate-400 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
+                '<p class="text-[10px] text-slate-500 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
+                '</div></div></a></li>';
+        }).join('');
+    }
+    
+    async function fetchNotifications() {
+        try {
+            const token = csrfToken();
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            if (token) headers['X-CSRFToken'] = token;
+            const res = await fetch('/api/notifications/', { 
+                headers: headers,
+                credentials: 'same-origin'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderNotifications(data);
+            }
+        } catch (e) {}
+    }
+    
+    bell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+        bell.setAttribute('aria-expanded', !dropdown.classList.contains('hidden'));
+        if (!dropdown.classList.contains('hidden')) {
+            fetchNotifications();
+        }
+    });
+    
+    document.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        bell.setAttribute('aria-expanded', 'false');
+    });
+    
+    dropdown.addEventListener('click', (e) => e.stopPropagation());
+    
+    list.addEventListener('click', (e) => {
+        const link = e.target.closest('.notif-link');
+        if (link) {
+            const id = link.dataset.id;
+            if (id) {
+                const token = csrfToken();
+                fetch('/api/notifications/' + id + '/read/', {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRFToken': token || '', 
+                        'X-Requested-With': 'XMLHttpRequest' 
+                    },
+                    credentials: 'same-origin'
+                });
+            }
+        }
+    });
+    
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', () => {
+            const token = csrfToken();
+            fetch('/api/notifications/read-all/', {
+                method: 'POST',
+                headers: { 
+                    'X-CSRFToken': token || '', 
+                    'X-Requested-With': 'XMLHttpRequest' 
+                },
+                credentials: 'same-origin'
+            }).then(() => fetchNotifications());
+        });
+    }
+    
+    // Initial load and polling - 30 seconds
+    fetchNotifications();
+    setInterval(fetchNotifications, 30000);
+})();
+</script>
+{% endif %}

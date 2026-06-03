@@ -1,2 +1,79 @@
-"{% extends \"base.html\" %}\n{% block title %}My Profile — Print-Edge{% endblock %}\n\n{% block content %}\n<div class=\"container py-4\">\n  <h1 class=\"fw-800 mb-4\">My Profile</h1>\n  <div class=\"row g-4\">\n    <!-- Profile Card -->\n    <div class=
-<truncated 4423 bytes>
+{% extends "base.html" %}
+{% block title %}Profile | PrintEdge{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-6 sm:py-8 overflow-x-hidden">
+  <h1 class="text-2xl sm:text-3xl font-semibold text-primary mb-6 sm:mb-8">My Profile</h1>
+  <div class="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-8">
+     <div class="card p-6 text-center order-1">
+       <img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg mx-auto object-cover mb-4" onerror="this.src='/static/icons/user-placeholder.png'">
+       <p class="font-bold text-lg break-words">{{ request.user.display_name }}</p>
+       <p class="text-sm text-text-muted break-all">{{ request.user.email }}</p>
+       <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent">{{ request.user.tier|title }}</span>
+       <dl class="mt-6 text-sm space-y-2 text-left">
+         <div class="flex justify-between gap-2"><dt>Orders</dt><dd class="font-bold">{{ request.user.total_orders }}</dd></div>
+         <div class="flex justify-between gap-2"><dt>Spent</dt><dd class="font-bold">৳{{ request.user.total_spent|floatformat:0 }}</dd></div>
+       </dl>
+     </div>
+    <div class="md:col-span-2 space-y-6 order-2">
+      <form method="post" enctype="multipart/form-data" class="card p-4 sm:p-6 space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="profile">
+        <h3 class="font-bold">Personal information</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label class="form-label">First name</label><input name="first_name" value="{{ request.user.first_name }}" class="form-input"></div>
+          <div><label class="form-label">Last name</label><input name="last_name" value="{{ request.user.last_name }}" class="form-input"></div>
+          <div><label class="form-label">Phone</label><input name="phone" value="{{ request.user.phone }}" class="form-input"></div>
+          <div><label class="form-label">University</label><input name="university" value="{{ request.user.university }}" class="form-input"></div>
+          <div><label class="form-label">Department</label><input name="department" value="{{ request.user.department }}" class="form-input"></div>
+          <div><label class="form-label">Student ID</label><input name="student_id" value="{{ request.user.student_id }}" class="form-input"></div>
+          <div class="sm:col-span-2"><label class="form-label">Email (read-only)</label><input value="{{ request.user.email }}" class="form-input opacity-70" disabled readonly></div>
+<div class="sm:col-span-2"><label class="form-label">Profile photo</label><input type="url" name="avatar_url" value="{{ request.user.avatar_url|default:'' }}" class="form-input" placeholder="Paste a direct link to your photo (e.g., from Imgur, Facebook, or any public image URL). Leave blank for default avatar."></div>
+        </div>
+        <div class="border-t border-slate-700 pt-4 mt-4">
+          <h4 class="font-bold mb-3">Notification Preferences</h4>
+          <label class="flex items-center gap-2 mb-2 cursor-pointer">
+            <input type="checkbox" name="notification_email" {% if request.user.notification_email %}checked{% endif %} class="w-4 h-4 rounded">
+            <span class="text-sm">Email notifications</span>
+          </label>
+<label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="notification_email" {% if request.user.notification_email %}checked{% endif %} class="w-4 h-4 rounded">
+            <span class="text-sm">Email notifications</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer opacity-70">
+            <input type="checkbox" name="notification_push" {% if request.user.notification_push %}checked{% endif %} class="w-4 h-4 rounded" disabled>
+            <span class="text-sm text-slate-400">Push notifications (coming soon)</span>
+        </label>
+        </div>
+        <button type="submit" class="btn-primary w-full sm:w-auto min-h-[44px]">Save profile</button>
+      </form>
+      <form method="post" class="card p-4 sm:p-6 space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="password">
+        <h3 class="font-bold">Change password</h3>
+        <div><label class="form-label" for="id_old_password">Current password</label>{{ password_form.old_password }}</div>
+        <div><label class="form-label" for="id_new_password1">New password</label>{{ password_form.new_password1 }}</div>
+        <div><label class="form-label" for="id_new_password2">Confirm password</label>{{ password_form.new_password2 }}</div>
+        <button type="submit" class="btn-secondary w-full sm:w-auto min-h-[44px]">Update password</button>
+      </form>
+      <div class="card p-4 sm:p-6">
+        <h3 class="font-bold mb-4">Saved addresses</h3>
+        {% for addr in addresses %}
+        <div class="p-3 mb-2 rounded-lg border border-surface-border text-sm">
+          <strong>{{ addr.label }}</strong> {% if addr.is_default %}<span class="text-accent text-xs">Default</span>{% endif %}
+          <p class="break-words">{{ addr.address }}</p>
+        </div>
+        {% empty %}
+        <p class="text-text-muted text-sm">No saved addresses yet.</p>
+        {% endfor %}
+        <form method="post" class="mt-4 space-y-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="address_add">
+          <input name="label" placeholder="Label" class="form-input" required>
+          <textarea name="address" rows="2" placeholder="Address" class="form-input" required></textarea>
+          <button type="submit" class="btn-secondary text-sm min-h-[44px]">Add address</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

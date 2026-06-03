@@ -1,0 +1,120 @@
+{% extends "admin_base.html" %}
+{% block title %}Email Logs | Print-Edge Admin{% endblock %}
+{% block breadcrumb %}Mail Service / Logs{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">Email Logs</h1>
+        <p class="text-slate-400 text-sm">Track all sent and failed emails</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{% url 'admin_mail_logs' %}?{% if current_status %}status={{ current_status }}{% endif %}" class="px-4 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">Refresh</a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+    <form method="get" class="grid md:grid-cols-5 gap-3">
+        <select name="status" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+            <option value="">All Statuses</option>
+            <option value="sent" {% if current_status == 'sent' %}selected{% endif %}>Sent</option>
+            <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
+        </select>
+        <input type="text" name="recipient" value="{{ current_recipient }}" placeholder="Recipient email" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+        <input type="text" name="subject" value="{{ current_subject }}" placeholder="Subject" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+        <input type="date" name="date_from" value="{{ date_from }}" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+        <input type="date" name="date_to" value="{{ date_to }}" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold">Filter</button>
+    </form>
+</div>
+
+<!-- Logs Table -->
+<form method="post" id="bulkForm">
+    {% csrf_token %}
+    <div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                        <th class="p-3 pl-5"><input type="checkbox" onclick="toggleAll(this)"></th>
+                        <th class="p-3">ID</th>
+                        <th class="p-3">Recipient</th>
+                        <th class="p-3">Subject</th>
+                        <th class="p-3">Status</th>
+                        <th class="p-3">Error</th>
+                        <th class="p-3">Date</th>
+                        <th class="p-3 pr-5">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700/50">
+                    {% for log in logs %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="p-3 pl-5"><input type="checkbox" name="log_ids" value="{{ log.id }}"></td>
+                        <td class="p-3 text-sm text-slate-300">{{ log.id }}</td>
+                        <td class="p-3 text-sm text-white">{{ log.recipient }}</td>
+                        <td class="p-3 text-sm text-slate-300">{{ log.subject|truncatechars:40 }}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 text-[10px] rounded-full {% if log.status == 'sent' %}bg-emerald-500/20 text-emerald-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+                                {{ log.status|title }}
+                            </span>
+                        </td>
+                        <td class="p-3 text-xs text-red-400 max-w-xs truncate">{{ log.error_message|truncatechars:40|default:"—" }}</td>
+                        <td class="p-3 text-xs text-slate-500">{{ log.created_at|date:"M d, Y g:i A" }}</td>
+                        <td class="p-3 pr-5">
+                            <button type="button" onclick="viewEmail({{ log.id }}, '{{ log.subject|escapejs }}', `{{ log.body|escapejs }}`)" class="text-[10px] text-brand-400 hover:underline">View</button>
+                            <button type="submit" name="action" value="resend" onclick="setResend({{ log.id }})" class="text-[10px] text-emerald-400 hover:underline ml-2">Resend</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="p-12 text-center text-slate-500">No email logs found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="flex items-center gap-3 mt-4">
+        <select name="action" onchange="runBulkAction(this.value)" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+            <option value="">Bulk Actions</option>
+            <option value="bulk_resend">Resend Selected</option>
+            <option value="bulk_delete">Delete Selected</option>
+            <option value="export_csv">Export as CSV</option>
+        </select>
+    </div>
+</form>
+
+<!-- View Modal -->
+<div x-show="viewModalOpen" x-cloak class="fixed inset-0 z-[100] bg-black/40 flex items-center justify-center p-4" id="viewModal" style="display: none;">
+    <div class="card max-w-2xl w-full p-6 rounded-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-white" id="modalSubject"></h3>
+            <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div id="modalBody" class="max-h-96 overflow-y-auto bg-slate-800/50 p-4 rounded-xl text-white text-sm"></div>
+    </div>
+</div>
+
+<script>
+function viewEmail(id, subject, body) {
+    document.getElementById('modalSubject').textContent = subject;
+    document.getElementById('modalBody').innerHTML = body || 'No content';
+    document.getElementById('viewModal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('viewModal').style.display = 'none'; }
+function toggleAll(cb) { document.querySelectorAll('input[name="log_ids"]').forEach(i => i.checked = cb.checked); }
+function setResend(id) {
+    const input = document.createElement('input'); input.type = 'hidden'; input.name = 'log_id'; input.value = id;
+    document.getElementById('bulkForm').appendChild(input);
+}
+function runBulkAction(action) {
+    if (!action) return;
+    if (action === 'export_csv') {
+        const params = new URLSearchParams(window.location.search);
+        params.set('export_csv', 'true');
+        window.location.href = '{% url 'admin_mail_logs' %}?' + params.toString();
+    }
+}
+</script>
+{% endblock %}

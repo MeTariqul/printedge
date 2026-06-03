@@ -1,183 +1,179 @@
 {% extends "base.html" %}
-{% block title %}Pricing — Print-Edge{% endblock %}
+{% block title %}Pricing | Print-Edge{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <!-- Header -->
-  <div class="text-center mb-5 pt-3">
-    <div class="badge rounded-pill px-3 py-2 mb-3" style="background:var(--primary-light);color:var(--primary);font-size:.8rem">
-      <i class="bi bi-tag-fill me-1"></i>Transparent Pricing
-    </div>
-    <h1 class="display-5 fw-bolder text-gradient mb-3">Simple &amp; Student-Friendly Pricing</h1>
-    <p class="lead text-muted mx-auto" style="max-width:580px">
-      No hidden fees. No surprises. Know exactly what you'll pay before placing your order.
-    </p>
-  </div>
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-  <!-- Pricing Cards -->
-  <div class="row g-4 justify-content-center mb-5">
-    <!-- B&W -->
-    <div class="col-lg-4 col-md-6">
-      <div class="card pricing-card h-100 border-0 shadow-sm" style="background:var(--bg-card)">
-        <div class="card-body p-4 text-center">
-          <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(100,116,139,0.15);color:#64748b">
-            <i class="bi bi-file-earmark-text-fill"></i>
-          </div>
-          <h4 class="fw-bold mb-1">Black &amp; White</h4>
-          <p class="text-muted small mb-4">Standard A4 Printing</p>
-          <div class="mb-4">
-            <span class="display-4 fw-bolder" style="color:var(--text)">৳2</span>
-            <span class="text-muted">/page</span>
-          </div>
-          <ul class="list-unstyled text-start mb-4">
-            <li class="d-flex align-items-center gap-2 mb-2 py-2" style="border-bottom:1px solid var(--border)">
-              <i class="bi bi-check2-circle text-success"></i>
-              <span>Single Sided — <strong>৳2/page</strong></span>
-            </li>
-            <li class="d-flex align-items-center gap-2 mb-2 py-2" style="border-bottom:1px solid var(--border)">
-              <i class="bi bi-check2-circle text-success"></i>
-              <span>Double Sided — <strong>৳3/page</strong></span>
-            </li>
-            <li class="d-flex align-items-center gap-2 mb-2 py-2" style="border-bottom:1px solid var(--border)">
-              <i class="bi bi-check2-circle text-success"></i>
-              <span>80 GSM High Quality Paper</span>
-            </li>
-            <li class="d-flex align-items-center gap-2 py-2">
-              <i class="bi bi-check2-circle text-success"></i>
-              <span>Instant Online Estimate</span>
-            </li>
-          </ul>
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-16 relative z-10">
+    
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto mb-20 animate-slide-up">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-500/30 bg-brand-500/10 mb-8 backdrop-blur-md">
+            <i class="bi bi-tag-fill text-brand-400"></i>
+            <span class="text-xs font-bold text-brand-300 uppercase tracking-widest">Transparent Pricing</span>
         </div>
-        <div class="card-footer bg-transparent border-0 pb-4 px-4">
-          <a href="{% url 'auth_register_page' %}" class="btn btn-ghost rounded-pill w-100 fw-semibold">Start Printing</a>
-        </div>
-      </div>
+        <h1 class="text-5xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight leading-tight">Simple & <span class="gradient-text">Student-Friendly</span></h1>
+        <p class="text-lg text-neutral-400 font-medium">No hidden fees. No surprises. Know exactly what you'll pay before placing your order.</p>
     </div>
 
-    <!-- Color (Featured) -->
-    <div class="col-lg-4 col-md-6">
-      <div class="card pricing-card featured h-100 shadow-lg position-relative" style="background:var(--bg-card)">
-        <div class="position-absolute top-0 start-50 translate-middle">
-          <span class="badge rounded-pill px-3 py-2" style="background:var(--primary);font-size:.75rem;box-shadow:0 4px 12px rgba(99,102,241,0.4)">
-            ⭐ Most Popular
-          </span>
+    <!-- Pricing Cards -->
+    <div class="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto mb-20">
+        
+        <!-- B&W -->
+        <div class="premium-card rounded-3xl p-8 md:p-10 relative overflow-hidden group animate-slide-up" style="animation-delay: 0.1s;">
+            <div class="w-16 h-16 rounded-2xl bg-neutral-800 border border-neutral-700 flex items-center justify-center mb-8">
+                <i class="bi bi-file-earmark-text-fill text-3xl text-neutral-400"></i>
+            </div>
+            
+            <h3 class="text-3xl font-display font-bold text-white mb-2">Black & White</h3>
+            <p class="text-neutral-500 font-medium mb-8">Standard A4 Printing</p>
+            
+            <div class="mb-10 flex items-baseline gap-1">
+                <span class="text-6xl font-display font-extrabold text-white">৳2</span>
+                <span class="text-neutral-500 font-medium">/page</span>
+            </div>
+            
+            <div class="space-y-5 mb-10">
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Single Sided — <strong class="text-white">৳2/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Double Sided — <strong class="text-white">৳3/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">80 GSM High Quality Paper</span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Instant Online Estimate</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'user_new_order' %}" class="block w-full py-4 rounded-xl text-center font-bold text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                Start Printing
+            </a>
         </div>
-        <div class="card-body p-4 pt-5 text-center">
-          <div class="avatar avatar-lg mx-auto mb-3" style="background:var(--primary-light);color:var(--primary)">
-            <i class="bi bi-palette-fill"></i>
-          </div>
-          <h4 class="fw-bold mb-1 text-primary">Full Color</h4>
-          <p class="text-muted small mb-4">Vibrant A4 Printing</p>
-          <div class="mb-4">
-            <span class="display-4 fw-bolder" style="color:var(--primary)">৳5</span>
-            <span class="text-muted">/page</span>
-          </div>
-          <ul class="list-unstyled text-start mb-4">
-            <li class="d-flex align-items-center gap-2 mb-2 py-2" style="border-bottom:1px solid var(--border)">
-              <i class="bi bi-check2-circle text-primary"></i>
-              <span>Single Sided — <strong>৳5/page</strong></span>
-            </li>
-            <li class="d-flex align-items-center gap-2 mb-2 py-2" style="border-bottom:1px solid var(--border)">
-              <i class="bi bi-check2-circle text-primary"></i>
-              <span>Double Sided — <strong>৳8/page</strong></span>
-            </li>
-            <li class="d-flex align-items-center gap-2 mb-2 py-2" style="border-bottom:1px solid var(--border)">
-              <i class="bi bi-check2-circle text-primary"></i>
-              <span>100 GSM Premium Paper</span>
-            </li>
-            <li class="d-flex align-items-center gap-2 py-2">
-              <i class="bi bi-check2-circle text-primary"></i>
-              <span>CMYK High-Resolution Print</span>
-            </li>
-          </ul>
-        </div>
-        <div class="card-footer bg-transparent border-0 pb-4 px-4">
-          <a href="{% url 'auth_register_page' %}" class="btn btn-primary rounded-pill w-100 fw-semibold shadow-sm">Start Printing</a>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Add-ons -->
-  <div class="row justify-content-center mb-5">
-    <div class="col-lg-8">
-      <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
-        <div class="card-header bg-transparent py-3 px-4">
-          <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Add-ons &amp; Extras</h5>
+        <!-- Color -->
+        <div class="premium-card rounded-3xl p-8 md:p-10 relative overflow-hidden group border-brand-500/30 shadow-2xl shadow-brand-500/10 animate-slide-up" style="animation-delay: 0.2s;">
+            <div class="absolute top-0 right-0 w-48 h-48 bg-brand-500/20 rounded-full blur-[80px] transition-transform group-hover:scale-150"></div>
+            
+            <div class="absolute top-0 inset-x-0 flex justify-center -mt-3">
+                <span class="bg-gradient-to-r from-brand-600 to-purple-600 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-brand-500/30">Most Popular</span>
+            </div>
+            
+            <div class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-8">
+                <i class="bi bi-palette-fill text-3xl text-brand-400"></i>
+            </div>
+            
+            <h3 class="text-3xl font-display font-bold text-white mb-2">Full Color</h3>
+            <p class="text-neutral-500 font-medium mb-8">Vibrant A4 Printing</p>
+            
+            <div class="mb-10 flex items-baseline gap-1">
+                <span class="text-6xl font-display font-extrabold gradient-text">৳5</span>
+                <span class="text-neutral-500 font-medium">/page</span>
+            </div>
+            
+            <div class="space-y-5 mb-10 relative z-10">
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Single Sided — <strong class="text-white">৳5/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">Double Sided — <strong class="text-white">৳8/page</strong></span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">100 GSM Premium Paper</span>
+                </div>
+                <div class="flex items-center gap-4 text-neutral-300">
+                    <div class="w-6 h-6 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center border border-brand-500/20"><i class="bi bi-check font-bold"></i></div>
+                    <span class="font-medium">CMYK High-Resolution Print</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'user_new_order' %}" class="block w-full py-4 rounded-xl text-center font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-lg shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] relative z-10">
+                Start Printing
+            </a>
         </div>
-        <div class="card-body p-0">
-          <div class="row g-0">
-            {% for addon in addons %}
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3" style="border-bottom:1px solid var(--border)">
-                <span class="fw-medium">{{ addon.name }}</span>
-                <span class="badge rounded-pill" style="background:var(--primary-light);color:var(--primary)">+৳{{ addon.price }}</span>
-              </div>
-            </div>
-            {% empty %}
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3" style="border-bottom:1px solid var(--border)"><span class="fw-medium">Spiral Binding</span><span class="badge rounded-pill" style="background:var(--primary-light);color:var(--primary)">+৳20</span></div>
-            </div>
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3" style="border-bottom:1px solid var(--border)"><span class="fw-medium">Comb Binding</span><span class="badge rounded-pill" style="background:var(--primary-light);color:var(--primary)">+৳15</span></div>
-            </div>
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3" style="border-bottom:1px solid var(--border)"><span class="fw-medium">Stapling</span><span class="badge rounded-pill" style="background:var(--primary-light);color:var(--primary)">+৳5</span></div>
-            </div>
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3" style="border-bottom:1px solid var(--border)"><span class="fw-medium">Lamination (per page)</span><span class="badge rounded-pill" style="background:var(--primary-light);color:var(--primary)">+৳15</span></div>
-            </div>
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3" style="border-bottom:1px solid var(--border)"><span class="fw-medium">Urgent (same-hour)</span><span class="badge rounded-pill" style="background:rgba(245,158,11,0.15);color:var(--warning)">+50%</span></div>
-            </div>
-            <div class="col-md-6">
-              <div class="d-flex align-items-center justify-content-between p-3"><span class="fw-medium">Bulk Discount (100+ pages)</span><span class="badge rounded-pill" style="background:rgba(16,185,129,0.15);color:var(--success)">-10%</span></div>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- FAQ -->
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <h3 class="fw-bold text-center mb-4">Frequently Asked Questions</h3>
-      <div class="accordion" id="pricingFAQ" style="--bs-accordion-border-color:var(--border)">
-        {% for q, a in faqs %}
-        <div class="accordion-item mb-2 rounded overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">
-          <h2 class="accordion-header">
-            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ forloop.counter }}" style="background:var(--bg-card);color:var(--text)">
-              {{ q }}
-            </button>
-          </h2>
-          <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#pricingFAQ">
-            <div class="accordion-body text-muted" style="background:var(--bg-card)">{{ a }}</div>
-          </div>
-        </div>
-        {% empty %}
-        <div class="accordion-item mb-2 rounded overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">
-          <h2 class="accordion-header"><button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" style="background:var(--bg-card);color:var(--text)">How do I pay?</button></h2>
-          <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#pricingFAQ">
-            <div class="accordion-body text-muted" style="background:var(--bg-card)">Payment is due on delivery. We accept Cash, bKash, Nagad, and Rocket at the Print-Edge campus desk.</div>
-          </div>
-        </div>
-        <div class="accordion-item mb-2 rounded overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">
-          <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" style="background:var(--bg-card);color:var(--text)">How long does printing take?</button></h2>
-          <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-            <div class="accordion-body text-muted" style="background:var(--bg-card)">Standard orders are ready within 1–2 hours during business hours. Track live status from your dashboard.</div>
-          </div>
-        </div>
-        <div class="accordion-item mb-2 rounded overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">
-          <h2 class="accordion-header"><button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" style="background:var(--bg-card);color:var(--text)">Can I cancel my order?</button></h2>
-          <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
-            <div class="accordion-body text-muted" style="background:var(--bg-card)">Yes! You can cancel any order that has not yet moved to the "Printing" status. Contact the desk or cancel via your dashboard.</div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
     </div>
-  </div>
+
+    <!-- Add-ons Section -->
+    <div class="max-w-4xl mx-auto mb-24 animate-slide-up" style="animation-delay: 0.3s;">
+        <div class="premium-card rounded-3xl p-8 md:p-12">
+            <h3 class="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                    <i class="bi bi-puzzle-fill text-purple-400"></i>
+                </div>
+                Add-ons & Extras
+            </h3>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                {% for addon in addons %}
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">{{ addon.name }}</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳{{ addon.price|floatformat:0 }}</span>
+                </div>
+                {% empty %}
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Spiral Binding</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳20</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Comb Binding</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳15</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Stapling</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳5</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
+                    <span class="font-medium text-neutral-200">Lamination</span>
+                    <span class="px-3 py-1 rounded-md bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20">+৳15</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+                <div class="flex justify-between items-center p-5 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                    <span class="font-medium text-neutral-200">Urgent (same-hour)</span>
+                    <span class="px-3 py-1 rounded-md bg-amber-500/10 text-amber-400 text-sm font-bold border border-amber-500/20">+50%</span>
+                </div>
+                <div class="flex justify-between items-center p-5 rounded-xl border border-brand-500/20 bg-brand-500/5">
+                    <span class="font-medium text-neutral-200">Bulk Discount (100+ pages)</span>
+                    <span class="px-3 py-1 rounded-md bg-brand-500/10 text-brand-400 text-sm font-bold border border-brand-500/20">-10%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="max-w-4xl mx-auto animate-slide-up" style="animation-delay: 0.4s;">
+        <h3 class="text-3xl font-display font-bold text-center text-white mb-10">Frequently Asked Questions</h3>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="premium-card p-6 rounded-2xl">
+                <div class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mb-4"><i class="bi bi-wallet2 text-neutral-400"></i></div>
+                <h4 class="text-lg font-bold text-white mb-3">How do I pay?</h4>
+                <p class="text-neutral-500 text-sm leading-relaxed font-medium">Payment is due on delivery. We accept Cash, bKash, Nagad, and Rocket at the Print-Edge campus desk. Partial upfront payment may be required for bulk orders.</p>
+            </div>
+            <div class="premium-card p-6 rounded-2xl">
+                <div class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mb-4"><i class="bi bi-clock-history text-neutral-400"></i></div>
+                <h4 class="text-lg font-bold text-white mb-3">How long does it take?</h4>
+                <p class="text-neutral-500 text-sm leading-relaxed font-medium">Standard orders are typically ready within 1–2 hours during regular business hours. You can track the live status from your dashboard.</p>
+            </div>
+            <div class="premium-card p-6 rounded-2xl">
+                <div class="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center mb-4"><i class="bi bi-x-circle text-neutral-400"></i></div>
+                <h4 class="text-lg font-bold text-white mb-3">Can I cancel my order?</h4>
+                <p class="text-neutral-500 text-sm leading-relaxed font-medium">Yes! You can cancel any order directly from your dashboard as long as it hasn't entered the "Printing" phase.</p>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

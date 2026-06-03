@@ -1,278 +1,277 @@
 {% extends "admin_base.html" %}
-{% block title %}Dashboard — PrintEase Admin{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
-{% block head %}
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-{% endblock %}
+{% block title %}Dashboard | PrintEdge Admin{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
 
 {% block content %}
 <!-- Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2 class="fw-bold mb-0">Good morning, {{ request.user.first_name|default:request.user.username|default:"Admin" }}! 👋</h2>
-    <p class="text-muted small mb-0" id="liveClock"></p>
-  </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'admin_walkin_order' %}" class="btn btn-gradient shadow-sm">
-      <i class="bi bi-shop me-1"></i>New Walk-in Order
-    </a>
-    <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()"><i class="bi bi-arrow-clockwise"></i></button>
-  </div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+    <div>
+        <h1 class="text-3xl font-semibold text-primary mb-2">
+            Welcome back, {{ request.user.first_name }}
+        </h1>
+        <p class="text-text-muted">Here's what's happening at PrintEdge today.</p>
+    </div>
 </div>
 
-<!-- KPI Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-xl-2 col-sm-4 col-6">
-    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--primary)!important">
-      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Orders Today</div>
-      <div class="fw-bold" style="font-size:1.75rem">47</div>
-      <div class="d-flex gap-1 align-items-center mt-1">
-        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>12.5%</span>
-        <span class="text-muted" style="font-size:.7rem">vs yesterday</span>
-      </div>
-      <div class="d-flex gap-2 mt-1" style="font-size:.7rem">
-        <span class="badge badge-online"><i class="bi bi-globe2"></i>28 online</span>
-        <span class="badge badge-offline"><i class="bi bi-shop"></i>19 offline</span>
-      </div>
+<!-- Mobile KPI Cards -->
+<div class="mobile-only grid grid-cols-2 gap-4 mb-6">
+    <div class="mobile-kpi-card">
+        <div class="mobile-kpi-icon"><i class="bi bi-receipt"></i></div>
+        <div class="mobile-kpi-value">{{ today_orders_count }}</div>
+        <div class="mobile-kpi-label">Orders Today</div>
     </div>
-  </div>
-  <div class="col-xl-2 col-sm-4 col-6">
-    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--success)!important">
-      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Revenue Today</div>
-      <div class="fw-bold" style="font-size:1.75rem">৳8,450</div>
-      <div class="d-flex gap-1 align-items-center mt-1">
-        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>8.2%</span>
-        <span class="text-muted" style="font-size:.7rem">vs yesterday</span>
-      </div>
-      <div style="font-size:.7rem;color:var(--text-muted)">৳5,200 cash · ৳3,250 digital</div>
+    <div class="mobile-kpi-card">
+        <div class="mobile-kpi-icon"><i class="bi bi-currency-dollar"></i></div>
+        <div class="mobile-kpi-value">৳{{ today_revenue|floatformat:0 }}</div>
+        <div class="mobile-kpi-label">Revenue</div>
     </div>
-  </div>
-  <div class="col-xl-2 col-sm-4 col-6">
-    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--warning)!important">
-      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Pending</div>
-      <div class="fw-bold" style="font-size:1.75rem">28</div>
-      <div class="d-flex gap-1 align-items-center mt-1">
-        <span class="badge badge-cancelled">5 urgent</span>
-      </div>
-      <div style="font-size:.7rem;color:var(--text-muted)">Needs attention</div>
+    <div class="mobile-kpi-card">
+        <div class="mobile-kpi-icon"><i class="bi bi-clock"></i></div>
+        <div class="mobile-kpi-value">{{ pending_count }}</div>
+        <div class="mobile-kpi-label">Pending</div>
     </div>
-  </div>
-  <div class="col-xl-2 col-sm-4 col-6">
-    <div class="card border-0 stat-card p-3" style="border-left:3px solid var(--secondary)!important">
-      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Active Customers</div>
-      <div class="fw-bold" style="font-size:1.75rem">1,204</div>
-      <div class="d-flex gap-1 align-items-center mt-1">
-        <span class="badge badge-online">+12 today</span>
-      </div>
-      <div style="font-size:.7rem;color:var(--text-muted)">341 walk-in</div>
+    <div class="mobile-kpi-card">
+        <div class="mobile-kpi-icon"><i class="bi bi-people"></i></div>
+        <div class="mobile-kpi-value">{{ active_customers }}</div>
+        <div class="mobile-kpi-label">Customers</div>
     </div>
-  </div>
-  <div class="col-xl-2 col-sm-4 col-6">
-    <div class="card border-0 stat-card p-3" style="border-left:3px solid #8b5cf6!important">
-      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Pages Printed</div>
-      <div class="fw-bold" style="font-size:1.75rem">3,842</div>
-      <div class="d-flex gap-1 align-items-center mt-1">
-        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>5.1%</span>
-      </div>
-      <div style="font-size:.7rem;color:var(--text-muted)">Today total</div>
+</div>
+
+<!-- Desktop KPI Cards -->
+<div class="desktop-only grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6 mb-10">
+    <!-- Orders Today -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
+        <p class="text-text-muted text-[10px] font-bold uppercase tracking-widest mb-2">Orders Today</p>
+        <p class="text-4xl font-bold text-text mb-2" data-counter="{{ today_orders_count }}">0</p>
+        <div class="flex items-center gap-1.5 text-xs font-bold {% if revenue_change >= 0 %}text-emerald-400{% else %}text-red-400{% endif %} relative z-10">
+            <i class="bi bi-arrow-{% if revenue_change >= 0 %}up{% else %}down{% endif %}-right"></i>
+            {{ revenue_change }}% vs yesterday
+        </div>
     </div>
-  </div>
-  <div class="col-xl-2 col-sm-4 col-6">
-    <div class="card border-0 stat-card p-3" style="border-left:3px solid #ec4899!important">
-      <div class="text-muted small fw-bold mb-1" style="font-size:.7rem;letter-spacing:.8px;text-transform:uppercase">Avg Order Value</div>
-      <div class="fw-bold" style="font-size:1.75rem">৳179</div>
-      <div class="d-flex gap-1 align-items-center mt-1">
-        <span class="badge badge-ready"><i class="bi bi-arrow-up-right"></i>3.4%</span>
-      </div>
-      <div style="font-size:.7rem;color:var(--text-muted)">Per order</div>
+
+    <!-- Revenue -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-500/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Revenue Today</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10"><span class="text-xl text-neutral-500 mr-1">৳</span><span data-counter="{{ today_revenue|floatformat:0 }}">0</span></p>
+        <div class="flex items-center gap-1.5 text-xs font-bold text-brand-400 relative z-10">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span> Live updating
+        </div>
     </div>
-  </div>
+
+    <!-- Pending -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pending</p>
+        <p class="text-4xl font-display font-bold {% if pending_count > 10 %}text-amber-400{% else %}text-white{% endif %} mb-2 relative z-10">{{ pending_count }}</p>
+        {% if pending_count > 0 %}
+        <a href="{% url 'admin_orders' %}?status=pending" class="text-xs font-bold text-amber-500 hover:text-amber-400 relative z-10 transition-colors">View Queue →</a>
+        {% else %}
+        <p class="text-xs font-bold text-neutral-600 relative z-10">All caught up!</p>
+        {% endif %}
+    </div>
+
+    <!-- Customers -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Customers</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ active_customers }}</p>
+        <p class="text-xs font-bold text-neutral-500 relative z-10">Active today</p>
+    </div>
+
+    <!-- Pages -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pages Printed</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10">{{ pages_today }}</p>
+        <p class="text-xs font-bold text-neutral-500 relative z-10">Today total</p>
+    </div>
+
+    <!-- Avg Value -->
+    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-colors"></div>
+        <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Avg Value</p>
+        <p class="text-4xl font-display font-bold text-white mb-2 relative z-10"><span class="text-xl text-neutral-500 mr-1">৳</span>{{ avg_order_value|floatformat:0 }}</p>
+        <p class="text-xs font-bold text-neutral-500 relative z-10">Per order</p>
+    </div>
 </div>
 
 <!-- Charts Row -->
-<div class="row g-3 mb-4">
-  <!-- Revenue Trend -->
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header d-flex justify-content-between align-items-center px-4 pt-4 pb-2">
-        <div><h6 class="fw-bold mb-0">Revenue Trend</h6><small class="text-muted">Online vs Offline</small></div>
-        <div class="d-flex gap-1">
-          <button class="btn btn-sm btn-ghost active" onclick="updateRevChart('7d',this)">7D</button>
-          <button class="btn btn-sm btn-ghost" onclick="updateRevChart('30d',this)">30D</button>
-          <button class="btn btn-sm btn-ghost" onclick="updateRevChart('90d',this)">90D</button>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+    <!-- Revenue Trend (takes 2 cols) -->
+    <div class="xl:col-span-2 premium-card p-6 md:p-8 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h3 class="text-xl font-bold text-white">Revenue Trend</h3>
+                <p class="text-sm text-neutral-500 font-medium mt-1">Last {{ chart_range }} days</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="?range=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range != '30' %}bg-accent text-white{% else %}bg-white/5 text-neutral-400{% endif %}">7d</a>
+                <a href="?range=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range == '30' %}bg-accent text-white{% else %}bg-white/5 text-neutral-400{% endif %}">30d</a>
+            </div>
         </div>
-      </div>
-      <div class="card-body px-4 pb-4"><div id="revenueChart" style="height:260px"></div></div>
+        <canvas id="revenueChart" height="120"></canvas>
     </div>
-  </div>
-  <!-- Order Distribution -->
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header px-4 pt-4 pb-2"><h6 class="fw-bold mb-0">Order Distribution</h6><small class="text-muted">By status</small></div>
-      <div class="card-body px-4 pb-4"><div id="donutChart" style="height:260px"></div></div>
+
+    <!-- Order Status Distribution -->
+    <div class="premium-card p-6 md:p-8 rounded-3xl relative">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h3 class="text-xl font-bold text-white">Status</h3>
+                <p class="text-sm text-neutral-500 font-medium mt-1">Current distribution</p>
+            </div>
+            <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                <i class="bi bi-pie-chart-fill text-purple-400"></i>
+            </div>
+        </div>
+        <canvas id="statusChart" height="200"></canvas>
     </div>
-  </div>
+    <div class="premium-card p-6 md:p-8 rounded-3xl xl:col-span-3">
+        <h3 class="text-xl font-bold text-white mb-4">Orders per hour (today)</h3>
+        <canvas id="hourChart" height="80"></canvas>
+    </div>
 </div>
 
-<!-- Live Feed + Recent Orders -->
-<div class="row g-3 mb-4">
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
-        <h6 class="fw-bold mb-0">Recent Orders</h6>
-        <a href="{% url 'admin_orders' %}" class="btn btn-ghost btn-sm">View All</a>
-      </div>
-      <div class="card-body p-0">
-        <table class="table mb-0">
-          <thead><tr>
-            <th class="ps-4">Order</th><th>Customer</th><th>Amount</th><th>Source</th><th>Status</th><th class="pe-4">Action</th>
-          </tr></thead>
-          <tbody>
-            <tr>
-              <td class="ps-4"><div class="fw-semibold" style="font-size:.85rem">PE-OFF-20260513-0028</div><div class="text-muted" style="font-size:.72rem">Just now</div></td>
-              <td><div style="font-size:.85rem;font-weight:600">Tariqul Islam</div><div class="text-muted" style="font-size:.72rem">+8801700000001</div></td>
-              <td class="fw-bold">৳504</td>
-              <td><span class="badge badge-offline"><i class="bi bi-shop me-1"></i>Offline</span></td>
-              <td><span class="status-pill badge-pending">Pending</span></td>
-              <td class="pe-4"><a href="#" class="btn btn-sm btn-ghost">Process</a></td>
-            </tr>
-            <tr>
-              <td class="ps-4"><div class="fw-semibold" style="font-size:.85rem">PE-ON-20260513-0027</div><div class="text-muted" style="font-size:.72rem">5 min ago</div></td>
-              <td><div style="font-size:.85rem;font-weight:600">Arif Ahmed</div><div class="text-muted" style="font-size:.72rem">arif@example.com</div></td>
-              <td class="fw-bold">৳120</td>
-              <td><span class="badge badge-online"><i class="bi bi-globe2 me-1"></i>Online</span></td>
-              <td><span class="status-pill badge-printing">Printing</span></td>
-              <td class="pe-4"><a href="#" class="btn btn-sm btn-ghost">View</a></td>
-            </tr>
-            <tr>
-              <td class="ps-4"><div class="fw-semibold" style="font-size:.85rem">PE-ON-20260513-0026</div><div class="text-muted" style="font-size:.72rem">22 min ago</div></td>
-              <td><div style="font-size:.85rem;font-weight:600">Sadia Rahman</div><div class="text-muted" style="font-size:.72rem">sadia@univ.edu.bd</div></td>
-              <td class="fw-bold">৳320</td>
-              <td><span class="badge badge-online"><i class="bi bi-globe2 me-1"></i>Online</span></td>
-              <td><span class="status-pill badge-ready">Ready</span></td>
-              <td class="pe-4"><a href="#" class="btn btn-sm btn-ghost">View</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  <!-- Activity Feed -->
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm h-100">
-      <div class="card-header d-flex justify-content-between align-items-center px-4 pt-3 pb-2">
-        <h6 class="fw-bold mb-0">Live Activity</h6>
-        <span class="badge badge-cancelled" style="animation:pulse 2s infinite">● Live</span>
-      </div>
-      <div class="card-body px-4 pb-3" id="activityFeed" style="overflow-y:auto;max-height:280px">
-        <div class="activity-item">
-          <div class="activity-icon" style="background:var(--primary-light);color:var(--primary)"><i class="bi bi-cart-check"></i></div>
-          <div><div style="font-size:.8rem;font-weight:600">New Walk-in Order</div><div class="text-muted" style="font-size:.72rem">Tariqul · PE-OFF-0028</div><div style="font-size:.65rem;color:var(--text-muted)">Just now</div></div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-icon" style="background:rgba(16,185,129,.12);color:var(--success)"><i class="bi bi-check-circle"></i></div>
-          <div><div style="font-size:.8rem;font-weight:600">Order Ready</div><div class="text-muted" style="font-size:.72rem">PE-ON-0027 ready for pickup</div><div style="font-size:.65rem;color:var(--text-muted)">5 min ago</div></div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-icon" style="background:rgba(6,182,212,.12);color:var(--secondary)"><i class="bi bi-person-plus"></i></div>
-          <div><div style="font-size:.8rem;font-weight:600">New Registration</div><div class="text-muted" style="font-size:.72rem">sadia@univ.edu.bd joined</div><div style="font-size:.65rem;color:var(--text-muted)">1 hr ago</div></div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-icon" style="background:rgba(245,158,11,.12);color:var(--warning)"><i class="bi bi-exclamation-triangle"></i></div>
-          <div><div style="font-size:.8rem;font-weight:600">Low Stock Alert</div><div class="text-muted" style="font-size:.72rem">A4 Paper — 50 reams left</div><div style="font-size:.65rem;color:var(--text-muted)">2 hr ago</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="premium-card p-4 rounded-lg mb-6 flex items-center justify-between" id="systemStatusWidget">
+    <span class="text-sm text-neutral-400"><i class="bi bi-hdd-network"></i> System status</span>
+    <span class="text-sm font-bold text-white" id="systemStatusText">Loading…</span>
 </div>
 
-<!-- Bottom Row -->
-<div class="row g-3">
-  <div class="col-md-6">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header px-4 pt-3 pb-2"><h6 class="fw-bold mb-0">Top Customers</h6></div>
-      <div class="card-body px-4 pb-3"><div id="topCustChart" style="height:200px"></div></div>
+<!-- Recent Orders + Actions -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- Recent Orders (2 cols) -->
+    <div class="xl:col-span-2 premium-card rounded-3xl overflow-hidden relative">
+        <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+            <h3 class="text-xl font-bold text-white">Recent Orders</h3>
+            <a href="{% url 'admin_orders' %}" class="text-sm font-bold text-brand-400 hover:text-brand-300 transition-colors">View All →</a>
+        </div>
+        <div class="table-scroll">
+            <table class="w-full text-left border-collapse min-w-[640px]">
+                <thead>
+                    <tr class="bg-black/40 text-neutral-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
+                        <th class="p-4 pl-6 md:pl-8">Order ID</th>
+                        <th class="p-4">Customer</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for o in recent_orders %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="p-4 pl-6 md:pl-8">
+                            <div class="font-display font-bold text-white text-sm">{{ o.order_number }}</div>
+                            <div class="text-[10px] font-bold tracking-widest mt-1">
+                                {% if o.source == 'offline' %}<span class="text-purple-400">Walk-in</span>{% else %}<span class="text-blue-400">Online</span>{% endif %}
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm text-white font-bold">{{ o.customer_name }}</div>
+                            <div class="text-[10px] text-neutral-500 font-medium">{{ o.customer_phone }}</div>
+                        </td>
+                        <td class="p-4 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border
+                                {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                {% elif o.status == 'printing' %}bg-blue-500/10 text-blue-400 border-blue-500/20
+                                {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
+                                {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                {{ o.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 pr-6 md:pr-8 text-right">
+                            <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:bg-brand-500 hover:text-white transition-all shadow-sm">
+                                <i class="bi bi-chevron-right text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center text-neutral-500 font-medium">No orders yet. Create a walk-in order to get started!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header px-4 pt-3 pb-2"><h6 class="fw-bold mb-0">Quick Stats</h6></div>
-      <div class="card-body px-4 pb-3">
-        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Online Orders</span><span class="fw-semibold">28 (59%)</span></div>
-        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Offline Orders</span><span class="fw-semibold">19 (41%)</span></div>
-        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Cash Revenue</span><span class="fw-semibold">৳5,200</span></div>
-        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border)"><span class="text-muted">Digital Revenue</span><span class="fw-semibold">৳3,250</span></div>
-        <div class="d-flex justify-content-between py-2"><span class="text-muted">Files Auto-deleted</span><span class="fw-semibold">12 today</span></div>
-      </div>
+
+    <!-- Right Column: Quick Actions -->
+    <div class="space-y-6">
+        {% if low_stock_count %}
+        <div class="premium-card p-6 rounded-3xl border-l-4 border-l-amber-500 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="flex items-center gap-4 relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-exclamation-triangle-fill text-amber-500 text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-base font-bold text-white mb-1">{{ low_stock_count }} Low Stock Alert{{ low_stock_count|pluralize }}</h4>
+                    <p class="text-xs font-medium text-neutral-500">Inventory requires attention</p>
+                </div>
+                <a href="{% url 'admin_inventory' %}" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-amber-400 hover:bg-white/10 transition-colors">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative">
+            <h4 class="text-lg font-bold text-white mb-6">Quick Actions</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="{% url 'admin_walkin_order' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/30 hover:bg-brand-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-plus-lg text-xl text-brand-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Walk-in</span>
+                </a>
+                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-list-task text-xl text-blue-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Orders</span>
+                </a>
+                <a href="{% url 'admin_inventory' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/30 hover:bg-purple-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-box-seam text-xl text-purple-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Inventory</span>
+                </a>
+                <a href="{% url 'admin_reports' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all group">
+                    <div class="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-bar-chart text-xl text-emerald-400"></i></div>
+                    <span class="text-xs font-bold text-neutral-400 group-hover:text-white transition-colors uppercase tracking-widest">Reports</span>
+                </a>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
+{% block extra_js %}
 <script>
-// Live clock
-setInterval(() => {
-  const el = document.getElementById('liveClock');
-  if (el) el.textContent = new Date().toLocaleString('en-BD', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
-}, 1000);
-
-const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-const fg = isDark ? '#f1f5f9' : '#1e293b';
-const muted = isDark ? '#94a3b8' : '#64748b';
-const grid = isDark ? '#1e2d45' : '#e2e8f0';
-
-// Revenue Chart
-const revOptions = {
-  chart: { type:'area', height:260, toolbar:{show:false}, background:'transparent', fontFamily:'Inter, sans-serif' },
-  theme: { mode: isDark ? 'dark' : 'light' },
-  series: [
-    { name:'Online', data:[3200,2800,4100,3600,5200,4800,5800] },
-    { name:'Offline', data:[1800,2100,2400,1900,2600,2200,2650] }
-  ],
-  xaxis: { categories:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{colors:muted}} },
-  yaxis: { labels:{ formatter:v=>'৳'+v, style:{colors:muted} } },
-  colors:['#6366f1','#f59e0b'],
-  stroke:{ curve:'smooth', width:2 },
-  fill:{ type:'gradient', gradient:{shadeIntensity:.1, opacityFrom:.4, opacityTo:0} },
-  dataLabels:{enabled:false},
-  legend:{position:'top', horizontalAlign:'right'},
-  grid:{ borderColor:grid, strokeDashArray:4 },
-  tooltip:{ theme: isDark?'dark':'light' }
-};
-new ApexCharts(document.getElementById('revenueChart'), revOptions).render();
-
-// Donut
-new ApexCharts(document.getElementById('donutChart'), {
-  chart:{type:'donut',height:260,background:'transparent'},
-  theme:{mode:isDark?'dark':'light'},
-  series:[28,12,15,8,5],
-  labels:['Pending','Printing','Ready','Delivered','Cancelled'],
-  colors:['#f59e0b','#3b82f6','#10b981','#64748b','#ef4444'],
-  dataLabels:{enabled:false},
-  legend:{position:'bottom',labels:{colors:muted}},
-  plotOptions:{pie:{donut:{size:'70%'}}},
-  tooltip:{theme:isDark?'dark':'light'}
-}).render();
-
-// Top Customers
-new ApexCharts(document.getElementById('topCustChart'), {
-  chart:{type:'bar',height:200,toolbar:{show:false},background:'transparent'},
-  theme:{mode:isDark?'dark':'light'},
-  series:[{name:'Orders',data:[42,38,31,28,24,20,18,15,12,10]}],
-  xaxis:{categories:['Tariqul','Arif','Sadia','Karim','Rina','Hasan','Mitu','Faruk','Laila','Rony'],labels:{style:{colors:muted}}},
-  colors:['#6366f1'],
-  dataLabels:{enabled:false},
-  plotOptions:{bar:{borderRadius:4,horizontal:true}},
-  grid:{borderColor:grid},
-  tooltip:{theme:isDark?'dark':'light'}
-}).render();
-
-function updateRevChart(period, btn) {
-  document.querySelectorAll('[onclick*=updateRevChart]').forEach(b => b.classList.remove('active','btn-primary'));
-  btn.classList.add('active');
-}
-function refreshDashboard() { Toast.show('Dashboard refreshed!','success',2000); }
+const gridColor = 'rgba(148,163,184,0.15)';
+const textColor = '#94a3b8';
+new Chart(document.getElementById('revenueChart'), {
+  type: 'line',
+  data: {
+    labels: {{ revenue_labels_json|safe }},
+    datasets: [{ label: 'Revenue (৳)', data: {{ revenue_trend_json|safe }}, borderColor: '#00B4D8', backgroundColor: 'rgba(0,180,216,0.15)', fill: true, tension: 0.35 }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+});
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: {{ chart_status_labels_json|safe }},
+    datasets: [{ data: {{ chart_status_json|safe }}, backgroundColor: ['#f59e0b','#3b82f6','#10b981','#64748b','#ef4444'] }]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
+});
+new Chart(document.getElementById('hourChart'), {
+  type: 'bar',
+  data: {
+    labels: Array.from({length:24}, (_,i) => i + ':00'),
+    datasets: [{ label: 'Orders', data: {{ orders_per_hour_json|safe }}, backgroundColor: '#1E3A5F' }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor, maxTicksLimit: 12 }, grid: { display: false } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+});
+fetch('/api/system-status/').then(r => r.json()).then(d => {
+  document.getElementById('systemStatusText').textContent = d.database + ' · Django ' + d.django_version;
+}).catch(() => { document.getElementById('systemStatusText').textContent = 'Unavailable'; });
 </script>
 {% endblock %}

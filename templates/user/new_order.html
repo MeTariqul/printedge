@@ -1,32 +1,304 @@
 {% extends "base.html" %}
-{% block title %}New Order — Print-Edge{% endblock %}
+{% load static %}
+{% block title %}New Print Order | Print-Edge{% endblock %}
 {% block content %}
-<div class="container py-5">
-  <h2 class="fw-bold text-gradient mb-4 text-center">Place New Order</h2>
-  <form id="orderForm" class="col-md-6 mx-auto card p-4 shadow-sm">
-    <div class="mb-3">
-      <label class="form-label">Upload File</label>
-      <input type="file" class="form-control" name="file" required>
+<div class="max-w-7xl mx-auto px-4 py-8" x-data="orderWizard()" data-tour="order">
+  <h1 class="text-3xl font-semibold text-primary mb-2">New Print Order</h1>
+  <p class="text-text-muted mb-6">Upload, configure each file, and place your order in three steps.</p>
+
+  {% if not accepting_orders %}
+  <div class="mb-6 alert-warning">
+    <p class="font-semibold">Orders temporarily paused</p>
+  </div>
+  {% endif %}
+
+  {% include "partials/order_stepper.html" %}
+
+  <form method="post" enctype="multipart/form-data" id="orderForm" class="{% if not accepting_orders %}opacity-60 pointer-events-none{% endif %}" @submit="onSubmit($event)">
+    {% csrf_token %}
+    <input type="hidden" name="files_config" :value="filesConfigJson">
+
+    <div class="grid lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Step 1 -->
+        <div x-show="step === 1" class="card p-6">
+          <h3 class="text-lg font-semibold mb-4">Step 1: Upload files</h3>
+          <div @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop($event)"
+               class="border-2 border-dashed border-surface-border rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors">
+            <i class="bi bi-cloud-arrow-up text-4xl text-gray-400 mb-3 block"></i>
+            <p class="font-semibold">Drop files or ZIP here</p>
+            <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files</p>
+            <input type="file" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)">
+          </div>
+          <template x-if="files.length">
+            <ul class="mt-4 space-y-2">
+              <template x-for="(f, i) in files" :key="i">
+                <li class="flex items-center justify-between p-3 rounded-lg bg-surface border border-surface-border">
+                  <span class="font-medium text-sm truncate" x-text="f.name"></span>
+                  <span class="text-xs text-primary font-semibold" x-text="f.pages + ' pages'"></span>
+                </li>
+              </template>
+            </ul>
+          </template>
+          <div class="mt-6 flex justify-end">
+            <button type="button" @click="if(files.length) step=2" class="btn-primary" :disabled="!files.length">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div x-show="step === 2" x-cloak class="space-y-4">
+          <template x-for="(f, fi) in files" :key="fi">
+            <div class="card p-6">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="font-semibold" x-text="f.name"></h4>
+                  <p class="text-sm text-text-muted"><span x-text="f.pages"></span> pages detected</p>
+                </div>
+                <button type="button" @click="f.expanded = !f.expanded" class="btn-secondary text-sm py-2 min-h-[44px]">
+                  <span x-text="f.expanded ? 'Hide' : 'Edit settings'"></span>
+                </button>
+              </div>
+              <div x-show="f.expanded" x-collapse class="mt-4 grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Print type
+                    <span class="tooltip-wrap ml-1"><i class="bi bi-question-circle text-gray-400"></i><span class="tooltip-text">Color costs more per page</span></span>
+                  </label>
+                  <select class="form-input" x-model="f.print_type" @change="updatePrice()">
+                    <option value="bw">Black & White</option>
+                    <option value="color">Color</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Sides</label>
+                  <select class="form-input" x-model="f.sides" @change="updatePrice()">
+                    <option value="single">Single sided</option>
+                    <option value="double">Double sided</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Copies (this file)</label>
+                  <input type="number" min="1" class="form-input" x-model.number="f.copies" @input="updatePrice()">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">Page count (override)</label>
+                  <input type="number" min="1" class="form-input" x-model.number="f.pages" @input="updatePrice()">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="form-label">Custom page ranges (optional)</label>
+                  <div class="table-wrap">
+                    <table class="w-full text-sm">
+                      <thead><tr class="text-left text-text-muted"><th class="py-2">Start</th><th>End</th><th>Type</th><th>Sides</th><th></th></tr></thead>
+                      <tbody>
+                        <template x-for="(r, ri) in f.ranges" :key="ri">
+                          <tr>
+                            <td class="py-1 pr-2"><input type="number" min="1" class="form-input w-20" x-model.number="r.start_page" @input="updatePrice()"></td>
+                            <td class="py-1 pr-2"><input type="number" min="1" class="form-input w-20" x-model.number="r.end_page" @input="updatePrice()"></td>
+                            <td class="py-1 pr-2">
+                              <select class="form-input w-28" x-model="r.print_type" @change="updatePrice()"><option value="bw">B&W</option><option value="color">Color</option></select>
+                            </td>
+                            <td class="py-1 pr-2">
+                              <select class="form-input w-28" x-model="r.sides" @change="updatePrice()"><option value="single">Single</option><option value="double">Double</option></select>
+                            </td>
+                            <td><button type="button" @click="f.ranges.splice(ri,1); updatePrice()" class="text-red-600 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                  <button type="button" @click="addRange(fi)" class="btn-secondary text-sm mt-2">Add range</button>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div class="flex gap-3">
+            <button type="button" @click="step=1" class="btn-secondary">Back</button>
+            <button type="button" @click="step=3; updatePrice()" class="btn-primary ml-auto">Review</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div x-show="step === 3" x-cloak class="space-y-6">
+          <div class="card p-6">
+            <h3 class="text-lg font-semibold mb-4">Step 3: Review & place order</h3>
+            <template x-for="(line, i) in quote.file_lines || []" :key="i">
+              <div class="flex justify-between py-2 border-b border-surface-border text-sm">
+                <span x-text="line.file_name"></span>
+                <span class="font-semibold" x-text="'৳' + Number(line.line_price).toFixed(0)"></span>
+              </div>
+            </template>
+            {% if addons %}
+            <div class="mt-4">
+              <h4 class="font-semibold mb-2">Add-ons</h4>
+              <div class="grid sm:grid-cols-2 gap-3">
+                {% for addon in addons %}
+                <label class="flex items-center gap-3 p-3 rounded-lg border border-surface-border cursor-pointer">
+                  <input type="checkbox" name="addons" value="{{ addon.id }}" class="w-5 h-5" @change="updatePrice()">
+                  <span class="text-sm">{{ addon.name }} (+৳{{ addon.price|floatformat:0 }})</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            <label class="flex items-center gap-3 mt-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 cursor-pointer min-h-[44px]">
+              <input type="checkbox" name="is_urgent" class="w-5 h-5" @change="updatePrice()">
+              <span class="font-semibold text-sm">Urgent processing (+{{ SITE.urgent_surcharge_percent }}%)</span>
+            </label>
+            <div class="mt-4">
+              <h4 class="font-semibold mb-2">Pickup or delivery</h4>
+              <label class="mr-4"><input type="radio" name="fulfillment_type" value="pickup" x-model="fulfillment"> Pickup</label>
+              <label><input type="radio" name="fulfillment_type" value="delivery" x-model="fulfillment"> Delivery</label>
+              <div x-show="fulfillment === 'delivery'" x-cloak class="mt-3 space-y-2">
+                <p class="text-sm text-text-muted">Default delivery location: Gono Bishwabidyalay (convenience point only).</p>
+                <p class="text-xs text-text-muted">Not affiliated with Gono Bishwabidyalay.</p>
+                <textarea name="delivery_address" rows="2" class="form-input" placeholder="Default delivery location: Gono Bishwabidyalay (convenience point only)."></textarea>
+                <input type="text" name="delivery_contact_phone" class="form-input" placeholder="Contact phone">
+              </div>
+            </div>
+            <textarea name="special_instructions" rows="2" class="form-input mt-4" placeholder="Special instructions (optional)"></textarea>
+            <input type="text" name="promo_code" class="form-input mt-2 uppercase" placeholder="Promo code" @input="updatePrice()">
+          </div>
+          <div class="flex gap-3">
+            <button type="button" @click="step=2" class="btn-secondary">Back</button>
+            <button type="submit" class="btn-cta ml-auto min-h-[44px]" :disabled="submitting">Place Order</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:sticky lg:top-24 h-fit">
+        <div class="card p-6">
+          <h3 class="font-semibold mb-4">Live quote</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Base</span><span class="font-bold" x-text="'৳' + (quote.base_price || 0).toFixed(0)">৳0</span></div>
+            <div class="flex justify-between"><span>Add-ons</span><span class="font-bold" x-text="'৳' + (quote.addons_price || 0).toFixed(0)">৳0</span></div>
+            <div class="flex justify-between text-amber-400"><span>Urgent</span><span x-text="'৳' + (quote.urgent_surcharge || 0).toFixed(0)">৳0</span></div>
+            <div class="flex justify-between text-emerald-400"><span>Discount</span><span x-text="'-৳' + (quote.total_discount || 0).toFixed(0)">-৳0</span></div>
+            <div class="flex justify-between text-lg font-bold pt-2 border-t border-surface-border"><span>Total</span><span class="text-primary" x-text="'৳' + (quote.total || 0).toFixed(0)">৳0</span></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Color Mode</label>
-      <select class="form-select" name="color">
-        <option value="bw">Black & White</option>
-        <option value="color">Color</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Sided</label>
-      <select class="form-select" name="side">
-        <option value="single">Single Sided</option>
-        <option value="double">Double Sided</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Copies</label>
-      <input type="number" class="form-control" name="copies" value="1" min="1" required>
-    </div>
-    <button type="submit" class="btn btn-primary w-100 fw-bold">Place Order</button>
   </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function orderWizard() {
+  return {
+    step: 1,
+    fulfillment: 'pickup',
+    files: [],
+    quote: {},
+    submitting: false,
+    get filesConfigJson() {
+      return JSON.stringify(this.files.map(f => ({
+        file_name: f.name,
+        print_type: f.print_type,
+        sides: f.sides,
+        paper_size: f.paper_size,
+        copies: f.copies,
+        pages_detected: f.pages_detected,
+        pages_override: f.pages,
+        pages: f.pages,
+        ranges: f.ranges,
+      })));
+    },
+    async handleFiles(e) {
+      const list = e.target.files;
+      await this.processFileList(list);
+    },
+    async handleDrop(e) {
+      await this.processFileList(e.dataTransfer.files);
+    },
+    async processFileList(list) {
+      const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      for (const file of list) {
+        let pages = 1;
+        if (!file.name.toLowerCase().endsWith('.zip')) {
+          const fd = new FormData();
+          fd.append('file', file);
+          try {
+            const r = await fetch('/api/detect-pages/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': csrf } });
+            const d = await r.json();
+            if (d.pages) pages = d.pages;
+          } catch (err) {}
+        }
+        this.files.push({
+          name: file.name, file, pages, pages_detected: pages,
+          print_type: 'bw', sides: 'single', paper_size: 'A4', copies: 1,
+          ranges: [], expanded: this.files.length === 0,
+        });
+      }
+      this.syncFileInput();
+      this.updatePrice();
+    },
+    syncFileInput() {
+      const dt = new DataTransfer();
+      this.files.forEach(f => { if (f.file) dt.items.add(f.file); });
+      this.$refs.fileInput.files = dt.files;
+    },
+    addRange(fi) {
+      this.files[fi].ranges.push({ start_page: 1, end_page: 1, print_type: 'color', sides: 'single' });
+      this.updatePrice();
+    },
+    onSubmit(e) {
+      if (this.step !== 3) {
+        e.preventDefault();
+        return;
+      }
+      if (!this.files.length) {
+        e.preventDefault();
+        if (window.PrintEdge) PrintEdge.Toast.show('Please upload at least one file.', 'error');
+        return;
+      }
+      this.submitting = true;
+    },
+    async updatePrice() {
+      const addonIds = [...document.querySelectorAll('input[name="addons"]:checked')].map(c => c.value);
+      const isUrgent = document.querySelector('input[name="is_urgent"]')?.checked || false;
+      const payload = {
+        files: this.files.map(f => ({
+          file_name: f.name,
+          pages: f.pages,
+          print_type: f.print_type,
+          sides: f.sides,
+          paper_size: f.paper_size,
+          copies: f.copies,
+          ranges: f.ranges,
+        })),
+        addon_ids: addonIds,
+        is_urgent: isUrgent,
+      };
+      try {
+        const r = await fetch('/api/price/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': PrintEdge.getCsrfToken() },
+          body: JSON.stringify(payload),
+        });
+        const d = await r.json();
+        if (d.error) {
+          if (window.PrintEdge) PrintEdge.Toast.show(d.error, 'error');
+          return;
+        }
+        this.quote = d;
+      } catch (e) {}
+    },
+  };
+}
+
+// Initial price load
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.querySelector('[x-data]')) {
+    const check = setInterval(() => {
+      if (window.Alpine) {
+        const comp = document.querySelector('[x-data]').__x;
+        if (comp && comp.$data && comp.$data.files && comp.$data.files.length) {
+          comp.$data.updatePrice();
+          clearInterval(check);
+        }
+      }
+    }, 100);
+  }
+});
+</script>
 {% endblock %}

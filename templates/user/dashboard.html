@@ -1,164 +1,244 @@
 {% extends "base.html" %}
-{% block title %}My Dashboard — Print-Edge{% endblock %}
+{% block title %}Dashboard | Print-Edge{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <!-- Header -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
-    <div>
-      <h1 class="fw-bolder mb-1" style="font-size:1.8rem">
-        Welcome back, {{ request.user.get_short_name|default:request.user.username }} 👋
-      </h1>
-      <p class="text-muted mb-0">Track your prints and manage your account below.</p>
-    </div>
-    <a href="#" class="btn btn-primary rounded-pill px-4 fw-semibold d-flex align-items-center gap-2">
-      <i class="bi bi-cloud-upload-fill"></i>New Order
-    </a>
-  </div>
+<!-- Ambient Glow Elements -->
+<div class="fixed top-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-brand-600/10 blur-[120px] pointer-events-none mix-blend-screen"></div>
 
-  <!-- Stats Row -->
-  <div class="row g-4 mb-5">
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
-        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(99,102,241,0.12);color:var(--primary)">
-          <i class="bi bi-clock-history"></i>
-        </div>
-        <h2 class="fw-bolder mb-1">1</h2>
-        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Active Orders</p>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
-        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(16,185,129,0.12);color:var(--success)">
-          <i class="bi bi-check-all"></i>
-        </div>
-        <h2 class="fw-bolder mb-1">12</h2>
-        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Completed</p>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift" style="background:var(--bg-card)">
-        <div class="avatar avatar-lg mx-auto mb-3" style="background:rgba(245,158,11,0.12);color:var(--warning)">
-          <i class="bi bi-wallet2"></i>
-        </div>
-        <h2 class="fw-bolder mb-1">৳450</h2>
-        <p class="text-muted mb-0 small fw-semibold text-uppercase" style="letter-spacing:1px">Total Spent</p>
-      </div>
-    </div>
-  </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-10 animate-fade-in">
 
-  <!-- Active Order Tracker -->
-  <div class="card border-0 shadow-sm mb-5 overflow-hidden" style="background:var(--bg-card)">
-    <div class="card-body p-4 p-md-5" style="background:linear-gradient(135deg,var(--bg-card),rgba(99,102,241,0.04))">
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <span class="badge rounded-pill px-3 mb-2" style="background:var(--primary-light);color:var(--primary)">
-            <i class="bi bi-circle-fill me-1" style="font-size:.5rem;animation:pulse 2s infinite"></i>Active Order
-          </span>
-          <h4 class="fw-bold mb-1">#ORD-992</h4>
-          <p class="text-muted mb-0 small">
-            <i class="bi bi-file-pdf text-danger me-1"></i>assignment.pdf &bull; Color, Double Sided &bull; 15 pages
-          </p>
+            <h1 class="text-3xl md:text-4xl font-display font-bold text-white mb-2">My Dashboard</h1>
+            <p class="text-neutral-500 font-medium">Welcome back, <span class="text-white">{{ request.user.first_name|default:request.user.username }}</span>.</p>
         </div>
-        <div class="text-md-end">
-          <h3 class="fw-bolder mb-0">৳120</h3>
-          <span class="text-muted small">Pay at pickup</span>
-        </div>
-      </div>
+        <a href="{% url 'user_new_order' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <i class="bi bi-cloud-arrow-up-fill text-lg"></i>
+            New Print Order
+        </a>
+    </div>
 
-      <!-- Progress Steps -->
-      <div class="row g-0 mt-4">
-        {% for step_label, done, active in progress_steps %}
-        <div class="col text-center">
-          <div class="d-flex flex-column align-items-center">
-            <div class="rounded-circle d-flex align-items-center justify-content-center mb-2 fw-bold"
-                 style="width:36px;height:36px;font-size:.8rem;
-                 {% if done %}background:var(--success);color:#fff;
-                 {% elif active %}background:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(99,102,241,0.2);
-                 {% else %}background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);{% endif %}">
-              {% if done %}<i class="bi bi-check-lg"></i>
-              {% elif active %}<i class="bi bi-hourglass-split" style="animation:spin 2s linear infinite"></i>
-              {% else %}{{ forloop.counter }}{% endif %}
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative overflow-hidden group border-l-4 border-l-blue-500">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-colors"></div>
+            <div class="relative z-10">
+                <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-3">Active Orders</p>
+                <p class="text-5xl font-display font-bold text-white">{{ stats.active_count }}</p>
             </div>
-            <small class="fw-semibold {% if done %}text-success{% elif active %}text-primary{% else %}text-muted{% endif %}" style="font-size:.7rem;white-space:nowrap">
-              {{ step_label }}
-            </small>
-          </div>
+            <div class="absolute bottom-6 right-6 text-blue-500/20 group-hover:text-blue-500/30 transition-colors">
+                <i class="bi bi-file-earmark-text-fill text-6xl"></i>
+            </div>
+        </div>
+
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative overflow-hidden group border-l-4 border-l-emerald-500">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors"></div>
+            <div class="relative z-10">
+                <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-3">Completed</p>
+                <p class="text-5xl font-display font-bold text-white">{{ stats.completed_count }}</p>
+            </div>
+            <div class="absolute bottom-6 right-6 text-emerald-500/20 group-hover:text-emerald-500/30 transition-colors">
+                <i class="bi bi-check-circle-fill text-6xl"></i>
+            </div>
+        </div>
+
+        <div class="premium-card p-6 md:p-8 rounded-3xl relative overflow-hidden group border-l-4 border-l-brand-500">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-brand-500/10 rounded-full blur-3xl group-hover:bg-brand-500/20 transition-colors"></div>
+            <div class="relative z-10">
+                <p class="text-neutral-500 text-[10px] font-bold uppercase tracking-widest mb-3">Total Spent</p>
+                <p class="text-5xl font-display font-bold text-white"><span class="text-2xl text-neutral-500 mr-1">৳</span>{{ stats.total_spent|floatformat:0 }}</p>
+            </div>
+            <div class="absolute bottom-6 right-6 text-brand-500/20 group-hover:text-brand-500/30 transition-colors">
+                <i class="bi bi-wallet2 text-6xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Order Tracker -->
+    {% if active_order %}
+    <div class="premium-card p-6 md:p-10 rounded-3xl mb-12 border-brand-500/30 shadow-2xl shadow-brand-500/10 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12 relative z-10">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-[10px] font-bold uppercase tracking-widest mb-4">
+                    <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                    Live Tracking
+                </div>
+                <h3 class="text-3xl font-display font-bold text-white mb-2">{{ active_order.order_number }}</h3>
+                <p class="text-neutral-400 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium">
+                    <span class="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg border border-white/10"><i class="bi bi-file-earmark-text text-neutral-500"></i> {{ active_order.file_name|default:"Physical Document" }}</span>
+                    <span>{{ active_order.get_print_type_display }}</span>
+                    <span class="text-neutral-700">•</span>
+                    <span>{{ active_order.get_sides_display }}</span>
+                    <span class="text-neutral-700">•</span>
+                    <span>{{ active_order.pages }} pages</span>
+                </p>
+            </div>
+            <div class="md:text-right">
+                <div class="text-4xl font-display font-bold text-white mb-3">৳{{ active_order.total_amount|floatformat:0 }}</div>
+                <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border
+                    {% if active_order.payment_status == 'paid' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                    {% elif active_order.payment_status == 'partial' %}bg-amber-500/10 text-amber-400 border-amber-500/20
+                    {% else %}bg-red-500/10 text-red-400 border-red-500/20{% endif %}">
+                    {{ active_order.get_payment_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Status Pipeline UI -->
+        <div class="relative z-10 w-full overflow-x-auto pb-4 hide-scrollbar">
+            <div class="flex items-center min-w-[600px] justify-between px-4">
+                
+                {% for status_key, status_label, status_icon in status_steps %}
+                    <!-- Step {{ status_key }} -->
+                    <div class="flex flex-col items-center relative z-10 w-24">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-500
+                            {% if active_order.status == status_key %}
+                                bg-brand-500 text-white shadow-lg shadow-brand-500/40 scale-110 -translate-y-1
+                            {% elif status_key in passed_statuses %}
+                                bg-white/10 text-white border border-white/20
+                            {% else %}
+                                bg-black/40 text-neutral-600 border border-white/5
+                            {% endif %}">
+                            <i class="bi {{ status_icon }} text-xl"></i>
+                        </div>
+                        <span class="text-xs font-bold text-center tracking-wide
+                            {% if active_order.status == status_key %}text-brand-400
+                            {% elif status_key in passed_statuses %}text-white
+                            {% else %}text-neutral-600{% endif %}">
+                            {{ status_label }}
+                        </span>
+                    </div>
+
+                    {% if not forloop.last %}
+                        <!-- Connecting Line -->
+                        <div class="flex-1 h-1 mx-4 rounded-full transition-colors duration-500 overflow-hidden bg-black/40 border border-white/5">
+                            <div class="h-full bg-brand-500 transition-all duration-1000" style="width: {% if status_key in passed_statuses %}100%{% else %}0%{% endif %}"></div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+        </div>
+        
+    </div>
+    {% endif %}
+
+    <!-- Recent Orders - Desktop Table -->
+    <div class="desktop-only premium-card rounded-3xl overflow-hidden relative">
+        <div class="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+            <h3 class="text-xl font-bold text-white">Recent Orders</h3>
+            <a href="{% url 'user_orders' %}" class="text-sm font-bold text-brand-400 hover:text-brand-300 transition-colors">View All &rarr;</a>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-black/40 text-neutral-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
+                        <th class="p-4 pl-6 md:pl-8">Order ID</th>
+                        <th class="p-4">Document</th>
+                        <th class="p-4">Details</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for o in orders %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="p-4 pl-6 md:pl-8 font-display font-bold text-white text-sm whitespace-nowrap">{{ o.order_number }}</td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-3 max-w-[200px]">
+                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10">
+                                    <i class="bi bi-file-earmark-text text-neutral-400"></i>
+                                </div>
+                                <span class="text-neutral-300 text-sm font-medium truncate" title="{{ o.file_name }}">{{ o.file_name|default:"Physical Doc" }}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-xs font-medium text-neutral-500">
+                            {{ o.get_print_type_display }} • {{ o.get_sides_display }}<br>
+                            {{ o.pages }}p × {{ o.copies }}
+                        </td>
+                        <td class="p-4 font-bold text-white text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5 border
+                                {% if o.status == 'delivered' or o.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+                                {% elif o.status == 'printing' %}bg-brand-500/10 text-brand-400 border-brand-500/20
+                                {% elif o.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
+                                {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+                                {% if o.status == 'delivered' or o.status == 'ready' %}<i class="bi bi-check-lg"></i>
+                                {% elif o.status == 'printing' %}<i class="bi bi-printer"></i>
+                                {% elif o.status == 'cancelled' %}<i class="bi bi-x-lg"></i>
+                                {% else %}<i class="bi bi-hourglass-split"></i>{% endif %}
+                                {{ o.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 pr-6 md:pr-8 text-right">
+                            <a href="{% url 'user_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-brand-500 transition-colors tooltip min-h-[44px] min-w-[44px]" title="View Details">
+                                <i class="bi bi-chevron-right text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-16 text-center">
+                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 text-neutral-500 mb-6 border border-white/10">
+                                <i class="bi bi-inbox text-3xl"></i>
+                            </div>
+                            <h4 class="text-xl font-display font-bold text-white mb-2">No orders yet</h4>
+                            <p class="text-neutral-500 font-medium mb-8 max-w-sm mx-auto">You haven't placed any print orders yet. Get started by uploading your first document.</p>
+                            <a href="{% url 'user_new_order' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-400 transition-colors shadow-lg shadow-brand-500/20 min-h-[44px]">
+                                Create Order <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Mobile Card View -->
+    <div class="mobile-only space-y-4">
+        {% for o in orders %}
+        <div class="mobile-order-card">
+            <div class="mobile-order-header">
+                <div>
+                    <div class="mobile-order-number">{{ o.order_number }}</div>
+                    <div class="text-xs text-neutral-500 mt-1">{{ o.file_name|default:"Physical Document" }}</div>
+                </div>
+                <div class="mobile-order-amount">৳{{ o.total_amount|floatformat:0 }}</div>
+            </div>
+            <div class="mobile-order-details">
+                <div class="mobile-order-detail">
+                    <span class="mobile-order-label">Print</span>
+                    <span class="mobile-order-value">{{ o.get_print_type_display }} · {{ o.get_sides_display }}</span>
+                </div>
+                <div class="mobile-order-detail">
+                    <span class="mobile-order-label">Pages × Copies</span>
+                    <span class="mobile-order-value">{{ o.pages }}p × {{ o.copies }}</span>
+                </div>
+            </div>
+            <div class="mobile-order-actions">
+                <a href="{% url 'user_order_detail' o.pk %}" class="flex-1 text-center py-2 px-4 rounded-lg bg-white/5 text-brand-400 font-semibold text-sm min-h-[44px] flex items-center justify-center">View</a>
+            </div>
         </div>
         {% empty %}
-        {% for s in "Placed,Confirmed,Printing,Ready"|make_list %}{% endfor %}
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--success);color:#fff;font-size:.8rem"><i class="bi bi-check-lg"></i></div>
-          <small class="fw-semibold text-success" style="font-size:.7rem">Placed</small>
-        </div>
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--primary);color:#fff;font-size:.8rem;box-shadow:0 0 0 4px rgba(99,102,241,0.2)"><i class="bi bi-hourglass-split"></i></div>
-          <small class="fw-semibold text-primary" style="font-size:.7rem">Confirmed</small>
-        </div>
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);font-size:.8rem">3</div>
-          <small class="text-muted" style="font-size:.7rem">Printing</small>
-        </div>
-        <div class="col text-center">
-          <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:36px;height:36px;background:var(--bg-card2);color:var(--text-muted);border:2px solid var(--border);font-size:.8rem">4</div>
-          <small class="text-muted" style="font-size:.7rem">Ready</small>
+        <div class="mobile-card text-center py-12">
+            <i class="bi bi-inbox text-4xl text-neutral-600 mb-4"></i>
+            <h4 class="text-lg font-bold text-white mb-2">No orders yet</h4>
+            <p class="text-sm text-neutral-500 mb-4">You haven't placed any print orders yet.</p>
+            <a href="{% url 'user_new_order' %}" class="inline-block py-3 px-6 rounded-xl bg-brand-500 text-white font-bold min-h-[44px]">Create Order</a>
         </div>
         {% endfor %}
-      </div>
     </div>
-  </div>
 
-  <!-- Order History -->
-  <div class="card border-0 shadow-sm" style="background:var(--bg-card)">
-    <div class="card-header bg-transparent py-3 px-4 d-flex justify-content-between align-items-center">
-      <h5 class="fw-bold mb-0">Order History</h5>
-      <button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-download me-1"></i>Export</button>
-    </div>
-    <div class="table-container" style="border:none;border-radius:0">
-      <table class="table mb-0">
-        <thead><tr>
-          <th class="ps-4">Order ID</th>
-          <th>Date</th>
-          <th>Document</th>
-          <th>Amount</th>
-          <th>Status</th>
-          <th class="pe-4 text-end">Action</th>
-        </tr></thead>
-        <tbody>
-          <tr>
-            <td class="ps-4 fw-semibold">#ORD-992</td>
-            <td class="text-muted small">Today, 10:45 AM</td>
-            <td><i class="bi bi-file-pdf text-danger me-1"></i>assignment.pdf</td>
-            <td class="fw-bold">৳120</td>
-            <td><span class="badge badge-pending">Pending</span></td>
-            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill">View</button></td>
-          </tr>
-          <tr>
-            <td class="ps-4 fw-semibold">#ORD-845</td>
-            <td class="text-muted small">Oct 12, 2025</td>
-            <td><i class="bi bi-file-word text-primary me-1"></i>project_proposal.docx</td>
-            <td class="fw-bold">৳45</td>
-            <td><span class="badge badge-ready">Delivered</span></td>
-            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-repeat me-1"></i>Reorder</button></td>
-          </tr>
-          <tr>
-            <td class="ps-4 fw-semibold">#ORD-721</td>
-            <td class="text-muted small">Sep 5, 2025</td>
-            <td><i class="bi bi-file-pdf text-danger me-1"></i>lecture_notes_ch1.pdf</td>
-            <td class="fw-bold">৳210</td>
-            <td><span class="badge badge-ready">Delivered</span></td>
-            <td class="pe-4 text-end"><button class="btn btn-ghost btn-sm rounded-pill"><i class="bi bi-arrow-repeat me-1"></i>Reorder</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>
 
-{% block scripts %}
 <style>
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
-{% endblock %}
 {% endblock %}

@@ -1,0 +1,102 @@
+{% extends "admin_base.html" %}
+{% block title %}Operator Queue | Print-Edge{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+  <div>
+    <h1 class="text-2xl font-semibold text-primary">Production Queue</h1>
+    <p class="text-text-muted text-sm">{{ today_count }} orders today</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'admin_walkin_order' %}" class="btn-cta text-sm">New Walk-in Order</a>
+    <button type="button" id="optimizeBtn" class="btn-primary text-sm">Optimize Queue</button>
+    <a href="?mine=1" class="btn-secondary text-sm {% if mine %}!bg-primary !text-white{% endif %}">My assignments</a>
+  </div>
+</div>
+
+<form method="get" class="flex flex-wrap gap-3 mb-6">
+  {% if mine %}<input type="hidden" name="mine" value="1">{% endif %}
+  <select name="print_type" class="form-input w-auto text-sm min-h-[44px]" onchange="this.form.submit()">
+    <option value="">All print types</option>
+    <option value="bw" {% if print_type == 'bw' %}selected{% endif %}>B&W</option>
+    <option value="color" {% if print_type == 'color' %}selected{% endif %}>Color</option>
+  </select>
+  <select name="fulfillment" class="form-input w-auto text-sm min-h-[44px]" onchange="this.form.submit()">
+    <option value="">All fulfillment</option>
+    <option value="pickup" {% if fulfillment == 'pickup' %}selected{% endif %}>Pickup</option>
+    <option value="delivery" {% if fulfillment == 'delivery' %}selected{% endif %}>Delivery</option>
+  </select>
+</form>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="card p-4">
+    <h3 class="font-semibold text-amber-700 mb-3">Pending</h3>
+    <div id="col-pending" class="space-y-3 min-h-[120px]">
+      {% for o in columns.pending %}
+      <div class="kanban-card p-3 rounded-lg bg-amber-50 border border-amber-200 cursor-grab min-h-[44px]" data-id="{{ o.pk }}">
+        <p class="font-bold text-sm">{{ o.order_number }}</p>
+        <p class="text-xs text-text-muted">{{ o.customer_name }}</p>
+        <p class="text-xs mt-1">{{ o.file_count }} file(s) · {{ o.total_pages_all_files }} pg · ৳{{ o.total_amount|floatformat:0 }}</p>
+      </div>
+      {% empty %}<p class="text-xs text-text-muted empty-state py-8"><i class="bi bi-inbox empty-state-icon block"></i>No pending orders</p>{% endfor %}
+    </div>
+  </div>
+  <div class="card p-4">
+    <h3 class="font-semibold text-primary mb-3">Printing</h3>
+    <div id="col-printing" class="space-y-3 min-h-[120px]">
+      {% for o in columns.printing %}
+      <div class="kanban-card p-3 rounded-lg bg-blue-50 border border-blue-200 cursor-grab" data-id="{{ o.pk }}">
+        <p class="font-bold text-sm">{{ o.order_number }}</p>
+        <p class="text-xs text-text-muted">{{ o.customer_name }}</p>
+        <p class="text-xs mt-1">{{ o.file_count }} file(s) · {{ o.total_pages_all_files }} pg</p>
+      </div>
+      {% empty %}<p class="text-xs text-text-muted">No orders printing</p>{% endfor %}
+    </div>
+  </div>
+  <div class="card p-4">
+    <h3 class="font-semibold text-emerald-700 mb-3">Ready</h3>
+    <div id="col-ready" class="space-y-3 min-h-[120px]">
+      {% for o in columns.ready %}
+      <div class="kanban-card p-3 rounded-lg bg-emerald-50 border border-emerald-200 cursor-grab" data-id="{{ o.pk }}">
+        <p class="font-bold text-sm">{{ o.order_number }}</p>
+        <p class="text-xs text-text-muted">{{ o.customer_name }}</p>
+        <p class="text-xs mt-1">৳{{ o.total_amount|floatformat:0 }}</p>
+      </div>
+      {% empty %}<p class="text-xs text-text-muted">No ready orders</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const csrf = document.querySelector('meta[name="csrf-token"]').content;
+function postStatus(id, status) {
+  return fetch('/api/orders/' + id + '/status/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+    body: JSON.stringify({ status }),
+  });
+}
+const colStatus = { pending: 'confirmed', printing: 'printing', ready: 'ready' };
+['col-pending','col-printing','col-ready'].forEach(colId => {
+  const el = document.getElementById(colId);
+  if (!el || typeof Sortable === 'undefined') return;
+  new Sortable(el, {
+    group: 'orders',
+    animation: 150,
+    onAdd(evt) {
+      const id = evt.item.dataset.id;
+      const col = colId.replace('col-','');
+      postStatus(id, colStatus[col]).then(r => r.json()).then(d => {
+        if (d.success && colStatus[col] === 'ready' && window.PrintEdge) {
+          PrintEdge.Toast.show('Marked ready for pickup', 'success');
+        }
+      });
+    },
+  });
+});
+document.getElementById('optimizeBtn')?.addEventListener('click', () => {
+  fetch('/api/operator/optimize-queue/', { method: 'POST', headers: { 'X-CSRFToken': csrf } })
+    .then(r => r.json()).then(d => { if (window.PrintEdge) PrintEdge.Toast.show(d.message, 'info'); });
+});
+</script>
+{% endblock %}

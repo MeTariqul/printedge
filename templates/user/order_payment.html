@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Payment for {{ order.order_number }} | PrintEdge{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+    <div class="flex items-center gap-3 mb-6">
+        <a href="{% url 'user_order_detail' order.pk %}" class="w-10 h-10 rounded-xl bg-surface border border-surface-border flex items-center justify-center text-text-muted hover:text-primary min-h-[44px] min-w-[44px]">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="text-2xl font-semibold text-primary">Complete Payment</h1>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="card p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <p class="text-sm text-text-muted">Order</p>
+                <p class="text-lg font-semibold">{{ order.order_number }}</p>
+            </div>
+            <div class="text-center sm:text-right">
+                <p class="text-sm text-text-muted">Total Amount</p>
+                <p class="text-3xl font-bold text-primary">৳{{ order.total_amount|floatformat:0 }}</p>
+                <p class="text-sm text-text-muted mt-1">Status: <span class="font-semibold {% if order.payment_status == 'pending_review' %}text-amber-400{% elif order.payment_status == 'paid' %}text-emerald-400{% elif order.payment_status == 'rejected' %}text-red-400{% else %}text-amber-400{% endif %}">{{ order.get_payment_status_display }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    {% if order.payment_status == 'rejected' and order.payment_rejection_reason %}
+    <div class="card p-4 mb-6 border border-red-500/30 bg-red-500/10">
+        <p class="text-sm font-semibold text-red-400 mb-1">Rejection Reason</p>
+        <p class="text-sm text-text">{{ order.payment_rejection_reason }}</p>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Payment Method Tabs -->
+        <div class="flex flex-wrap gap-2 p-2 rounded-xl bg-surface border border-surface-border mb-6 min-h-[44px]">
+            {% for slug, name, number, icon_class in payment_methods %}
+            {% if number %}
+            <a href="?method={{ slug }}" class="flex-1 min-w-[120px] text-center px-4 py-3 rounded-lg font-semibold transition-all {% if active_method == slug %}bg-primary text-white{% else %}text-text-muted hover:bg-surface{% endif %}">{{ name }}</a>
+            {% else %}
+            <span class="flex-1 min-w-[120px] text-center px-4 py-3 rounded-lg font-semibold bg-amber-500/20 text-amber-400 cursor-not-allowed">{{ name }}</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Payment Method Content -->
+        {% for slug, name, number, icon_class in payment_methods %}
+        {% if active_method == slug and number %}
+        <input type="hidden" name="payment_method" value="{{ slug }}">
+        <div class="card p-6 space-y-5">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 mb-4">
+                    <i class="bi {{ icon_class }} text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">{{ name }}</h3>
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <span id="phone-number-{{ slug }}" class="text-4xl font-mono font-bold text-primary">{{ number }}</span>
+                    <button type="button" onclick="navigator.clipboard.writeText('{{ number }}').then(() => PrintEdge.Toast.show('Copied!', 'success'))" class="w-10 h-10 rounded-lg bg-surface border border-surface-border flex items-center justify-center text-primary min-h-[44px] min-w-[44px]" title="Copy number">
+                        <i class="bi bi-copy"></i>
+                    </button>
+                </div>
+
+                <!-- QR Code with white border for dark background -->
+                <div class="inline-block p-3 bg-white rounded-2xl mb-4">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ number }}" alt="QR for {{ number }}" class="w-64 h-64 object-contain">
+                </div>
+
+                <p class="text-sm text-text-muted max-w-md mx-auto">
+                    Please send exactly <strong class="text-primary">৳{{ order.total_amount|floatformat:0 }}</strong> to the number above using {{ name }}, then upload your payment screenshot below.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <!-- Screenshot Upload -->
+        <div class="card p-6">
+            <h3 class="font-semibold mb-4 flex items-center gap-2">
+                <i class="bi bi-upload text-primary"></i> Upload Payment Screenshot
+            </h3>
+            <div class="space-y-4">
+                <input type="file" name="payment_screenshot" accept=".jpg,.jpeg,.png" capture="environment" required
+                       class="w-full px-4 py-3 rounded-xl bg-surface border border-surface-border text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:font-semibold min-h-[44px]">
+                <p class="text-xs text-text-muted">Accepted formats: JPG, PNG (max 5MB)</p>
+                <button type="submit" class="btn-cta w-full min-h-[44px]">
+                    <i class="bi bi-check-lg"></i> I've Completed the Payment
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('input[name="payment_screenshot"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.size > 5 * 1024 * 1024) {
+                PrintEdge.Toast.show('File must be under 5MB', 'error');
+                e.target.value = '';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "user_base.html" %}
+{% block title %}Notifications | {{ user.get_full_name|default:user.email }}{% endblock %}
+{% block breadcrumb %}Notifications{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">Notifications</h1>
+        <p class="text-slate-400 text-sm">{{ unread_count|default:0 }} unread</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="?status=unread" class="{% if status_filter == 'unread' %}px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-300{% else %}px-4 py-2.5 rounded-xl bg-slate-800/50 text-slate-400{% endif %} text-sm font-bold border border-slate-700 hover:bg-slate-700">
+            Unread
+        </a>
+        <a href="?status=read" class="{% if status_filter == 'read' %}px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-300{% else %}px-4 py-2.5 rounded-xl bg-slate-800/50 text-slate-400{% endif %} text-sm font-bold border border-slate-700 hover:bg-slate-700">
+            Read
+        </a>
+        <a href="?status=" class="{% if not status_filter %}px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-300{% else %}px-4 py-2.5 rounded-xl bg-slate-800/50 text-slate-400{% endif %} text-sm font-bold border border-slate-700 hover:bg-slate-700">
+            All
+        </a>
+    </div>
+</div>
+
+{% if page_obj %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="delete_selected">
+
+    <div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                        <th class="p-3 w-10"><input type="checkbox" id="select-all" class="w-4 h-4 rounded"></th>
+                        <th class="p-3">Notification</th>
+                        <th class="p-3">Time</th>
+                        <th class="p-3 w-32">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700/50">
+                    {% for n in page_obj %}
+                    <tr class="{% if not n.is_read %}bg-brand-500/5{% endif %} hover:bg-white/5 transition-colors">
+                        <td class="p-3">
+                            <input type="checkbox" name="selected_ids" value="{{ n.id }}" class="w-4 h-4 rounded notif-checkbox">
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-start gap-2">
+                                <span class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0 {% if n.is_read %}hidden{% endif %}"></span>
+                                <div>
+                                    <p class="font-semibold text-white text-sm">{{ n.verb }}</p>
+                                    <p class="text-xs text-slate-400 mt-0.5">{{ n.description|linebreaksbr }}</p>
+                                    {% if n.actor %}
+                                    <p class="text-[10px] text-slate-500 mt-1">By: {{ n.actor.get_full_name|default:n.actor.email }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3 text-xs text-slate-400">
+                            {{ n.created_at|timesince }} ago
+                        </td>
+                        <td class="p-3">
+                            <div class="flex gap-1">
+                                {% if not n.is_read %}
+                                <button type="button" onclick="markRead({{ n.id }})" class="px-2 py-1 rounded-lg bg-brand-500/20 text-brand-300 text-xs font-bold border border-brand-500/30 hover:bg-brand-500/30">
+                                    Read
+                                </button>
+                                {% endif %}
+                                <button type="button" onclick="deleteNotif({{ n.id }})" class="px-2 py-1 rounded-lg bg-red-500/20 text-red-300 text-xs font-bold border border-red-500/30 hover:bg-red-500/30">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-4 text-sm text-slate-400">
+        <div x-data="{ any: false }" x-init="document.querySelectorAll('.notif-checkbox').forEach(c => { c.addEventListener('change', () => { any = document.querySelectorAll('.notif-checkbox:checked').length > 0 }) }">
+            <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 hover:bg-amber-500/30" onclick="return confirm('Delete selected notifications?')">
+                Delete Selected
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Pagination -->
+<div class="mt-6">
+    <ul class="flex gap-1">
+        {% if page_obj.has_previous %}
+        <li><a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}" class="px-3 py-1 rounded-lg bg-slate-800/50 text-slate-300 hover:bg-slate-700">Prev</a></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li><span class="px-3 py-1 rounded-lg bg-brand-500/20 text-brand-300 font-bold">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li><a href="?page={{ num }}&status={{ status_filter }}" class="px-3 py-1 rounded-lg bg-slate-800/50 text-slate-300 hover:bg-slate-700">{{ num }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li><a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}" class="px-3 py-1 rounded-lg bg-slate-800/50 text-slate-300 hover:bg-slate-700">Next</a></li>
+        {% endif %}
+    </ul>
+</div>
+
+<script>
+function markRead(id) {
+    fetch(`/api/notifications/${id}/read/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '', 'X-Requested-With': 'XMLHttpRequest' },
+    }).then(() => location.reload());
+}
+
+function deleteNotif(id) {
+    if (confirm('Delete this notification?')) {
+        fetch(`/api/notifications/${id}/delete/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '', 'X-Requested-With': 'XMLHttpRequest' },
+        }).then(() => location.reload());
+    }
+}
+
+document.getElementById('select-all')?.addEventListener('change', function() {
+    document.querySelectorAll('.notif-checkbox').forEach(cb => cb.checked = this.checked);
+});
+</script>
+
+{% else %}
+<div class="premium-card p-12 rounded-2xl border border-slate-700/50 text-center">
+    <div class="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
+        <i class="bi bi-bell text-2xl text-slate-500"></i>
+    </div>
+    <h4 class="text-lg font-bold text-white mb-2">No notifications</h4>
+    <p class="text-slate-400 text-sm">All caught up! Check back later for updates.</p>
+</div>
+{% endif %}
+{% endblock %}

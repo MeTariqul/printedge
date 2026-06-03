@@ -1,0 +1,49 @@
+{% load static %}
+{% comment %}Mobile Bottom Navigation Bar - included in base.html{% endcomment %}
+<nav class="mobile-bottom-nav">
+    <div class="flex justify-around h-16 items-center max-w-lg mx-auto">
+        <a href="{% url 'public_index' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'public_index' or request.resolver_match.url_name == 'user_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
+            <i class="bi bi-house-door-fill nav-icon"></i>Home
+        </a>
+        {% if user.is_authenticated %}
+            {% if not user.is_admin_user %}
+                <a href="{% url 'user_new_order' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'user_new_order' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-cloud-arrow-up-fill nav-icon"></i>Upload
+                </a>
+                <a href="{% url 'user_orders' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_orders' or request.resolver_match.url_name == 'user_order_detail' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-receipt nav-icon"></i>Orders
+                </a>
+                <a href="{% url 'user_notifications' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center relative {% if request.resolver_match.url_name == 'user_notifications' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-bell-fill nav-icon"></i>
+                    {% if unread_count > 0 %}
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center">{{ unread_count|default:'0' }}</span>
+                    {% endif %}
+                    <span class="opacity-0">Notifications</span>
+                </a>
+                <a href="{% url 'user_profile' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_profile' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-person-fill nav-icon"></i>Profile
+                </a>
+            {% else %}
+                <a href="{% url 'admin_dashboard' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'admin_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-grid-fill nav-icon"></i>Dashboard
+                </a>
+                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'admin_orders' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-list-check nav-icon"></i>Orders
+                </a>
+                <a href="{% url 'admin_mail_dashboard' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'admin_mail_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-envelope-paper nav-icon"></i>Mail
+                </a>
+                <a href="{% url 'user_profile' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'user_profile' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-person-gear nav-icon"></i>Profile
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'public_pricing_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center text-text-muted">
+                <i class="bi bi-tags-fill nav-icon"></i>Pricing
+            </a>
+            <a href="{% url 'auth_login_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center text-text-muted">
+                <i class="bi bi-box-arrow-in-right nav-icon"></i>Login
+            </a>
+        {% endif %}
+    </div>
+</nav>

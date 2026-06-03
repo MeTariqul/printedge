@@ -1,404 +1,334 @@
 {% extends "admin_base.html" %}
-{% block title %}New Walk-in Order — PrintEase{% endblock %}
-{% block breadcrumb %}<li class="breadcrumb-item active">Walk-in Order</li>{% endblock %}
+{% block title %}Walk-in Order | PrintEdge Admin{% endblock %}
+{% block breadcrumb %}Walk-in POS{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2 class="fw-bold mb-1"><i class="bi bi-shop me-2" style="color:var(--primary)"></i>New Walk-in Order</h2>
-    <p class="text-muted mb-0 small">Serve walk-in customers quickly — 6 simple steps.</p>
-  </div>
-  <span class="badge" style="background:rgba(245,158,11,.15);color:#f59e0b;font-size:.8rem;padding:.5rem 1rem">
-    <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Offline Order
-  </span>
+<div class="mb-6">
+    <h1 class="text-2xl font-semibold mb-1">Walk-in POS</h1>
+    <p class="text-text-muted text-sm">Multi-file orders with per-document settings</p>
 </div>
 
-<!-- Wizard Steps -->
-<div class="wizard-steps mb-4">
-  <div class="wizard-step active" id="ws1"><div class="step-circle">1</div><span class="step-label">Customer</span></div>
-  <div class="wizard-step" id="ws2"><div class="step-circle">2</div><span class="step-label">File</span></div>
-  <div class="wizard-step" id="ws3"><div class="step-circle">3</div><span class="step-label">Print Options</span></div>
-  <div class="wizard-step" id="ws4"><div class="step-circle">4</div><span class="step-label">Pricing</span></div>
-  <div class="wizard-step" id="ws5"><div class="step-circle">5</div><span class="step-label">Payment</span></div>
-  <div class="wizard-step" id="ws6"><div class="step-circle">6</div><span class="step-label">Receipt</span></div>
-</div>
+<form method="post" enctype="multipart/form-data" x-data="walkinPos()" @submit="onSubmit($event)">
+    {% csrf_token %}
+    <input type="hidden" name="files_config" :value="filesConfigJson">
+    <input type="hidden" name="walkin_customer_id" x-model="selectedCustomerId">
 
-<form id="walkinForm">
-<!-- Step 1: Customer -->
-<div class="wizard-panel card border-0 shadow-sm p-4" id="panel1">
-  <h5 class="fw-bold mb-3">Step 1: Select Customer</h5>
-  <div class="mb-3">
-    <div class="input-group">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="form-control" id="custSearch" placeholder="Search by name or phone..." oninput="searchCustomer(this.value)">
-    </div>
-  </div>
-  <div id="custResults" class="mb-3"></div>
-  <hr class="divider">
-  <div class="d-flex align-items-center gap-2 mb-3">
-    <div style="flex:1;height:1px;background:var(--border)"></div>
-    <span class="text-muted small">OR ADD NEW</span>
-    <div style="flex:1;height:1px;background:var(--border)"></div>
-  </div>
-  <div class="row g-3">
-    <div class="col-md-6"><label class="form-label">Full Name *</label><input type="text" class="form-control" id="newCustName" placeholder="Customer name"></div>
-    <div class="col-md-6"><label class="form-label">Phone *</label><input type="text" class="form-control" id="newCustPhone" placeholder="01XXXXXXXXX"></div>
-  </div>
-  <div class="mt-3 p-3 rounded" id="selectedCustomerCard" style="display:none;background:var(--primary-light);border:1px solid rgba(99,102,241,.2)">
-    <div class="d-flex align-items-center gap-3">
-      <div style="width:40px;height:40px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700" id="custInitial">?</div>
-      <div><div class="fw-bold" id="custName">—</div><div class="text-muted small" id="custPhone">—</div></div>
-      <span class="badge ms-auto" id="custTier"></span>
-    </div>
-  </div>
-</div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-2 space-y-6">
+            <div class="card p-6">
+                <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="bi bi-person-fill text-primary"></i> Customer</h3>
+                <div class="relative mb-4" x-ref="searchContainer" @click.outside="open = false" @keydown.escape="open = false">
+                    <label class="form-label">Customer Name or Phone</label>
+                    <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomer(); open = searchResults.length > 0" @focus="open = searchResults.length > 0" @click="open = searchResults.length > 0" placeholder="Start typing to search or enter new customer…" class="form-input mb-1" autocomplete="off">
+                    <template x-if="open && searchResults.length">
+                        <div class="absolute z-10 w-full mt-1 rounded-lg border border-surface-border bg-surface shadow-lg max-h-60 overflow-y-auto">
+                            <template x-for="c in searchResults" :key="c.id">
+                                <button type="button" @click="selectCustomer(c); open = false" class="w-full text-left px-4 py-3 hover:bg-surface/50 border-b border-surface-border last:border-0 min-h-[44px]">
+                                    <span class="font-semibold" x-text="c.name"></span>
+                                    <span class="text-text-muted text-sm ml-2" x-text="c.phone"></span>
+                                    <span class="text-text-muted text-xs block" x-text="c.orders_count + ' orders'"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="customer_name" x-model="customerName" required class="form-input" placeholder="Customer name">
+                    </div>
+                    <div>
+                        <label class="form-label">Phone <span class="text-text-muted font-normal">(optional)</span></label>
+                        <input type="tel" name="customer_phone" x-model="customerPhone" class="form-input" placeholder="01XXXXXXXXX">
+                    </div>
+                </div>
+            </div>
 
-<!-- Step 2: File -->
-<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel2">
-  <h5 class="fw-bold mb-3">Step 2: File / Document</h5>
-  <div class="row g-3 mb-3">
-    <div class="col-md-6">
-      <div class="p-4 rounded text-center cursor-pointer" id="fileUploadArea" style="border:2px dashed var(--border);transition:var(--transition)" onclick="document.getElementById('fileInput').click()">
-        <i class="bi bi-cloud-upload" style="font-size:2rem;color:var(--primary)"></i>
-        <div class="fw-semibold mt-2">Upload File</div>
-        <div class="text-muted small">PDF, DOCX, PPTX, JPG, PNG</div>
-        <input type="file" id="fileInput" class="d-none" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" onchange="handleFile(this)">
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="p-4 rounded text-center cursor-pointer" id="physicalDocBtn" onclick="selectPhysical()" style="border:2px dashed var(--border);transition:var(--transition)">
-        <i class="bi bi-file-earmark-text" style="font-size:2rem;color:var(--warning)"></i>
-        <div class="fw-semibold mt-2">Physical Document</div>
-        <div class="text-muted small">No file — manual page count</div>
-      </div>
-    </div>
-  </div>
-  <div id="physicalPageCount" class="d-none">
-    <label class="form-label fw-semibold">Number of Pages (manual count)</label>
-    <input type="number" class="form-control" id="manualPages" placeholder="Enter page count" min="1">
-  </div>
-  <div id="fileInfo" class="d-none p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
-    <div class="d-flex align-items-center gap-3">
-      <i class="bi bi-file-earmark-pdf-fill text-danger" style="font-size:1.5rem"></i>
-      <div><div class="fw-semibold" id="fileName">—</div><div class="text-muted small" id="filePages">Detecting pages...</div></div>
-    </div>
-  </div>
-</div>
+            <div class="card p-6">
+                <h3 class="font-semibold mb-4 flex items-center gap-2"><i class="bi bi-cloud-arrow-up text-primary"></i> Files</h3>
+                <label class="flex items-center gap-3 mb-4 p-3 rounded-lg border border-surface-border cursor-pointer min-h-[44px]">
+                    <input type="checkbox" name="is_physical_document" x-model="isPhysical" @change="onPhysicalToggle()" class="w-5 h-5">
+                    <span class="text-sm font-semibold">Physical document (no digital file)</span>
+                </label>
+                <div x-show="!isPhysical" x-cloak>
+                    <div @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop($event)"
+                         class="border-2 border-dashed border-surface-border rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors">
+                        <i class="bi bi-cloud-arrow-up text-4xl text-text-muted mb-3 block"></i>
+                        <p class="font-semibold">Drop files or click to upload</p>
+                        <p class="text-sm text-text-muted mt-1">PDF, Office, images — multiple files supported</p>
+                        <input type="file" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)">
+                    </div>
+                </div>
+                <div x-show="isPhysical" x-cloak class="space-y-4 p-4 rounded-lg border border-surface-border bg-surface/50">
+                    <div>
+                        <label class="form-label">Page count</label>
+                        <input type="number" name="physical_pages" min="1" x-model.number="physicalPages" @change="updatePrice()" class="form-input">
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Print type</label>
+                            <select name="physical_print_type" class="form-select" x-model="physicalPrintType" @change="updatePrice()">
+                                <option value="bw">Black & White</option>
+                                <option value="color">Color</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Sides</label>
+                            <select name="physical_sides" class="form-select" x-model="physicalSides" @change="updatePrice()">
+                                <option value="single">Single</option>
+                                <option value="double">Double</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Copies</label>
+                            <input type="number" name="physical_copies" min="1" class="form-input" x-model.number="physicalCopies" @change="updatePrice()">
+                        </div>
+                    </div>
+                    <p class="text-xs text-text-muted">Paper size: A4</p>
+                    <div>
+                        <label class="form-label">Description / notes</label>
+                        <textarea name="physical_description" rows="2" class="form-input" placeholder="e.g. Thesis hard copy" x-model="physicalDescription"></textarea>
+                    </div>
+                </div>
+            </div>
 
-<!-- Step 3: Print Options -->
-<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel3">
-  <h5 class="fw-bold mb-3">Step 3: Print Options</h5>
-  <div class="mb-4">
-    <label class="form-label fw-semibold">Quick Presets</label>
-    <div class="d-flex flex-wrap gap-2">
-      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('thesis')"><i class="bi bi-book me-1"></i>Thesis Print</button>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('assignment')"><i class="bi bi-file-text me-1"></i>Assignment</button>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('photo')"><i class="bi bi-image me-1"></i>Photo Print</button>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('handout')"><i class="bi bi-journals me-1"></i>Handout Bundle</button>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="applyPreset('poster')"><i class="bi bi-aspect-ratio me-1"></i>Poster</button>
-    </div>
-  </div>
-  <div class="row g-3">
-    <div class="col-md-4">
-      <label class="form-label">Print Type</label>
-      <select class="form-select" id="printType" onchange="updatePrice()">
-        <option value="bw">Black & White</option>
-        <option value="color">Color</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Sides</label>
-      <select class="form-select" id="sides" onchange="updatePrice()">
-        <option value="single">Single Sided</option>
-        <option value="double">Double Sided</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Paper Size</label>
-      <select class="form-select" id="paperSize">
-        <option value="a4">A4</option>
-        <option value="a3">A3</option>
-        <option value="letter">Letter</option>
-        <option value="legal">Legal</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Copies</label>
-      <input type="number" class="form-control" id="copies" value="1" min="1" oninput="updatePrice()">
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Pages</label>
-      <input type="number" class="form-control" id="pages" value="1" min="1" oninput="updatePrice()">
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Priority</label>
-      <select class="form-select" id="priority" onchange="updatePrice()">
-        <option value="normal">Normal</option>
-        <option value="urgent">Urgent (+50%)</option>
-      </select>
-    </div>
-    <div class="col-12">
-      <label class="form-label">Add-ons</label>
-      <div class="d-flex flex-wrap gap-2">
-        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addSpiral" value="spiral_bind" onchange="updatePrice()"><label class="form-check-label" for="addSpiral">Spiral Bind +৳20</label></div>
-        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addComb" value="comb_bind" onchange="updatePrice()"><label class="form-check-label" for="addComb">Comb Bind +৳15</label></div>
-        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addStaple" value="stapled" onchange="updatePrice()"><label class="form-check-label" for="addStaple">Stapled +৳5</label></div>
-        <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="addLam" value="lamination" onchange="updatePrice()"><label class="form-check-label" for="addLam">Lamination +৳15</label></div>
-      </div>
-    </div>
-    <div class="col-12">
-      <label class="form-label">Special Instructions</label>
-      <textarea class="form-control" id="notes" rows="2" placeholder="Any special notes..."></textarea>
-    </div>
-  </div>
-</div>
+            <template x-if="files.length && !isPhysical">
+                <div class="space-y-4">
+                    <template x-for="(f, fi) in files" :key="fi">
+                        <div class="card p-6">
+                            <div class="flex justify-between gap-4 mb-4">
+                                <div>
+                                    <h4 class="font-semibold" x-text="f.name"></h4>
+                                    <p class="text-sm text-text-muted"><span x-text="f.pages"></span> pages</p>
+                                </div>
+                                <button type="button" @click="f.expanded = !f.expanded" class="btn-secondary text-sm py-2 min-h-[44px]" x-text="f.expanded ? 'Hide' : 'Settings'"></button>
+                            </div>
+                            <div x-show="f.expanded" class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Print type</label>
+                                    <select class="form-select" x-model="f.print_type" @change="updatePrice()">
+                                        <option value="bw">Black & White</option>
+                                        <option value="color">Color</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Sides</label>
+                                    <select class="form-select" x-model="f.sides" @change="updatePrice()">
+                                        <option value="single">Single</option>
+                                        <option value="double">Double</option>
+                                    </select>
+                                </div>
+                                <p class="text-xs text-text-muted md:col-span-2">Paper size: A4</p>
+                                <div>
+                                    <label class="form-label">Copies</label>
+                                    <input type="number" min="1" class="form-input" x-model.number="f.copies" @change="updatePrice()">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="form-label">Pages (override)</label>
+                                    <input type="number" min="1" class="form-input" x-model.number="f.pages" @change="updatePrice()">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="form-label">Custom ranges</label>
+                                    <template x-for="(r, ri) in f.ranges" :key="ri">
+                                        <div class="flex flex-wrap gap-2 mb-2 items-center">
+                                            <input type="number" min="1" class="form-input w-20" x-model.number="r.start_page" @change="updatePrice()">
+                                            <span class="text-text-muted">–</span>
+                                            <input type="number" min="1" class="form-input w-20" x-model.number="r.end_page" @change="updatePrice()">
+                                            <select class="form-select w-28" x-model="r.print_type"><option value="bw">B&W</option><option value="color">Color</option></select>
+                                            <select class="form-select w-28" x-model="r.sides"><option value="single">Single</option><option value="double">Double</option></select>
+                                            <button type="button" @click="f.ranges.splice(ri,1); updatePrice()" class="text-red-400 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="addRange(fi)" class="btn-secondary text-sm mt-2">Add range</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
 
-<!-- Step 4: Pricing -->
-<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel4">
-  <h5 class="fw-bold mb-3">Step 4: Pricing & Discount</h5>
-  <div class="row g-3 mb-4">
-    <div class="col-md-6">
-      <div class="p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
-        <div class="text-muted small mb-2">Price Breakdown</div>
-        <div class="d-flex justify-content-between mb-1"><span>Base price</span><span id="basePrice" class="fw-semibold">৳0</span></div>
-        <div class="d-flex justify-content-between mb-1"><span>Add-ons</span><span id="addonPrice">৳0</span></div>
-        <div class="d-flex justify-content-between mb-1 text-danger"><span>Discount</span><span id="discountAmt">-৳0</span></div>
-        <hr class="divider my-2">
-        <div class="d-flex justify-content-between"><span class="fw-bold">Total</span><span class="fw-bold fs-4" style="color:var(--primary)" id="totalPrice">৳0</span></div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Manual Discount (%)</label>
-      <input type="number" class="form-control mb-2" id="manualDiscount" value="0" min="0" max="100" oninput="updatePrice()">
-      <label class="form-label">Discount Reason</label>
-      <input type="text" class="form-control" id="discountReason" placeholder="e.g. Student, Loyalty, Manager approval">
-    </div>
-  </div>
-</div>
+            {% if addons %}
+            <div class="card p-6">
+                <h3 class="font-semibold mb-4">Add-ons</h3>
+                <div class="grid sm:grid-cols-2 gap-3">
+                    {% for addon in addons %}
+                    <label class="flex items-center gap-3 p-3 rounded-lg border border-surface-border cursor-pointer min-h-[44px]">
+                        <input type="checkbox" name="addons" value="{{ addon.pk }}" @change="updatePrice()" class="w-5 h-5">
+                        <span class="text-sm">{{ addon.name }} (+৳{{ addon.price|floatformat:0 }})</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
-<!-- Step 5: Payment -->
-<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel5">
-  <h5 class="fw-bold mb-3">Step 5: Payment</h5>
-  <div class="row g-3">
-    <div class="col-md-6">
-      <label class="form-label">Payment Method</label>
-      <div class="d-flex flex-wrap gap-2">
-        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('cash')" id="pm_cash"><i class="bi bi-cash me-1"></i>Cash</button>
-        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('bkash')" id="pm_bkash"><i class="bi bi-phone me-1"></i>bKash</button>
-        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('nagad')" id="pm_nagad">Nagad</button>
-        <button type="button" class="btn btn-ghost pmBtn" onclick="selectPM('rocket')" id="pm_rocket">Rocket</button>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Amount Received (৳)</label>
-      <input type="number" class="form-control" id="amtReceived" placeholder="0" oninput="calcChange()">
-    </div>
-    <div class="col-md-6 d-none" id="txnIdRow">
-      <label class="form-label">Transaction ID</label>
-      <input type="text" class="form-control" id="txnId" placeholder="bKash/Nagad TxnID">
-    </div>
-    <div class="col-12">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="partialPay" onchange="togglePartial()">
-        <label class="form-check-label" for="partialPay">Partial Payment (customer will pay remaining later)</label>
-      </div>
-    </div>
-    <div class="col-md-6 d-none" id="partialAmtRow">
-      <label class="form-label">Amount Paying Now (৳)</label>
-      <input type="number" class="form-control" id="partialAmt" placeholder="0" oninput="calcChange()">
-    </div>
-  </div>
-  <div class="mt-3 p-3 rounded" style="background:var(--bg-card2);border:1px solid var(--border)">
-    <div class="d-flex justify-content-between mb-1"><span>Order Total</span><span id="payTotal" class="fw-semibold">৳0</span></div>
-    <div class="d-flex justify-content-between mb-1"><span>Amount Received</span><span id="payReceived">৳0</span></div>
-    <div class="d-flex justify-content-between fw-bold" style="color:var(--success)"><span>Change</span><span id="payChange">৳0</span></div>
-  </div>
-</div>
+            <label class="flex items-center gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 cursor-pointer min-h-[44px]">
+                <input type="checkbox" name="is_urgent" @change="updatePrice()" class="w-5 h-5">
+                <span class="font-semibold text-sm">Urgent (+{{ SITE.urgent_surcharge_percent }}%)</span>
+            </label>
+        </div>
 
-<!-- Step 6: Receipt -->
-<div class="wizard-panel card border-0 shadow-sm p-4 d-none" id="panel6">
-  <h5 class="fw-bold mb-3">Step 6: Order Confirmed!</h5>
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="p-3 rounded mb-3" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)">
-        <i class="bi bi-check-circle-fill text-success me-2"></i>
-        <span class="fw-semibold" style="color:var(--success)">Order Created Successfully</span>
-        <div class="mt-2"><span class="fw-bold fs-5" id="orderNumber">PE-OFF-...</span></div>
-      </div>
-      <div class="d-flex gap-2 flex-wrap">
-        <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="bi bi-printer me-1"></i>Print Receipt</button>
-        <button type="button" class="btn btn-ghost" onclick="printJobSheet()"><i class="bi bi-file-earmark-text me-1"></i>Job Sheet</button>
-        <a href="{% url 'admin_orders' %}" class="btn btn-ghost"><i class="bi bi-list me-1"></i>View Orders</a>
-        <button type="button" class="btn btn-gradient" onclick="resetWizard()"><i class="bi bi-plus me-1"></i>New Order</button>
-      </div>
+        <div class="space-y-6">
+            <div class="card p-6 xl:sticky xl:top-24">
+                <h3 class="font-semibold mb-4">Order summary</h3>
+                <template x-for="(line, i) in quote.file_lines || []" :key="i">
+                    <div class="flex justify-between text-sm py-1 border-b border-surface-border">
+                        <span x-text="line.file_name" class="truncate pr-2"></span>
+                        <span class="font-semibold" x-text="'৳' + Number(line.line_price).toFixed(0)"></span>
+                    </div>
+                </template>
+                <div class="space-y-2 text-sm mt-4">
+                    <div class="flex justify-between"><span class="text-text-muted">Base</span><span x-text="'৳' + (quote.base_price || 0).toFixed(0)">৳0</span></div>
+                    <div class="flex justify-between"><span class="text-text-muted">Add-ons</span><span x-text="'৳' + (quote.addons_price || 0).toFixed(0)">৳0</span></div>
+                    <div class="flex justify-between text-lg font-bold pt-2 border-t border-surface-border">
+                        <span>Total</span><span class="text-primary" x-text="'৳' + (quote.total || 0).toFixed(0)">৳0</span>
+                    </div>
+                </div>
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label class="form-label">Manual discount (৳)</label>
+                        <input type="number" name="manual_discount" value="0" min="0" step="1" class="form-input" @change="updatePrice()">
+                        <input type="text" name="discount_reason" placeholder="Reason" class="form-input mt-2">
+                    </div>
+                    <div>
+                        <label class="form-label">Payment</label>
+                        <select name="payment_method" class="form-select">
+                            <option value="Cash">Cash</option>
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Amount received (৳)</label>
+                        <input type="number" name="amount_paid" step="0.01" min="0" class="form-input">
+                    </div>
+                </div>
+                <button type="submit" class="btn-cta w-full mt-6" :disabled="submitting">Create order</button>
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-      <!-- Thermal Receipt Preview -->
-      <div class="receipt" id="receiptPreview">
-        <div class="text-center fw-bold" style="font-size:14px">PrintEase</div>
-        <div class="text-center" style="font-size:10px">Gono Bishwabidyalay Campus</div>
-        <div class="receipt-divider"></div>
-        <div class="d-flex justify-content-between"><span>Order:</span><span id="rcOrderNum">PE-OFF-...</span></div>
-        <div class="d-flex justify-content-between"><span>Customer:</span><span id="rcCust">—</span></div>
-        <div class="d-flex justify-content-between"><span>Phone:</span><span id="rcPhone">—</span></div>
-        <div class="receipt-divider"></div>
-        <div class="d-flex justify-content-between"><span>Print Type:</span><span id="rcType">—</span></div>
-        <div class="d-flex justify-content-between"><span>Pages:</span><span id="rcPages">—</span></div>
-        <div class="d-flex justify-content-between"><span>Copies:</span><span id="rcCopies">—</span></div>
-        <div class="receipt-divider"></div>
-        <div class="d-flex justify-content-between fw-bold"><span>Total:</span><span id="rcTotal">৳0</span></div>
-        <div class="d-flex justify-content-between"><span>Payment:</span><span id="rcPayment">—</span></div>
-        <div class="d-flex justify-content-between"><span>Change:</span><span id="rcChange">৳0</span></div>
-        <div class="receipt-divider"></div>
-        <div class="text-center" style="font-size:10px">Thank you! Come again.</div>
-        <div class="text-center" id="rcDate" style="font-size:9px"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Navigation Buttons -->
-<div class="d-flex justify-content-between mt-4">
-  <button type="button" class="btn btn-ghost" id="wizardPrev" onclick="Wizard.prev()" disabled>
-    <i class="bi bi-arrow-left me-1"></i>Previous
-  </button>
-  <button type="button" class="btn btn-primary" id="wizardNext" onclick="handleNext()">
-    Next <i class="bi bi-arrow-right ms-1"></i>
-  </button>
-</div>
 </form>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-let orderData = { customer: null, fileType: 'upload', pages: 1, copies: 1, printType: 'bw', sides: 'single', addons: [], discount: 0, paymentMethod: 'cash', amtReceived: 0, total: 0 };
-
-Wizard.init(6);
-
-function handleNext() {
-  if (Wizard.current === 6) { submitOrder(); return; }
-  Wizard.next();
-  if (Wizard.current === 4) updatePrice();
-  if (Wizard.current === 5) document.getElementById('payTotal').textContent = formatCurrency(orderData.total);
-}
-
-function searchCustomer(q) {
-  if (q.length < 2) { document.getElementById('custResults').innerHTML = ''; return; }
-  // Simulated results for demo
-  const results = [{ name: 'Tariqul Islam', phone: '01700000001', tier: 'Gold', orders: 32 }].filter(c => c.name.toLowerCase().includes(q.toLowerCase()) || c.phone.includes(q));
-  document.getElementById('custResults').innerHTML = results.map(c => `
-    <div class="p-3 rounded mb-1 cursor-pointer" style="background:var(--bg-card2);border:1px solid var(--border)" onclick='selectCustomer(${JSON.stringify(c)})'>
-      <div class="d-flex align-items-center gap-3">
-        <div style="width:36px;height:36px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);font-weight:700">${c.name[0]}</div>
-        <div><div class="fw-semibold">${c.name}</div><div class="text-muted small">${c.phone} · ${c.orders} orders</div></div>
-        <span class="badge tier-gold ms-auto">${c.tier}</span>
-      </div>
-    </div>`).join('') || '<div class="text-muted small p-2">No matching customers found</div>';
-}
-
-function selectCustomer(c) {
-  orderData.customer = c;
-  document.getElementById('custName').textContent = c.name;
-  document.getElementById('custPhone').textContent = c.phone;
-  document.getElementById('custInitial').textContent = c.name[0];
-  document.getElementById('custTier').textContent = c.tier || '';
-  document.getElementById('selectedCustomerCard').style.display = '';
-  document.getElementById('custResults').innerHTML = '';
-  document.getElementById('custSearch').value = c.name;
-}
-
-function handleFile(input) {
-  const f = input.files[0];
-  if (!f) return;
-  orderData.fileType = 'upload';
-  document.getElementById('fileName').textContent = f.name;
-  document.getElementById('filePages').textContent = 'Counting pages...';
-  document.getElementById('fileInfo').classList.remove('d-none');
-  document.getElementById('pages').value = 10; // placeholder
-  orderData.pages = 10;
-  updatePrice();
-}
-
-function selectPhysical() {
-  orderData.fileType = 'physical';
-  document.getElementById('physicalDocBtn').style.borderColor = 'var(--warning)';
-  document.getElementById('physicalPageCount').classList.remove('d-none');
-}
-
-function applyPreset(preset) {
-  const presets = {
-    thesis: { printType: 'bw', sides: 'double', copies: 1 },
-    assignment: { printType: 'bw', sides: 'single', copies: 1 },
-    photo: { printType: 'color', sides: 'single', copies: 1 },
-    handout: { printType: 'bw', sides: 'double', copies: 30 },
-    poster: { printType: 'color', sides: 'single', copies: 1 }
+function walkinPos() {
+  return {
+    customerSearch: '', searchResults: [], selectedCustomerId: '',
+    customerName: '', customerPhone: '', open: false,
+    files: [], quote: {}, isPhysical: false,
+    physicalPages: 1, physicalPrintType: 'bw', physicalSides: 'single',
+    physicalCopies: 1, physicalDescription: '', submitting: false,
+    get filesConfigJson() {
+      return JSON.stringify(this.files.map(f => ({
+        file_name: f.name, print_type: f.print_type, sides: f.sides,
+        paper_size: 'A4', copies: f.copies,
+        pages_detected: f.pages_detected, pages_override: f.pages, pages: f.pages, ranges: f.ranges,
+      })));
+    },
+    onPhysicalToggle() {
+      if (this.isPhysical) {
+        this.files = [];
+        if (this.$refs.fileInput) this.$refs.fileInput.value = '';
+      }
+      this.updatePrice();
+    },
+searchCustomer() {
+      if (this.customerSearch.length < 2) { this.searchResults = []; return; }
+      this.customerName = this.customerSearch;
+      fetch('/api/walkin-search/?q=' + encodeURIComponent(this.customerSearch))
+        .then(r => r.json()).then(d => { this.searchResults = d.results || []; });
+    },
+    selectCustomer(c) {
+      this.selectedCustomerId = c.id;
+      this.customerName = c.name;
+      this.customerPhone = c.phone || '';
+      this.searchResults = [];
+      this.open = false;
+    },
+    async handleFiles(e) { await this.processFileList(e.target.files); },
+    async handleDrop(e) { await this.processFileList(e.dataTransfer.files); },
+    async processFileList(list) {
+      const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      for (const file of list) {
+        let pages = 1;
+        if (!file.name.toLowerCase().endsWith('.zip')) {
+          const fd = new FormData();
+          fd.append('file', file);
+          try {
+            const r = await fetch('/api/detect-pages/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': csrf } });
+            const d = await r.json();
+            if (d.pages) pages = d.pages;
+          } catch (err) {}
+        }
+        this.files.push({
+          name: file.name, file, pages, pages_detected: pages,
+          print_type: 'bw', sides: 'single', paper_size: 'A4', copies: 1,
+          ranges: [], expanded: this.files.length === 0,
+        });
+      }
+      const dt = new DataTransfer();
+      this.files.forEach(f => { if (f.file) dt.items.add(f.file); });
+      this.$refs.fileInput.files = dt.files;
+      this.updatePrice();
+    },
+    addRange(fi) {
+      this.files[fi].ranges.push({ start_page: 1, end_page: 1, print_type: 'color', sides: 'single' });
+      this.updatePrice();
+    },
+    async updatePrice() {
+      const manual = parseFloat(document.querySelector('[name=manual_discount]')?.value || 0);
+      let filePayload = [];
+      if (this.isPhysical) {
+        filePayload = [{
+          file_name: this.physicalDescription || 'Physical document',
+          pages: Math.max(1, this.physicalPages || 1),
+          print_type: this.physicalPrintType,
+          sides: this.physicalSides,
+          paper_size: 'A4',
+          copies: Math.max(1, this.physicalCopies || 1),
+          ranges: [],
+        }];
+      } else {
+        filePayload = this.files.map(f => ({
+          file_name: f.name, pages: f.pages, print_type: f.print_type,
+          sides: f.sides, paper_size: 'A4', copies: f.copies, ranges: f.ranges,
+        }));
+      }
+      const payload = {
+        files: filePayload,
+        addon_ids: [...document.querySelectorAll('input[name=addons]:checked')].map(c => c.value),
+        is_urgent: document.querySelector('input[name=is_urgent]')?.checked || false,
+        manual_discount: manual,
+      };
+      if (!payload.files.length) {
+        this.quote = { base_price: 0, addons_price: 0, total: 0, file_lines: [] };
+        return;
+      }
+      try {
+        const r = await fetch('/api/price/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': PrintEdge.getCsrfToken() },
+          body: JSON.stringify(payload),
+        });
+        this.quote = await r.json();
+      } catch (e) {}
+    },
+    onSubmit(e) {
+      if (!this.customerName.trim()) {
+        e.preventDefault();
+        if (window.PrintEdge) PrintEdge.Toast.show('Customer name is required.', 'error');
+        return;
+      }
+      if (!this.isPhysical && !this.files.length) {
+        e.preventDefault();
+        if (window.PrintEdge) PrintEdge.Toast.show('Upload a file or enable physical document.', 'error');
+        return;
+      }
+      this.submitting = true;
+    },
+    init() { this.updatePrice(); },
   };
-  const p = presets[preset];
-  if (!p) return;
-  document.getElementById('printType').value = p.printType;
-  document.getElementById('sides').value = p.sides;
-  document.getElementById('copies').value = p.copies;
-  updatePrice();
-  Toast.show(`Preset "${preset}" applied!`, 'success', 2000);
 }
-
-function updatePrice() {
-  const pages = parseInt(document.getElementById('pages')?.value) || 1;
-  const copies = parseInt(document.getElementById('copies')?.value) || 1;
-  const pt = document.getElementById('printType')?.value || 'bw';
-  const sides = document.getElementById('sides')?.value || 'single';
-  const urgent = document.getElementById('priority')?.value === 'urgent';
-  const discount = parseFloat(document.getElementById('manualDiscount')?.value) || 0;
-  const addons = Array.from(document.querySelectorAll('.form-check-input[value]:checked')).map(el => el.value);
-  const result = PriceCalc.calculate(pages, copies, pt, sides, addons, discount, urgent);
-  orderData.total = result.total;
-  orderData.pages = pages; orderData.copies = copies; orderData.printType = pt; orderData.sides = sides;
-  document.getElementById('basePrice').textContent = formatCurrency(result.base);
-  document.getElementById('addonPrice').textContent = formatCurrency(result.addons);
-  document.getElementById('discountAmt').textContent = '-' + formatCurrency(result.discount);
-  document.getElementById('totalPrice').textContent = formatCurrency(result.total);
-}
-
-function selectPM(method) {
-  orderData.paymentMethod = method;
-  document.querySelectorAll('.pmBtn').forEach(b => b.classList.remove('btn-primary'));
-  document.getElementById('pm_' + method)?.classList.add('btn-primary');
-  document.getElementById('txnIdRow').classList.toggle('d-none', method === 'cash');
-}
-
-function togglePartial() {
-  document.getElementById('partialAmtRow').classList.toggle('d-none', !document.getElementById('partialPay').checked);
-}
-
-function calcChange() {
-  const total = orderData.total;
-  const received = parseFloat(document.getElementById('amtReceived').value) || 0;
-  const change = Math.max(0, received - total);
-  document.getElementById('payReceived').textContent = formatCurrency(received);
-  document.getElementById('payChange').textContent = formatCurrency(change);
-}
-
-function submitOrder() {
-  const num = 'PE-OFF-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Math.floor(Math.random()*9000)+1000);
-  orderData.orderNumber = num;
-  document.getElementById('orderNumber').textContent = num;
-  document.getElementById('rcOrderNum').textContent = num;
-  document.getElementById('rcCust').textContent = orderData.customer?.name || document.getElementById('newCustName').value || '—';
-  document.getElementById('rcPhone').textContent = orderData.customer?.phone || document.getElementById('newCustPhone').value || '—';
-  document.getElementById('rcType').textContent = orderData.printType.toUpperCase() + ' ' + orderData.sides;
-  document.getElementById('rcPages').textContent = orderData.pages;
-  document.getElementById('rcCopies').textContent = orderData.copies;
-  document.getElementById('rcTotal').textContent = formatCurrency(orderData.total);
-  document.getElementById('rcPayment').textContent = orderData.paymentMethod;
-  document.getElementById('rcChange').textContent = formatCurrency(parseFloat(document.getElementById('amtReceived')?.value||0) - orderData.total);
-  document.getElementById('rcDate').textContent = new Date().toLocaleString();
-  Wizard.next();
-  Toast.show('Walk-in order created! ' + num, 'success');
-}
-
-function printReceipt() { window.print(); }
-function printJobSheet() { alert('Job sheet printing...'); }
-function resetWizard() { location.reload(); }
-
-// Init
-selectPM('cash');
-updatePrice();
 </script>
 {% endblock %}

@@ -1,117 +1,102 @@
 {% extends "base.html" %}
-{% block title %}Create Account — Print-Edge{% endblock %}
+{% block title %}Create Account | Print-Edge{% endblock %}
 
 {% block content %}
-<div class="auth-page-wrapper" style="background:var(--bg)">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6 col-lg-5">
-        <!-- Logo -->
-        <div class="text-center mb-4">
-          <div class="avatar avatar-xl bg-gradient-primary mx-auto mb-3 shadow-lg">
-            <i class="bi bi-person-plus-fill" style="font-size:1.8rem"></i>
-          </div>
-          <h1 class="fw-bolder mb-1" style="font-size:1.6rem">Create your account</h1>
-          <p class="text-muted small">Join hundreds of students on Print-Edge</p>
-        </div>
-
-        <div class="auth-card p-4 p-md-5">
-          <form id="regForm" method="post" action="{% url 'auth_register_page' %}">
-            {% csrf_token %}
-            <div class="row g-3 mb-3">
-              <div class="col-12">
-                <label class="form-label">Full Name</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-person"></i></span>
-                  <input type="text" name="full_name" class="form-control" required placeholder="Tariqul Islam" autofocus>
-                </div>
-              </div>
-              <div class="col-12">
-                <label class="form-label">Email Address</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                  <input type="email" name="email" class="form-control" required placeholder="you@example.com">
-                </div>
-              </div>
-              <div class="col-12">
-                <label class="form-label">Phone Number</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-phone"></i></span>
-                  <input type="tel" name="phone" class="form-control" required placeholder="+8801XXXXXXXXX">
-                </div>
-              </div>
-              <div class="col-12">
-                <label class="form-label">Password</label>
-                <div class="input-group">
-                  <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                  <input type="password" name="password" id="regPwd" class="form-control" required placeholder="Min 8 characters">
-                  <button class="btn btn-ghost" type="button" onclick="togglePwd('regPwd',this)" tabindex="-1">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="form-check mb-4">
-              <input class="form-check-input" type="checkbox" id="agreeTerms" required>
-              <label class="form-check-label small text-muted" for="agreeTerms">
-                I agree to Print-Edge's <a href="#" style="color:var(--primary)">Terms of Service</a>
-              </label>
-            </div>
-            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold mb-3" id="regBtn">
-              <i class="bi bi-person-check-fill me-2"></i>Create Account
-            </button>
-          </form>
-          <div id="regAlert" class="alert d-none mt-2 py-2 small rounded"></div>
-          <p class="text-center text-muted small mb-0">
-            Already have an account?
-            <a href="{% url 'auth_login_page' %}" style="color:var(--primary);font-weight:600">Sign in</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="fixed inset-0 overflow-hidden pointer-events-none mix-blend-screen z-[-1]">
+    <div class="absolute top-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px]"></div>
+    <div class="absolute bottom-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px]"></div>
 </div>
 
-{% block scripts %}
-<script>
-function togglePwd(id, btn) {
-  const el = document.getElementById(id);
-  const isText = el.type === 'text';
-  el.type = isText ? 'password' : 'text';
-  btn.querySelector('i').className = isText ? 'bi bi-eye' : 'bi bi-eye-slash';
-}
-document.getElementById('regForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('regBtn');
-  const al = document.getElementById('regAlert');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account...';
-  const data = Object.fromEntries(new FormData(e.target));
-  try {
-    const res = await fetch('/auth/register/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
-      body: JSON.stringify(data)
-    });
-    const result = await res.json();
-    if (res.ok && result.success) {
-      al.className = 'alert alert-success rounded mt-2 py-2 small';
-      al.textContent = '✓ Account created! Redirecting to login...';
-      al.classList.remove('d-none');
-      setTimeout(() => window.location.href = "{% url 'auth_login_page' %}", 1500);
-    } else {
-      al.className = 'alert alert-danger rounded mt-2 py-2 small';
-      al.textContent = result.message || 'Registration failed. Please try again.';
-      al.classList.remove('d-none');
-    }
-  } catch {
-    al.className = 'alert alert-danger rounded mt-2 py-2 small';
-    al.textContent = 'Connection error. Please try again.';
-    al.classList.remove('d-none');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="bi bi-person-check-fill me-2"></i>Create Account';
-});
-</script>
-{% endblock %}
+<div class="flex-grow flex items-center justify-center px-4 py-12 relative z-10 min-h-[calc(100vh-8rem)]">
+    <div class="w-full max-w-xl animate-fade-in">
+        
+        <div class="text-center mb-8">
+            <div class="mx-auto mb-6 flex justify-center">{% include "partials/site_logo.html" %}</div>
+            <h1 class="text-3xl font-display font-bold text-white mb-2">Create your account</h1>
+            <p class="text-neutral-500 font-medium">Join Print-Edge to manage your printing easily.</p>
+        </div>
+
+        <div class="premium-card rounded-3xl p-8 shadow-2xl">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">First Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-person text-neutral-500"></i></div>
+                            <input type="text" name="first_name" required autofocus class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="First Name">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Last Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-person text-neutral-500"></i></div>
+                            <input type="text" name="last_name" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="Last Name">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-envelope text-neutral-500"></i></div>
+                        <input type="email" name="email" required autocomplete="email" class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="student@example.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Phone Number</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-telephone text-neutral-500"></i></div>
+                        <input type="tel" name="phone" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="01XXXXXXXXX">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div x-data="{ show: false }">
+                        <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-lock text-neutral-500"></i></div>
+                            <input :type="show ? 'text' : 'password'" name="password" required autocomplete="new-password" class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="••••••••">
+                            <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-500 hover:text-white transition-colors">
+                                <i class="bi" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div x-data="{ show: false }">
+                        <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Confirm Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-lock text-neutral-500"></i></div>
+                            <input :type="show ? 'text' : 'password'" name="password2" required autocomplete="new-password" class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="••••••••">
+                            <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-500 hover:text-white transition-colors">
+                                <i class="bi" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-2 text-xs text-neutral-400">Must be at least 8 characters long.</p>
+
+                <div class="flex items-start gap-3">
+                    <input type="checkbox" required class="mt-1 w-4 h-4 rounded border-white/20 bg-white/10 text-brand-500 focus:ring-brand-500 focus:ring-offset-black">
+                    <span class="text-sm font-medium text-neutral-300">By creating an account, you agree to our <a href="#" class="text-white hover:text-brand-400 transition-colors">Terms of Service</a> and <a href="#" class="text-white hover:text-brand-400 transition-colors">Privacy Policy</a>.</span>
+                </div>
+
+                <button type="submit" class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i class="bi bi-person-plus-fill text-lg"></i>
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="mt-8 text-center border-t border-white/5 pt-6">
+                <p class="text-sm text-neutral-500 font-medium">
+                    Already have an account? 
+                    <a href="{% url 'auth_login_page' %}" class="text-brand-400 hover:text-brand-300 font-bold ml-1">Sign In →</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

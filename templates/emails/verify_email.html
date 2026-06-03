@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - PrintEdge</title>
+    <!--[if mso]>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased;">
+    <!-- Main Container -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <!-- Header -->
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #1e293b, #111827); padding: 30px 20px;">
+                <a href="https://printedge.vercel.app" style="text-decoration: none;">
+                    <img src="https://printedge.vercel.app/static/icons/logo.png" alt="PrintEdge" width="120" style="display: block; margin: 0 auto;">
+                </a>
+                <h1 style="color: #ffffff; font-size: 24px; font-weight: 600; margin: 20px 0 0 0; font-family: Arial, Helvetica, sans-serif;">Verify Your Email</h1>
+            </td>
+        </tr>
+        
+        <!-- Body -->
+        <tr>
+            <td style="padding: 40px 30px 30px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td>
+                            <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 16px;">Hello {{ user.first_name|default:user.email }},</p>
+                            
+                            <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0 0 24px;">
+                                Welcome to PrintEdge! To complete your registration and start placing orders, please verify your email address by clicking the button below.
+                            </p>
+                            
+                            <!-- Verification Button -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="padding: 10px 0 30px;">
+                                        <a href="{{ verification_url }}" style="display: inline-block; background: linear-gradient(135deg, #06b6d4, #0891b4); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 14px 32px; border-radius: 12px; mso-padding-alt: 0;">
+                                            Verify My Email
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="font-size: 14px; line-height: 1.6; color: #666666; margin: 0 0 16px; background-color: #f1f5f9; padding: 12px 16px; border-radius: 8px;">
+                                <strong>Security Notice:</strong> This verification link will expire in 24 hours for your protection.
+                            </p>
+                            
+                            <p style="font-size: 16px; line-height: 1.6; color: #333333; margin: 0;">
+                                If you didn't create an account with PrintEdge, you can safely ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        
+        <!-- Footer -->
+        <tr>
+            <td style="background-color: #111827; padding: 30px; text-align: center;">
+                <p style="font-size: 14px; color: #94a3b8; margin: 0 0 8px;">PrintEdge &copy; 2026</p>
+                <p style="font-size: 12px; color: #64748b; margin: 0;">
+                    This is an automated message. Please do not reply to this email.
+                </p>
+                <p style="font-size: 12px; color: #64748b; margin: 8px 0 0;">
+                    {{ SITE.business_address|linebreaksbr }}
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

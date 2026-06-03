@@ -1,35 +1,80 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from django.views.generic import RedirectView
+from django.contrib.staticfiles.storage import staticfiles_storage
+from . import views, admin_ops_views, frontend_views
 
 urlpatterns = [
-    # Admin URLs
-    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('admin/orders/', views.admin_orders, name='admin_orders'),
-    path('admin/orders/walkin/', views.admin_walkin_order, name='admin_walkin_order'),
-    path('admin/customers/online/', views.admin_users, name='admin_users'),
-    path('admin/customers/offline/', views.admin_offline_customers, name='admin_offline_customers'),
-    path('admin/services/', views.admin_services, name='admin_services'),
-    path('admin/inventory/', views.admin_inventory, name='admin_inventory'),
-    path('admin/financial/', views.admin_financial, name='admin_financial'),
-    path('admin/staff/', views.admin_staff, name='admin_staff'),
-    path('admin/reports/', views.admin_reports, name='admin_reports'),
-    path('admin/audit/', views.admin_audit_log, name='admin_audit_log'),
-    path('admin/display/', views.admin_display_mode, name='admin_display_mode'),
-    path('admin/settings/', views.admin_settings, name='admin_settings'),
-    
-    # Auth URLs
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('icons/favicon.png'), permanent=True)),
+    # Public
+    path('', views.public_index, name='public_index'),
+    path('services/', views.public_services, name='public_services_page'),
+    path('upload/', views.public_upload, name='public_upload_page'),
+    path('pricing/', views.public_pricing, name='public_pricing_page'),
+    path('contact/', views.public_contact, name='public_contact_page'),
+    path('manifest.json', views.pwa_manifest, name='manifest'),
+    path('robots.txt', views.robots_txt, name='robots_txt'),
+    path('sitemap.xml', views.sitemap_xml, name='sitemap_xml'),
+
+    # Auth
     path('auth/login/', views.auth_login, name='auth_login_page'),
     path('auth/register/', views.auth_register, name='auth_register_page'),
     path('auth/logout/', views.auth_logout, name='auth_logout'),
-    
-    # User URLs
-    path('user/dashboard/', views.user_dashboard, name='user_dashboard'),
-    
-    # Public URLs
-    path('', views.public_index, name='public_index'),
-    path('pricing/', views.public_pricing, name='public_pricing_page'),
+    path('auth/verify/', views.auth_verify_pending, name='auth_verify_pending'),
+    path('auth/verify/<int:uid>/<str:token>/', views.auth_verify_email, name='auth_verify_email'),
+    path('auth/', include('django.contrib.auth.urls')),
 
-    # API URLs
-    path('admin/api/search', views.api_search, name='api_search'),
-    path('admin/api/orders/<str:order_id>/status', views.api_order_status, name='api_order_status'),
+    # User
+    path('user/dashboard/', views.user_dashboard, name='user_dashboard'),
+    path('user/orders/', views.user_orders, name='user_orders'),
+    path('user/orders/new/', views.user_new_order, name='user_new_order'),
+    path('user/orders/<int:pk>/', views.user_order_detail, name='user_order_detail'),
+    path('user/orders/<int:pk>/cancel/', views.user_cancel_order, name='user_cancel_order'),
+    path('user/orders/<int:pk>/download/', admin_ops_views.order_download_file, name='user_order_download_file'),
+    path('user/orders/<int:pk>/invoice/', admin_ops_views.order_invoice_pdf, name='user_order_invoice'),
+    path('user/profile/', frontend_views.user_profile, name='user_profile'),
+    path('user/notifications/', views.user_notifications, name='user_notifications'),
+    # Admin
+    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/operator/', frontend_views.admin_operator_dashboard, name='admin_operator_dashboard'),
+    path('admin/profile/', frontend_views.admin_profile, name='admin_profile'),
+    path('admin/orders/', views.admin_orders, name='admin_orders'),
+    path('admin/orders/<int:pk>/', views.admin_order_detail, name='admin_order_detail'),
+    path('admin/orders/walkin/', views.admin_walkin_order, name='admin_walkin_order'),
+    path('admin/customers/online/', views.admin_users, name='admin_users'),
+    path('admin/customers/online/<int:pk>/', views.admin_user_detail, name='admin_user_detail'),
+    path('admin/customers/offline/', views.admin_offline_customers, name='admin_offline_customers'),
+    path('admin/inventory/', views.admin_inventory, name='admin_inventory'),
+    path('admin/services/', views.admin_services, name='admin_services'),
+    path('admin/financial/', views.admin_financial, name='admin_financial'),
+    path('admin/reports/', views.admin_reports, name='admin_reports'),
+    path('admin/audit/', views.admin_audit_log, name='admin_audit_log'),
+    path('admin/files/', admin_ops_views.admin_uploaded_files, name='admin_uploaded_files'),
+    path('admin/settings/', views.admin_settings, name='admin_settings'),
+    path('admin/staff/', views.admin_staff, name='admin_staff'),
+    path('admin/system/', admin_ops_views.admin_system_status, name='admin_system_status'),
+    path('admin/email-logs/', admin_ops_views.admin_email_logs, name='admin_email_logs'),
+    # Mail Service
+    path('admin/mail/dashboard/', admin_ops_views.admin_mail_dashboard, name='admin_mail_dashboard'),
+    path('admin/mail/compose/', admin_ops_views.admin_mail_compose, name='admin_mail_compose'),
+    path('admin/mail/logs/', admin_ops_views.admin_mail_logs, name='admin_mail_logs'),
+    path('admin/mail/templates/', admin_ops_views.admin_mail_templates, name='admin_mail_templates'),
+    path('admin/mail/settings/', admin_ops_views.admin_mail_settings, name='admin_mail_settings'),
+    path('admin/orders/<int:pk>/download/', admin_ops_views.order_download_file, name='admin_order_download_file'),
+    path('admin/orders/<int:pk>/invoice/', admin_ops_views.order_invoice_pdf, name='admin_order_invoice'),
+    path('admin/reports/export/', views.admin_reports_export, name='admin_reports_export'),
+    path('admin/orders/export/', frontend_views.admin_orders_export, name='admin_orders_export'),
+    path('admin/customers/offline/<int:pk>/', frontend_views.admin_walkin_merge, name='admin_walkin_detail'),
+    # API
+    path('api/detect-pages/', views.api_detect_pages, name='api_detect_pages'),
+    path('api/price/', views.api_price_calculate, name='api_price_calculate'),
+    path('api/walkin-search/', views.api_walkin_search, name='api_walkin_search'),
+    path('api/orders/<int:pk>/status/', views.api_order_status_update, name='api_order_status'),
+    path('api/operator/optimize-queue/', frontend_views.api_operator_optimize_queue, name='api_operator_optimize_queue'),
+    path('api/system-status/', frontend_views.api_system_status, name='api_system_status'),
+    path('api/admin/quick-search/', views.api_admin_quick_search, name='api_admin_quick_search'),
+    path('api/search/', views.api_global_search, name='api_global_search'),
+    path('api/notifications/', views.api_notifications, name='api_notifications'),
+    path('api/notifications/read-all/', views.api_notifications_read_all, name='api_notifications_read_all'),
+    path('api/notifications/<int:pk>/read/', views.api_notification_mark_read, name='api_notification_mark_read'),
+    path('api/cron/purge-files/', admin_ops_views.api_cron_purge_files, name='api_cron_purge_files'),
 ]

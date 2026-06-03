@@ -1,0 +1,125 @@
+{% extends "admin_base.html" %}
+{% block title %}Templates | Print-Edge Admin{% endblock %}
+{% block breadcrumb %}Mail Service / Templates{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-display font-bold text-white mb-1">Email Templates</h1>
+        <p class="text-slate-400 text-sm">Manage reusable email templates</p>
+    </div>
+    {% if request.user.is_full_admin %}
+    <button type="button" onclick="openAddModal()" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition-colors">
+        <i class="bi bi-plus-lg"></i> Add Template
+    </button>
+    {% endif %}
+</div>
+
+{% if messages %}
+<div class="mb-4">
+    {% for msg in messages %}
+    <div class="p-3 rounded-xl {% if msg.tags == 'success' %}bg-emerald-500/20 text-emerald-400{% else %}bg-red-500/20 text-red-400{% endif %}">{{ msg }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                    <th class="p-3 pl-5">Name</th>
+                    <th class="p-3">Subject</th>
+                    <th class="p-3">Last Updated</th>
+                    <th class="p-3 pr-5">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+                {% for tpl in templates %}
+                <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="p-3 pl-5 text-sm font-semibold text-white">{{ tpl.name }}</td>
+                    <td class="p-3 text-sm text-slate-300">{{ tpl.subject|truncatechars:50 }}</td>
+                    <td class="p-3 text-xs text-slate-500">{{ tpl.updated_at|date:"M d, Y g:i A" }}</td>
+                    <td class="p-3 pr-5">
+                        <button type="button" onclick="previewTemplate('{{ tpl.html_body|escapejs }}')" class="text-[10px] text-brand-400 hover:underline">Preview</button>
+                        {% if request.user.is_full_admin %}
+                        <button type="button" onclick="editTemplate({{ tpl.id }}, '{{ tpl.name|escapejs }}', '{{ tpl.subject|escapejs }}')" class="text-[10px] text-amber-400 hover:underline ml-2">Edit</button>
+                        <form method="post" class="inline" onsubmit="return confirm('Delete this template?');">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="{{ tpl.id }}"><button type="submit" class="text-[10px] text-red-400 hover:underline ml-2">Delete</button></form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="p-12 text-center text-slate-500">No templates found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div x-show="previewModalOpen" x-cloak class="fixed inset-0 z-[100] bg-black/40 flex items-center justify-center p-4" id="previewModal" style="display: none;">
+    <div class="card max-w-2xl w-full p-6 rounded-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-white">Template Preview</h3>
+            <button type="button" onclick="closeModal('previewModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div id="previewContent" class="max-h-96 overflow-y-auto bg-slate-800/50 p-4 rounded-xl text-white text-sm"></div>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div x-show="addModalOpen" x-cloak class="fixed inset-0 z-[100] bg-black/40 flex items-center justify-center p-4" id="addModal" style="display: none;">
+    <form method="post" class="card max-w-2xl w-full p-6 rounded-2xl">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="modalAction" value="add">
+        <input type="hidden" name="template_id" id="modalTemplateId" value="">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-white" id="modalTitle">Add Template</h3>
+            <button type="button" onclick="closeModal('addModal')" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase mb-2">Name</label>
+                <input type="text" name="name" id="modalName" required class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase mb-2">Subject</label>
+                <input type="text" name="subject" id="modalSubject" required class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-neutral-400 uppercase mb-2">HTML Body</label>
+                <textarea name="html_body" id="modalBody" rows="10" required class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:border-brand-500 outline-none font-mono text-sm"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-white text-sm">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-xl bg-brand-500 text-white text-sm font-bold">Save</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function previewTemplate(body) {
+    document.getElementById('previewContent').innerHTML = body || 'No content';
+    document.getElementById('previewModal').style.display = 'flex';
+}
+function openAddModal() {
+    document.getElementById('modalAction').value = 'add';
+    document.getElementById('modalTemplateId').value = '';
+    document.getElementById('modalTitle').textContent = 'Add Template';
+    document.getElementById('modalName').value = '';
+    document.getElementById('modalSubject').value = '';
+    document.getElementById('modalBody').value = '';
+    document.getElementById('addModal').style.display = 'flex';
+}
+function editTemplate(id, name, subject) {
+    document.getElementById('modalAction').value = 'edit';
+    document.getElementById('modalTemplateId').value = id;
+    document.getElementById('modalTitle').textContent = 'Edit Template';
+    document.getElementById('modalName').value = name;
+    document.getElementById('modalSubject').value = subject;
+    document.getElementById('addModal').style.display = 'flex';
+}
+function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+</script>
+{% endblock %}

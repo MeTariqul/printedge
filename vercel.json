@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "crons": [
+    {
+      "path": "/api/cron/purge-files/",
+      "schedule": "0 3 * * *"
+    }
+  ],
+  "builds": [
+    {
+      "src": "print_edge/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1",
+      "continue": true
+    },
+    {
+      "src": "/(.*)",
+      "dest": "print_edge/wsgi.py"
+    }
+  ]
+}

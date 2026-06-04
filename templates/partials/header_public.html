@@ -37,13 +37,13 @@
     </div>
 </nav>
 
-<header class="navbar md:hidden pt-safe">
-    <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 h-14">
+<header class="navbar md:hidden pt-safe" style="overflow: visible !important;">
+    <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 h-14" style="overflow: visible !important;">
         <button type="button" @click="mobileMenu = true" class="w-11 h-11 flex items-center justify-center rounded-lg border border-surface-border" aria-label="Open menu">
             <i class="bi bi-list text-xl"></i>
         </button>
         <div class="flex justify-center min-w-0">{% include "partials/site_logo.html" %}</div>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1" style="overflow: visible !important;">
             {% if user.is_authenticated %}{% include "partials/notifications_bell.html" %}{% endif %}
         </div>
     </div>

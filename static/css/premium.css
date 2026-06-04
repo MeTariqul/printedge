@@ -17,6 +17,43 @@
   }
 }
 
+/* Notification bell dropdown - ensure proper stacking and visibility */
+#notification-dropdown {
+  display: none;
+}
+#notification-dropdown:not(.hidden) {
+  display: block;
+}
+
+/* Desktop navbar needs relative positioning for dropdown */
+nav.navbar:not(.md\:hidden) #notification-wrapper,
+.navbar:not(.md\\:hidden) #notification-wrapper {
+  position: relative !important;
+}
+nav.navbar:not(.md\:hidden) #notification-wrapper #notification-dropdown {
+  position: absolute !important;
+  z-index: 1050 !important;
+}
+
+/* Mobile header - dropdown uses fixed positioning to escape any container */
+@media (max-width: 768px) {
+  .navbar.md\:hidden #notification-wrapper,
+  .navbar.md\\:hidden #notification-wrapper {
+    position: static !important;
+  }
+  .navbar.md\:hidden #notification-dropdown,
+  .navbar.md\\:hidden #notification-dropdown {
+    position: absolute !important;
+    z-index: 1050 !important;
+    top: 100% !important;
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    max-width: calc(100vw - 1rem) !important;
+    width: auto !important;
+    max-height: 50vh !important;
+  }
+}
+
 /* Optimize button response - active state for immediate feedback */
 button:active,
 .btn-primary:active,

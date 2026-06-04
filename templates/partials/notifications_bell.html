@@ -23,154 +23,172 @@
 </div>
 <script>
 (function() {
-    function getCookie(name) {
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + '=')) {
-                    return decodeURIComponent(cookie.substring(name.length + 1));
+    // Wait for DOM + ensure element exists
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNotifBell);
+    } else {
+        initNotifBell();
+    }
+    
+    function initNotifBell() {
+        const bell = document.getElementById('notification-bell');
+        const badge = document.getElementById('notification-badge');
+        const dropdown = document.getElementById('notification-dropdown');
+        const list = document.getElementById('notification-list');
+        const markAllBtn = document.getElementById('mark-all-read-btn');
+        
+        if (!bell) return;
+        
+        function getCookie(name) {
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        return decodeURIComponent(cookie.substring(name.length + 1));
+                    }
                 }
             }
-        }
-        return '';
-    }
-
-    function csrfToken() {
-        let token = getCookie('csrftoken');
-        if (!token) {
-            const meta = document.querySelector('meta[name="csrf-token"]');
-            if (meta) token = meta.getAttribute('content') || '';
-        }
-        return token;
-    }
-
-    const bell = document.getElementById('notification-bell');
-    const badge = document.getElementById('notification-badge');
-    const dropdown = document.getElementById('notification-dropdown');
-    const list = document.getElementById('notification-list');
-    const markAllBtn = document.getElementById('mark-all-read-btn');
-    
-    if (!bell) return;
-    
-    function timeAgo(iso) {
-        const d = new Date(iso);
-        const now = new Date();
-        const diff = Math.floor((now - d) / 1000);
-        if (diff < 60) return diff + 's ago';
-        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-        return Math.floor(diff / 86400) + 'd ago';
-    }
-    
-    function updateBadge(count) {
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-    }
-    
-    function renderNotifications(data) {
-        const items = data.notifications || [];
-        updateBadge(data.unread_count || 0);
-        
-        if (!items.length) {
-            list.innerHTML = '<li class="px-4 py-6 text-slate-500 text-center">No notifications</li>';
-            return;
+            return '';
         }
         
-        list.innerHTML = items.map(n => {
-            const unreadClass = n.is_read ? '' : ' bg-brand-500/5';
-            const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></span>';
-            return '<li class="px-4 py-3 hover:bg-white/5 transition-colors' + unreadClass + '">' +
-                '<a href="' + (n.target_url || '#') + '" class="block notif-link" data-id="' + n.id + '">' +
-                '<div class="flex items-start gap-2">' + unreadDot +
-                '<div class="flex-1 min-w-0">' +
-                '<p class="font-semibold text-white text-sm break-words">' + n.verb + '</p>' +
-                '<p class="text-xs text-slate-400 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
-                '<p class="text-[10px] text-slate-500 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
-                '</div></div></a></li>';
-        }).join('');
-    }
-    
-    async function fetchNotifications() {
-        try {
-            const token = csrfToken();
-            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-            if (token) headers['X-CSRFToken'] = token;
-            const res = await fetch('/api/notifications/', { 
-                headers: headers,
-                credentials: 'same-origin'
-            });
-            if (res.ok) {
-                const data = await res.json();
-                renderNotifications(data);
+        function csrfToken() {
+            let token = getCookie('csrftoken');
+            if (!token) {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) token = meta.getAttribute('content') || '';
             }
-        } catch (e) {}
-    }
-    
-    bell.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const wasHidden = dropdown.classList.contains('hidden');
-        dropdown.classList.toggle('hidden');
-        bell.setAttribute('aria-expanded', !dropdown.classList.contains('hidden'));
-        if (!dropdown.classList.contains('hidden')) {
-            fetchNotifications();
+            return token;
         }
-        if (wasHidden) {
+        
+        function timeAgo(iso) {
+            const d = new Date(iso);
+            const now = new Date();
+            const diff = Math.floor((now - d) / 1000);
+            if (diff < 60) return diff + 's ago';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+        
+        function updateBadge(count) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        function renderNotifications(data) {
+            const items = data.notifications || [];
+            updateBadge(data.unread_count || 0);
+            
+            if (!items.length) {
+                list.innerHTML = '<li class="px-4 py-6 text-slate-500 text-center">No notifications</li>';
+                return;
+            }
+            
+            list.innerHTML = items.map(n => {
+                const unreadClass = n.is_read ? '' : ' bg-brand-500/5';
+                const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></span>';
+                return '<li class="px-4 py-3 hover:bg-white/5 transition-colors' + unreadClass + '">' +
+                    '<a href="' + (n.target_url || '#') + '" class="block notif-link" data-id="' + n.id + '">' +
+                    '<div class="flex items-start gap-2">' + unreadDot +
+                    '<div class="flex-1 min-w-0">' +
+                    '<p class="font-semibold text-white text-sm break-words">' + n.verb + '</p>' +
+                    '<p class="text-xs text-slate-400 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
+                    '<p class="text-[10px] text-slate-500 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
+                    '</div></div></a></li>';
+            }).join('');
+        }
+        
+        async function fetchNotifications() {
+            try {
+                const token = csrfToken();
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (token) headers['X-CSRFToken'] = token;
+                const res = await fetch('/api/notifications/', { 
+                    headers: headers,
+                    credentials: 'same-origin'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    renderNotifications(data);
+                }
+            } catch (e) {}
+        }
+        
+        // Click handler - works for both mouse and touch
+        bell.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const isHidden = dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            bell.setAttribute('aria-expanded', !isHidden);
+            if (!isHidden) {
+                fetchNotifications();
+            }
+            // Remove focus immediately on touch devices to prevent sticky hover
             setTimeout(() => {
                 if (document.activeElement === bell) bell.blur();
-            }, 0);
+            }, 100);
+        });
+        
+        // Also handle touchend for mobile reliability
+        bell.addEventListener('touchstart', () => {
+            // Just track that touch happened
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (dropdown && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+                dropdown.classList.add('hidden');
+                if (bell) bell.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        if (dropdown) {
+            dropdown.addEventListener('click', (e) => e.stopPropagation());
         }
-    });
-    
-    document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
-            dropdown.classList.add('hidden');
-            bell.setAttribute('aria-expanded', 'false');
-            if (document.activeElement === bell) bell.blur();
+        
+        if (list) {
+            list.addEventListener('click', (e) => {
+                const link = e.target.closest('.notif-link');
+                if (link) {
+                    const id = link.dataset.id;
+                    if (id) {
+                        const token = csrfToken();
+                        fetch('/api/notifications/' + id + '/read/', {
+                            method: 'POST',
+                            headers: { 
+                                'X-CSRFToken': token || '', 
+                                'X-Requested-With': 'XMLHttpRequest' 
+                            },
+                            credentials: 'same-origin'
+                        });
+                    }
+                }
+            });
         }
-    });
-    
-    dropdown.addEventListener('click', (e) => e.stopPropagation());
-    
-    list.addEventListener('click', (e) => {
-        const link = e.target.closest('.notif-link');
-        if (link) {
-            const id = link.dataset.id;
-            if (id) {
+        
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', () => {
                 const token = csrfToken();
-                fetch('/api/notifications/' + id + '/read/', {
+                fetch('/api/notifications/read-all/', {
                     method: 'POST',
                     headers: { 
                         'X-CSRFToken': token || '', 
                         'X-Requested-With': 'XMLHttpRequest' 
                     },
                     credentials: 'same-origin'
-                });
-            }
+                }).then(() => fetchNotifications());
+            });
         }
-    });
-    
-    if (markAllBtn) {
-        markAllBtn.addEventListener('click', () => {
-            const token = csrfToken();
-            fetch('/api/notifications/read-all/', {
-                method: 'POST',
-                headers: { 
-                    'X-CSRFToken': token || '', 
-                    'X-Requested-With': 'XMLHttpRequest' 
-                },
-                credentials: 'same-origin'
-            }).then(() => fetchNotifications());
-        });
+        
+        // Initial load and polling - 30 seconds
+        fetchNotifications();
+        setInterval(fetchNotifications, 30000);
     }
-    
-    // Initial load and polling - 30 seconds
-    fetchNotifications();
-    setInterval(fetchNotifications, 30000);
 })();
 </script>
 {% endif %}

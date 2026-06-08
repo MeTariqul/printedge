@@ -17,12 +17,10 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 from django.utils.html import strip_tags
-from django.urls import reverse
-from django.contrib import messages
-from django.utils import timezone
 
 from .decorators import admin_required, superadmin_required, permission_required
 from .models import Order, OrderFile, SiteSettings, User, AuditLog, EmailLog, EmailTemplate
+from .email_utils import send_brevo_email
 from .order_files import (
     purge_expired_order_files,
     orders_eligible_for_purge,
@@ -222,6 +220,31 @@ def _cron_authorized(request):
 @superadmin_required
 def admin_system_status(request):
     site = SiteSettings.get()
+    backup_message = ''
+    cache_message = ''
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'backup_database':
+            try:
+                from django.core.management import call_command
+                from io import StringIO
+                backup_path = os.path.join(settings.BASE_DIR, 'backup.json')
+                out = StringIO()
+                call_command('dumpdata', '--exclude', 'auth.permission', '--natural-foreign', '--natural-primary', stdout=out)
+                data = out.getvalue()
+                with open(backup_path, 'w', encoding='utf-8') as f:
+                    f.write(data)
+                backup_message = f'Backup saved to {backup_path}'
+            except Exception as exc:
+                backup_message = f'Backup failed: {exc}'
+        elif action == 'clear_cache':
+            try:
+                from django.core.cache import caches
+                caches['default'].clear()
+                cache.clear()
+                cache_message = 'Cache cleared successfully.'
+            except Exception as exc:
+                cache_message = f'Cache clear failed: {exc}'
 
     # Use helper functions from system_utils
     server_info = get_server_info()
@@ -332,6 +355,8 @@ def admin_system_status(request):
         'health_status': health_status,
         'health_emoji': health_emoji,
         'django_version': django.get_version(),
+        'backup_message': backup_message,
+        'cache_message': cache_message,
     }
     return render(request, 'admin/system_status.html', ctx)
 
@@ -342,8 +367,26 @@ def api_cron_purge_files(request):
     if not _cron_authorized(request):
         return JsonResponse({'error': 'Unauthorized'}, status=401)
     dry_run = request.GET.get('dry_run') == '1'
-    count = purge_expired_order_files(dry_run=dry_run)
-    return JsonResponse({'success': True, 'purged': count, 'dry_run': dry_run})
+    
+    # 1. Purge files
+    files_count = purge_expired_order_files(dry_run=dry_run)
+    
+    # 2. Cleanup notifications
+    try:
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command('cleanup_notifications', dry_run=dry_run, stdout=out)
+        cleanup_msg = out.getvalue().strip()
+    except Exception as e:
+        cleanup_msg = f"Failed to cleanup notifications: {e}"
+
+    return JsonResponse({
+        'success': True,
+        'purged_files': files_count,
+        'notifications_cleanup': cleanup_msg,
+        'dry_run': dry_run
+    })
 
 
 def _order_file_access_allowed(request, order):
@@ -369,6 +412,13 @@ def order_invoice_pdf(request, pk):
     response = HttpResponse(pdf_bytes, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="invoice-{order.order_number}.pdf"'
     return response
+
+
+@permission_required('view_orders')
+def admin_thermal_receipt(request, pk):
+    """Render an 80mm thermal receipt for walk-in orders."""
+    order = get_object_or_404(Order, pk=pk)
+    return render(request, 'admin/thermal_receipt.html', {'order': order})
 
 
 def order_download_file(request, pk):
@@ -685,6 +735,18 @@ def admin_mail_logs(request):
             for log in logs_qs:
                 writer.writerow([log.id, log.recipient, log.subject, log.status, log.error_message, log.created_at])
             return response
+
+    # Handle CSV export via GET
+    if request.GET.get('export_csv') == 'true':
+        import csv
+        from django.http import HttpResponse
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="email_logs.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Recipient', 'Subject', 'Status', 'Error Message', 'Created At'])
+        for log in logs_qs:
+            writer.writerow([log.id, log.recipient, log.subject, log.status, log.error_message, log.created_at])
+        return response
 
     # Calculate statistics
     from datetime import date

@@ -56,7 +56,7 @@ def get_database_status():
             t0 = time.perf_counter()
 
             with db_conn.cursor() as cursor:
-                cursor.execute('SELECT 1')  # Basic connectivity test
+                cursor.execute('SELECT 1')
 
                 vendor = db_conn.vendor
 
@@ -65,11 +65,9 @@ def get_database_status():
                     row = cursor.fetchone()
                     version = row[0][:150] if row else 'PostgreSQL'
 
-                    # Get table count
                     cursor.execute("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'")
                     table_count = cursor.fetchone()[0]
 
-                    # Get database size
                     cursor.execute("SELECT pg_database_size(current_database())")
                     size_bytes = cursor.fetchone()[0] if cursor.rowcount else 0
 

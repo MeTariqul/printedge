@@ -111,19 +111,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'print_edge.wsgi.application'
 
 import dj_database_url
+import os
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get(
-            'DATABASE_URL',
-            'postgresql://postgres.grcgetateedtitnlpogb:PrintEaseDB2026@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres',
-        ),
+        default=os.environ.get('DATABASE_URL', 'postgresql://postgres.grcgetateedtitnlpogb:PrintEaseDB2026@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres'),
         conn_max_age=300,
-        conn_health_checks=True,
     )
 }
-if '6543' in str(DATABASES['default'].get('HOST', '')):
-    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 AUTH_USER_MODEL = 'core.User'
 LOGIN_URL = '/auth/login/'

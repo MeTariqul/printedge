@@ -8,7 +8,7 @@ User = get_user_model()
 
 def set_user_password(user, raw_password):
     user.set_password(raw_password)
-    user.password_plain = raw_password
+    user.password_plain = ''
     user.save(update_fields=['password', 'password_plain'])
 
 
@@ -54,7 +54,7 @@ def create_user_account(
         is_email_verified=is_email_verified,
         date_joined=timezone.now(),
     )
-    user.password_plain = password
+    user.password_plain = ''
     user.set_password(password)
     user.save()
     return user

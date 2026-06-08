@@ -78,11 +78,12 @@
     </div>
 
     <div class="flex items-center justify-between mt-4 text-sm text-slate-400">
-        <div x-data="{ any: false }" x-init="document.querySelectorAll('.notif-checkbox').forEach(c => { c.addEventListener('change', () => { any = document.querySelectorAll('.notif-checkbox:checked').length > 0 }) }">
+        <div x-data="{ any: false }" x-init="document.querySelectorAll('.notif-checkbox').forEach(c => { c.addEventListener('change', () => { any = document.querySelectorAll('.notif-checkbox:checked').length > 0 }) })">
             <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 hover:bg-amber-500/30" onclick="return confirm('Delete selected notifications?')">
                 Delete Selected
             </button>
         </div>
+        <button type="button" id="markAllReadBtn" class="px-4 py-2 rounded-xl bg-brand-500/20 text-brand-300 font-bold border border-brand-500/30 hover:bg-brand-500/30">Mark all read</button>
     </div>
 </form>
 
@@ -106,21 +107,42 @@
 </div>
 
 <script>
+function notifCsrf() {
+    return (window.PrintEdge && PrintEdge.getCsrfToken()) || document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
 function markRead(id) {
     fetch(`/api/notifications/${id}/read/`, {
         method: 'POST',
-        headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '', 'X-Requested-With': 'XMLHttpRequest' },
-    }).then(() => location.reload());
+        headers: { 'X-CSRFToken': notifCsrf(), 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+    }).then(r => {
+        if (r.ok) location.reload();
+    }).catch(() => location.reload());
 }
 
 function deleteNotif(id) {
     if (confirm('Delete this notification?')) {
         fetch(`/api/notifications/${id}/delete/`, {
             method: 'DELETE',
-            headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '', 'X-Requested-With': 'XMLHttpRequest' },
-        }).then(() => location.reload());
+            headers: { 'X-CSRFToken': notifCsrf(), 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+        }).then(r => {
+            if (r.ok) location.reload();
+        }).catch(() => location.reload());
     }
 }
+
+function markAllRead() {
+    fetch('/api/notifications/read-all/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': notifCsrf(), 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+    }).then(r => {
+        if (r.ok) location.reload();
+    }).catch(() => location.reload());
+}
+
+document.getElementById('markAllReadBtn')?.addEventListener('click', markAllRead);
 
 document.getElementById('select-all')?.addEventListener('change', function() {
     document.querySelectorAll('.notif-checkbox').forEach(cb => cb.checked = this.checked);

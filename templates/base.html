@@ -11,6 +11,7 @@
     <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/png">
     <link rel="manifest" href="{% url 'manifest' %}">
     {% include "partials/head_assets.html" %}
+    {% block structured_data %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/mobile.css' %}" media="screen and (max-width: 768px)">
     {% block extra_css %}{% endblock %}
 </head>
@@ -27,7 +28,6 @@
         <nav class="flex-1 overflow-y-auto p-4 space-y-1">
             <a href="{% url 'public_index' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Home</a>
             <a href="{% url 'public_services_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Services</a>
-            <a href="{% url 'public_upload_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Upload</a>
             <a href="{% url 'public_pricing_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Pricing</a>
             <a href="{% url 'public_contact_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Contact</a>
             {% if user.is_authenticated %}
@@ -67,5 +67,27 @@
     {% endif %}
 
     {% block extra_js %}{% endblock %}
+
+    {% block extra_js_inline %}{% endblock %}
+    <script>
+      window.PrintEdge = window.PrintEdge || {
+        getCsrfToken: function() {
+          return (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+        },
+        Toast: {
+          show: function(message, type) {
+            type = type || 'info';
+            var el = document.createElement('div');
+            el.className = 'fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-bold min-h-[44px] flex items-center';
+            if (type === 'success') el.className += ' bg-emerald-500 text-white';
+            else if (type === 'error') el.className += ' bg-red-500 text-white';
+            else el.className += ' bg-brand-500 text-white';
+            el.textContent = message;
+            document.body.appendChild(el);
+            setTimeout(function() { el.remove(); }, 3000);
+          }
+        }
+      };
+    </script>
 </body>
 </html>

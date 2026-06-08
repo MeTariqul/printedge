@@ -1,121 +1,150 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Order {{ order.order_number }} | Print-Edge{% endblock %}
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-6">
-    
-    <!-- Desktop View -->
-    <div class="desktop-only">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-            <div>
-                <h1 class="text-2xl font-semibold text-primary">{{ order.order_number }}</h1>
-                <p class="text-text-muted text-sm">{{ order.created_at|date:"F j, Y, g:i a" }}</p>
-            </div>
-            <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold border
-                {% if order.status == 'ready' or order.status == 'delivered' %}bg-emerald-50 text-emerald-700 border-emerald-200
-                {% elif order.status == 'cancelled' %}bg-red-50 text-red-700 border-red-200
-                {% else %}bg-amber-50 text-amber-800 border-amber-200{% endif %}">
-                {{ order.get_status_display }}
-            </span>
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl font-semibold text-primary">{{ order.order_number }}</h1>
+            <p class="text-text-muted text-sm">{{ order.created_at|date:"F j, Y, g:i a" }}</p>
+            <p class="text-xs text-neutral-500 mt-1">Order placed on {{ order.created_at|date:"M d, Y" }}</p>
         </div>
-        
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="md:col-span-2 space-y-6">
-                <div class="card p-6">
-                    <h3 class="font-semibold mb-4">Files</h3>
-                    {% for f in order.order_files.all %}
-                    <div class="border-b border-surface-border py-3 last:border-0">
-                        <p class="font-semibold">{{ f.file_name }}</p>
-                        <p class="text-sm text-text-muted">{{ f.get_print_type_display }} · {{ f.get_sides_display }} · {{ f.paper_size }} · {{ f.effective_pages }} pages × {{ f.copies }} copies</p>
-                        {% for r in f.page_ranges.all %}
-                        <p class="text-xs text-secondary mt-1">Pages {{ r.start_page }}-{{ r.end_page }}: {{ r.get_print_type_display }}, {{ r.get_sides_display }}</p>
-                        {% endfor %}
-                        <p class="text-sm font-semibold mt-1">৳{{ f.line_base_price|floatformat:2 }}</p>
-                        {% if f.file %}
-                        <a href="{% url 'user_order_download_file' order.pk %}?file_id={{ f.pk }}" class="btn-secondary text-sm py-2 mt-2 inline-flex min-h-[44px]">Download</a>
-                        {% endif %}
-                    </div>
-                    {% empty %}
-                    <p class="font-semibold">{{ order.file_name|default:"—" }}</p>
-                    {% if order.has_stored_file %}
-                    <a href="{% url 'user_order_download_file' order.pk %}" class="btn-secondary text-sm py-2 mt-2 inline-flex min-h-[44px]"><i class="bi bi-download"></i> Download</a>
-                    {% endif %}
-                    {% endfor %}
-                    <a href="{% url 'user_order_invoice' order.pk %}" class="btn-secondary text-sm py-2 mt-4 inline-flex min-h-[44px]"><i class="bi bi-receipt"></i> Invoice PDF</a>
-                </div>
-                {% if order.special_instructions %}
-                <div class="card p-6">
-                    <h3 class="font-semibold mb-2">Instructions</h3>
-                    <p class="text-sm">{{ order.special_instructions }}</p>
-                </div>
-                {% endif %}
-            </div>
-            <div class="card p-6 h-fit">
-                <h3 class="font-semibold mb-4">Payment</h3>
-                <p class="text-3xl font-bold text-primary mb-2">৳{{ order.total_amount|floatformat:0 }}</p>
-                <p class="text-sm text-text-muted">{{ order.get_payment_status_display }}</p>
-                {% if order.status == 'pending' %}
-                <form method="post" action="{% url 'user_cancel_order' order.pk %}" class="mt-6" id="cancelForm">
-                    {% csrf_token %}
-                    <button type="button" class="btn-danger w-full min-h-[44px]" onclick="PrintEdge.confirmAction('Cancel this order?', () => document.getElementById('cancelForm').submit())">Cancel Order</button>
-                </form>
-                {% endif %}
-            </div>
-        </div>
-        <a href="{% url 'user_orders' %}" class="inline-flex mt-8 text-primary font-semibold hover:underline min-h-[44px]">← All orders</a>
+        <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold border
+            {% if order.status == 'delivered' or order.status == 'ready' %}bg-emerald-500/10 text-emerald-400 border-emerald-500/20
+            {% elif order.status == 'cancelled' %}bg-red-500/10 text-red-400 border-red-500/20
+            {% else %}bg-amber-500/10 text-amber-400 border-amber-500/20{% endif %}">
+            {{ order.get_status_display }}
+        </span>
     </div>
 
-    <!-- Mobile Card View -->
-    <div class="mobile-only space-y-6">
-        <div class="mobile-card">
-            <h1 class="text-xl font-bold text-white mb-2">{{ order.order_number }}</h1>
-            <p class="text-xs text-neutral-500">{{ order.created_at|date:"M d, Y g:i a" }}</p>
-            <div class="mt-3">
-                <span class="mobile-badge {% if order.status == 'delivered' or order.status == 'ready' %}mobile-badge-success{% elif order.status == 'printing' %}mobile-badge-pending{% else %}mobile-badge-pending{% endif %}">
-                    {{ order.get_status_display }}
+    <!-- Status Timeline -->
+    <div class="card p-6 mb-6 overflow-x-auto">
+        <div class="flex items-center min-w-[600px] justify-between px-2">
+            {% for status_key, status_label, status_icon in status_steps %}
+            <div class="flex flex-col items-center relative z-10 w-24">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-500
+                    {% if order.status == status_key %}bg-primary text-white shadow-lg shadow-primary/40 scale-110
+                    {% elif status_key in passed_statuses %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                    {% else %}bg-surface text-text-muted border border-surface-border{% endif %}">
+                    <i class="bi {{ status_icon }} text-lg"></i>
+                </div>
+                <span class="text-xs font-bold text-center tracking-wide
+                    {% if order.status == status_key %}text-primary
+                    {% elif status_key in passed_statuses %}text-emerald-400
+                    {% else %}text-text-disabled{% endif %}">
+                    {{ status_label }}
                 </span>
             </div>
-        </div>
-        
-        <div class="mobile-card">
-            <h3 class="text-lg font-bold text-white mb-3">Files</h3>
-            {% for f in order.order_files.all %}
-            <div class="border-b border-white/10 py-3 last:border-0">
-                <p class="font-semibold text-white">{{ f.file_name }}</p>
-                <p class="text-sm text-neutral-400">{{ f.get_print_type_display }} · {{ f.get_sides_display }} · {{ f.sheets_for_file }} sheets</p>
-                <p class="text-sm text-brand-400 font-bold mt-1">৳{{ f.line_base_price|floatformat:2 }}</p>
-                {% if f.file %}
-                <a href="{% url 'user_order_download_file' order.pk %}?file_id={{ f.pk }}" class="btn-secondary text-xs py-2 mt-2 inline-flex min-h-[44px]">Download</a>
-                {% endif %}
+            {% if not forloop.last %}
+            <div class="flex-1 h-1 mx-2 rounded-full transition-colors duration-500 overflow-hidden bg-surface-alt border border-surface-border">
+                <div class="h-full bg-emerald-500 transition-all duration-1000" style="width: {% if status_key in passed_statuses %}100%{% else %}0%{% endif %}"></div>
             </div>
-            {% empty %}
-            <p class="font-semibold text-white">{{ order.file_name|default:"Physical Document" }}</p>
-            {% if order.has_stored_file %}
-            <a href="{% url 'user_order_download_file' order.pk %}" class="btn-secondary text-sm py-2 mt-2 inline-flex min-h-[44px]">Download</a>
             {% endif %}
             {% endfor %}
-            <a href="{% url 'user_order_invoice' order.pk %}" class="btn-secondary text-sm py-2 mt-4 inline-flex min-h-[44px]"><i class="bi bi-receipt"></i> Invoice PDF</a>
         </div>
-        
-        {% if order.special_instructions %}
-        <div class="mobile-card">
-            <h3 class="text-lg font-bold text-white mb-2">Instructions</h3>
-            <p class="text-sm text-neutral-300">{{ order.special_instructions }}</p>
-        </div>
-        {% endif %}
-        
-        <div class="mobile-card">
-            <h3 class="text-lg font-bold text-white mb-3">Payment</h3>
-            <p class="text-2xl font-bold text-brand-400 mb-2">৳{{ order.total_amount|floatformat:0 }}</p>
-            <p class="text-sm text-neutral-400">{{ order.get_payment_status_display }}</p>
-            {% if order.status == 'pending' %}
-            <form method="post" action="{% url 'user_cancel_order' order.pk %}" class="mt-4" id="cancelFormMobile">
-                {% csrf_token %}
-                <button type="button" onclick="if(confirm('Cancel this order?')) document.getElementById('cancelFormMobile').submit()" class="w-full py-3 rounded-xl bg-red-500/20 text-red-400 font-bold min-h-[44px]">Cancel Order</button>
-            </form>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 space-y-6">
+            <!-- Files Section -->
+            <div class="card p-6">
+                <h3 class="font-semibold mb-4">Files</h3>
+                {% for f in order.order_files.all %}
+                <div class="border-b border-surface-border py-4 last:border-0">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="font-semibold text-text-primary">{{ f.file_name }}</p>
+                            <p class="text-sm text-text-muted">{{ f.get_print_type_display }} · {{ f.get_sides_display }} · {{ f.paper_size }} · {{ f.effective_pages }} pages × {{ f.copies }} copies</p>
+                            {% for r in f.page_ranges.all %}
+                            <p class="text-xs text-neutral-500 mt-1">Pages {{ r.start_page }}-{{ r.end_page }}: {{ r.get_print_type_display }}, {{ r.get_sides_display }}</p>
+                            {% endfor %}
+                            <p class="text-sm font-semibold mt-1 text-primary">৳{{ f.line_base_price|floatformat:2 }}</p>
+                        </div>
+                        {% if f.file %}
+                        <a href="{% url 'user_order_download_file' order.pk %}?file_id={{ f.pk }}" class="btn-secondary text-sm py-2 min-h-[44px] inline-flex items-center gap-2">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div>
+                    <p class="font-semibold text-text-primary">{{ order.file_name|default:"Physical Document" }}</p>
+                    <p class="text-sm text-text-muted">{{ order.get_print_type_display }} · {{ order.get_sides_display }} · {{ order.pages }} pages × {{ order.copies }} copies</p>
+                    {% if order.has_stored_file %}
+                    <a href="{% url 'user_order_download_file' order.pk %}" class="btn-secondary text-sm py-2 mt-3 inline-flex items-center gap-2 min-h-[44px]">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Instructions -->
+            {% if order.special_instructions %}
+            <div class="card p-6">
+                <h3 class="font-semibold mb-2">Special Instructions</h3>
+                <p class="text-sm text-text-secondary">{{ order.special_instructions }}</p>
+            </div>
             {% endif %}
         </div>
-        
-        <a href="{% url 'user_orders' %}" class="inline-block text-center py-3 text-brand-400 font-semibold min-h-[44px]">← All orders</a>
+
+        <!-- Payment & Actions Sidebar -->
+        <div class="space-y-6">
+            <div class="card p-6 h-fit">
+                <h3 class="font-semibold mb-4">Payment</h3>
+                <p class="text-3xl font-bold text-primary mb-1">৳{{ order.total_amount|floatformat:0 }}</p>
+                <p class="text-sm text-text-muted mb-4">{{ order.get_payment_status_display }}</p>
+
+                {% if order.payment_status == 'unpaid' or order.payment_status == 'rejected' %}
+                {% if order.status != 'cancelled' %}
+                <a href="{% url 'user_order_payment' order.pk %}" class="btn-cta w-full mb-3 min-h-[44px] inline-flex items-center justify-center gap-2">
+                    <i class="bi bi-wallet2"></i> Pay Now
+                </a>
+                {% endif %}
+                {% elif order.payment_status == 'pending_review' %}
+                <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-3">
+                    <p class="text-sm text-amber-400 font-medium">Payment screenshot under review.</p>
+                </div>
+                {% endif %}
+
+                {% if order.payment_screenshot and order.status != 'cancelled' %}
+                <div class="mt-3">
+                    <p class="text-xs text-text-muted mb-2">Payment screenshot:</p>
+                    <img src="{{ order.payment_screenshot.url }}" alt="Payment screenshot" class="rounded-lg border border-surface-border max-w-[200px] max-h-[200px] object-cover">
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="card p-6 h-fit">
+                <h3 class="font-semibold mb-4">Actions</h3>
+                <div class="space-y-3">
+                    <a href="{% url 'user_order_invoice' order.pk %}" class="btn-secondary w-full min-h-[44px] inline-flex items-center justify-center gap-2">
+                        <i class="bi bi-receipt"></i> Download Invoice PDF
+                    </a>
+                    {% if order.status == 'delivered' or order.status == 'ready' %}
+                    <a href="{% url 'user_new_order' %}?reorder={{ order.pk }}" class="btn-secondary w-full min-h-[44px] inline-flex items-center justify-center gap-2">
+                        <i class="bi bi-arrow-repeat"></i> Reorder
+                    </a>
+                    {% endif %}
+                    {% if order.status == 'pending' %}
+                    <form method="post" action="{% url 'user_cancel_order' order.pk %}" id="cancelFormDesktop">
+                        {% csrf_token %}
+                        <button type="button" onclick="PrintEdge.confirmAction('Cancel this order?', () => document.getElementById('cancelFormDesktop').submit())" class="btn-danger w-full min-h-[44px]">
+                            <i class="bi bi-x-circle"></i> Cancel Order
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
+
+    <a href="{% url 'user_orders' %}" class="inline-flex items-center gap-2 mt-8 text-primary font-semibold hover:underline min-h-[44px]">
+        <i class="bi bi-arrow-left"></i> All orders
+    </a>
 </div>
 {% endblock %}

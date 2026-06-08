@@ -20,18 +20,58 @@
     return '';
   }
 
+  function playDing() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+      
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.log('Audio play failed:', e);
+    }
+  }
+
   function onNewNotification(payload) {
+    const title = payload.new?.title || payload.title || payload.new?.verb || 'New notification';
     if (global.PrintEdge && global.PrintEdge.Toast) {
-      const title = payload.new?.title || payload.title || 'New notification';
       global.PrintEdge.Toast.show(title, 'info');
     }
+    
+    // Play sound if enabled
+    const soundEnabled = localStorage.getItem('printedge_sound_enabled') !== 'false';
+    if (soundEnabled) {
+       playDing();
+    }
+    
+    // Desktop Notification
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Print-Edge", {
+        body: title,
+        icon: '/static/icons/icon-192.png'
+      });
+    }
     document.dispatchEvent(new CustomEvent('printedge:notification', { detail: payload }));
-    const badge = document.querySelector('[data-notification-count]');
+    const badge = document.querySelector('[data-notification-badge]');
     if (badge) {
       const n = parseInt(badge.textContent, 10) || 0;
       badge.textContent = String(n + 1);
       badge.classList.remove('hidden');
     }
+    fetchNotifications();
   }
 
   async function fetchNotifications() {
@@ -63,7 +103,7 @@
     script.onload = () => {
       try {
         const client = global.supabase.createClient(config.url, config.anonKey);
-        channel = client
+        const channel = client
           .channel('notifications-' + config.userId)
           .on(
             'postgres_changes',
@@ -103,6 +143,39 @@
     }
     initSupabase(config);
     fetchNotifications();
+
+    // Sound toggle logic
+    const soundEnabled = localStorage.getItem('printedge_sound_enabled') !== 'false';
+    const soundBtns = document.querySelectorAll('[data-notification-sound]');
+    const soundIcons = document.querySelectorAll('[data-sound-icon]');
+    
+    function updateSoundIcons(enabled) {
+      soundIcons.forEach(icon => {
+        if (enabled) {
+          icon.classList.remove('bi-volume-mute-fill');
+          icon.classList.add('bi-volume-up-fill');
+        } else {
+          icon.classList.remove('bi-volume-up-fill');
+          icon.classList.add('bi-volume-mute-fill');
+        }
+      });
+    }
+    
+    updateSoundIcons(soundEnabled);
+    
+    soundBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = localStorage.getItem('printedge_sound_enabled') !== 'false';
+        const next = !current;
+        localStorage.setItem('printedge_sound_enabled', String(next));
+        updateSoundIcons(next);
+        
+        // Also request notification permission on first interaction
+        if (next && "Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+          Notification.requestPermission();
+        }
+      });
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);

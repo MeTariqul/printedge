@@ -77,8 +77,8 @@ def generate_order_invoice_pdf(order):
     addons_lines = ", ".join(a.name for a in order.addons.all())
     discount_reason = ""
     if order.discount_amount:
-        if order.promo_code:
-            discount_reason = f"Promo: {order.promo_code.code}"
+        if order.coupon:
+            discount_reason = f"Promo: {order.coupon.code}"
         else:
             discount_reason = "Tier discount"
 
@@ -110,10 +110,11 @@ def generate_order_invoice_pdf(order):
     elements.append(header_table)
 
     # Customer info section
+    customer_email = order.customer.email if order.customer else ''
     customer_data = [
         ['Bill To', 'Invoice Details'],
         ['Name:', order.customer_name],
-        ['Email:', order.customer_email or '—'],
+        ['Email:', customer_email or '—'],
         ['Phone:', order.customer_phone or '—'],
     ]
     customer_table = Table(customer_data, colWidths=[30*mm, 80*mm])

@@ -26,6 +26,15 @@ PERMISSIONS = {
 def user_has_permission(user, permission):
     if not user.is_authenticated:
         return False
+    if user.role == 'super_admin':
+        return True
+    
+    if user.custom_permissions and isinstance(user.custom_permissions, list):
+        if permission in user.custom_permissions:
+            return True
+        elif f"-{permission}" in user.custom_permissions:
+            return False
+
     allowed = PERMISSIONS.get(permission, ())
     return user.role in allowed
 

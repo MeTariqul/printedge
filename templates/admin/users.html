@@ -26,7 +26,7 @@
         <input type="password" name="password" placeholder="Password (min 8)" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
         <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold">Create account</button>
     </form>
-    <p class="text-[10px] text-amber-400/80 mt-3">Passwords are stored in a copy visible to admins for support purposes.</p>
+    <p class="text-[10px] text-slate-500 mt-3">Passwords are hashed and cannot be viewed after creation.</p>
 </div>
 {% endif %}
 
@@ -49,7 +49,6 @@
                      <th class="p-3 pl-5">Customer</th>
                      <th class="p-3">Avatar</th>
                      <th class="p-3">Contact</th>
-                     <th class="p-3">Password</th>
                      <th class="p-3">Tier</th>
                      <th class="p-3">Orders</th>
                      <th class="p-3">Status</th>
@@ -67,11 +66,6 @@
                          <img src="{{ u.avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">
                      </td>
                     <td class="p-3 text-sm text-slate-400">{{ u.phone|default:"—" }}</td>
-                    <td class="p-3">
-                        {% if can_manage %}
-                        <code class="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded">{{ u.password_plain|default:"—" }}</code>
-                        {% else %}—{% endif %}
-                    </td>
                     <td class="p-3 text-xs font-bold text-brand-400 uppercase">{{ u.tier }}</td>
                     <td class="p-3 text-sm text-white">{{ u.total_orders }}</td>
                     <td class="p-3">

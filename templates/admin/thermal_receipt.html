@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt {{ order.order_number }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            width: 80mm;
+            max-width: 80mm;
+            background: #fff;
+            color: #111;
+            padding: 4mm 4mm 8mm 4mm;
+        }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .divider { border-top: 1px dashed #888; margin: 4px 0; }
+        .divider-solid { border-top: 1px solid #333; margin: 4px 0; }
+        .logo { font-size: 18px; font-weight: bold; letter-spacing: 2px; }
+        .tagline { font-size: 10px; color: #555; margin-bottom: 6px; }
+        .order-num { font-size: 14px; font-weight: bold; margin: 4px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 2px 0; vertical-align: top; }
+        td.right { text-align: right; }
+        td.label { color: #555; font-size: 11px; width: 45%; }
+        td.value { font-weight: bold; font-size: 11px; }
+        .total-row td { font-size: 14px; font-weight: bold; border-top: 1px solid #333; padding-top: 4px; margin-top: 4px; }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .thanks { font-size: 11px; margin: 6px 0 2px; }
+        .footer-small { font-size: 9px; color: #777; }
+        @media print {
+            body { width: 80mm; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="center">
+        <div class="logo">PRINT EDGE</div>
+        <div class="tagline">Your Campus Print Shop</div>
+    </div>
+    <div class="divider-solid"></div>
+
+    <div class="center">
+        <div class="order-num">{{ order.order_number }}</div>
+        <div>{{ order.created_at|date:"d M Y, g:i A" }}</div>
+        <span class="status-badge">{{ order.get_status_display }}</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <table>
+        <tr>
+            <td class="label">Customer:</td>
+            <td class="value">{{ order.customer_name }}</td>
+        </tr>
+        {% if order.customer_phone %}
+        <tr>
+            <td class="label">Phone:</td>
+            <td class="value">{{ order.customer_phone }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="label">Source:</td>
+            <td class="value">{% if order.source == 'offline' %}Walk-In{% else %}Online{% endif %}</td>
+        </tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <table>
+        <tr>
+            <td class="label">Print Type:</td>
+            <td class="value">{{ order.get_print_type_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Sides:</td>
+            <td class="value">{{ order.get_sides_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Paper:</td>
+            <td class="value">{{ order.paper_size }}</td>
+        </tr>
+        <tr>
+            <td class="label">Pages:</td>
+            <td class="value">{{ order.pages }}</td>
+        </tr>
+        <tr>
+            <td class="label">Copies:</td>
+            <td class="value">{{ order.copies }}</td>
+        </tr>
+        {% if order.is_urgent %}
+        <tr>
+            <td class="label">Urgent:</td>
+            <td class="value">⚡ Yes</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <div class="divider"></div>
+
+    <table>
+        <tr>
+            <td class="label">Base Price:</td>
+            <td class="value right">৳{{ order.base_price|floatformat:0 }}</td>
+        </tr>
+        {% if order.addons_price %}
+        <tr>
+            <td class="label">Add-ons:</td>
+            <td class="value right">+৳{{ order.addons_price|floatformat:0 }}</td>
+        </tr>
+        {% endif %}
+        {% if order.urgent_surcharge %}
+        <tr>
+            <td class="label">Urgent Fee:</td>
+            <td class="value right">+৳{{ order.urgent_surcharge|floatformat:0 }}</td>
+        </tr>
+        {% endif %}
+        {% if order.discount_amount %}
+        <tr>
+            <td class="label">Discount:</td>
+            <td class="value right">-৳{{ order.discount_amount|floatformat:0 }}</td>
+        </tr>
+        {% endif %}
+        <tr class="total-row">
+            <td>TOTAL:</td>
+            <td class="right">৳{{ order.total_amount|floatformat:0 }}</td>
+        </tr>
+        <tr>
+            <td class="label">Paid:</td>
+            <td class="value right">৳{{ order.amount_paid|floatformat:0 }}</td>
+        </tr>
+        {% if order.amount_due > 0 %}
+        <tr>
+            <td class="label">Due:</td>
+            <td class="value right">৳{{ order.amount_due|floatformat:0 }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="label">Payment:</td>
+            <td class="value right">{{ order.payment_method|default:"—" }}</td>
+        </tr>
+    </table>
+
+    <div class="divider-solid"></div>
+    <div class="center">
+        <div class="thanks bold">Thank you for choosing Print Edge!</div>
+        <div class="footer-small">Visit: printedge.app</div>
+        <div class="footer-small">Powered by PrintEdge POS</div>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() { window.print(); });
+    </script>
+</body>
+</html>

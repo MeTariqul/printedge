@@ -3,9 +3,10 @@
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
+from django.contrib.sites.shortcuts import get_current_site
 
 from .models import EmailLog
-from .email_utils import send_brevo_email
+from .email_utils import send_db_email
 
 
 def send_order_confirmation_email(request, order):
@@ -23,25 +24,17 @@ def send_order_confirmation_email(request, order):
 
     subject = f'Order #{order.order_number} Confirmed – PrintEdge'
 
-    # Build tracking URL
-    tracking_url = f"https://printedge.vercel.app/user/orders/{order.pk}/"
+    # Build tracking URL using request or fallback
+    if request:
+        tracking_url = request.build_absolute_uri(f'/user/orders/{order.pk}/')
+    else:
+        tracking_url = f"https://printedge.vercel.app/user/orders/{order.pk}/"
 
     # Render HTML template
-    html_content = render_to_string('emails/order_confirmation.html', {
+    success, result = send_db_email('order_confirmation', recipient_email, {
         'order': order,
         'tracking_url': tracking_url,
         'now': timezone.now()
     })
-    text_content = strip_tags(html_content)
-
-    success, result = send_brevo_email(recipient_email, subject, html_content, text_content)
-
-    EmailLog.objects.create(
-        recipient=recipient_email,
-        subject=subject,
-        body=text_content[:500] if text_content else '',
-        status='sent' if success else 'failed',
-        error_message='' if success else result,
-    )
 
     return success

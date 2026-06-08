@@ -139,6 +139,127 @@
     return input ? input.value : '';
   }
 
+  function initDomNotificationBells() {
+    if (window.__printedgeDomNotifInit) return;
+    window.__printedgeDomNotifInit = true;
+
+    function timeAgo(iso) {
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 1000);
+      if (diff < 60) return diff + 's ago';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    function renderForRoot(root, data) {
+      const uid = root.getAttribute('data-notification-root');
+      const badge = root.querySelector('[data-notification-badge="' + uid + '"]');
+      const list = root.querySelector('[data-notification-list="' + uid + '"]');
+      const count = data.unread_count || 0;
+      if (badge) {
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : String(count);
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+      if (!list) return;
+      const items = data.notifications || [];
+      if (!items.length) {
+        list.innerHTML = '<li class="px-4 py-6 text-slate-500 text-center">No notifications</li>';
+        return;
+      }
+      list.innerHTML = items.map((n) => {
+        const unreadClass = n.is_read ? '' : ' bg-brand-500/5';
+        const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></span>';
+        return '<li class="px-4 py-3 hover:bg-white/5 transition-colors' + unreadClass + '">' +
+          '<a href="' + (n.target_url || '#') + '" class="block notif-link" data-id="' + n.id + '">' +
+          '<div class="flex items-start gap-2">' + unreadDot +
+          '<div class="flex-1 min-w-0">' +
+          '<p class="font-semibold text-white text-sm break-words">' + n.verb + '</p>' +
+          '<p class="text-xs text-slate-400 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
+          '<p class="text-[10px] text-slate-500 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
+          '</div></div></a></li>';
+      }).join('');
+    }
+
+    function renderAll(data) {
+      document.querySelectorAll('[data-notification-root]').forEach((root) => renderForRoot(root, data));
+    }
+
+    async function fetchNotifications() {
+      try {
+        const token = getCsrfToken();
+        const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+        if (token) headers['X-CSRFToken'] = token;
+        const res = await fetch('/api/notifications/', { headers, credentials: 'same-origin' });
+        if (res.ok) renderAll(await res.json());
+      } catch (_) { /* ignore */ }
+    }
+
+    document.querySelectorAll('[data-notification-root]').forEach((root) => {
+      const uid = root.getAttribute('data-notification-root');
+      const bell = root.querySelector('[data-notification-bell="' + uid + '"]');
+      const dropdown = root.querySelector('[data-notification-dropdown="' + uid + '"]');
+      const list = root.querySelector('[data-notification-list="' + uid + '"]');
+      const markAllBtn = root.querySelector('[data-mark-all-read="' + uid + '"]');
+      if (!bell || !dropdown) return;
+
+      bell.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isHidden = dropdown.classList.contains('hidden');
+        dropdown.classList.toggle('hidden');
+        bell.setAttribute('aria-expanded', String(!isHidden));
+        if (isHidden) fetchNotifications();
+        setTimeout(() => { if (document.activeElement === bell) bell.blur(); }, 100);
+      });
+
+      if (list) {
+        list.addEventListener('click', (e) => {
+          const link = e.target.closest('.notif-link');
+          if (!link || !link.dataset.id) return;
+          fetch('/api/notifications/' + link.dataset.id + '/read/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrfToken() || '', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+          });
+        });
+      }
+
+      if (markAllBtn) {
+        markAllBtn.addEventListener('click', () => {
+          fetch('/api/notifications/read-all/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrfToken() || '', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+          }).then(() => fetchNotifications());
+        });
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      document.querySelectorAll('[data-notification-root]').forEach((root) => {
+        const uid = root.getAttribute('data-notification-root');
+        const bell = root.querySelector('[data-notification-bell="' + uid + '"]');
+        const dropdown = root.querySelector('[data-notification-dropdown="' + uid + '"]');
+        if (dropdown && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+          dropdown.classList.add('hidden');
+          bell.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    document.addEventListener('printedge:notifications-sync', (e) => {
+      if (e.detail) renderAll(e.detail);
+    });
+
+    fetchNotifications();
+  }
+
   // Wait for Alpine to be ready before defining components
   function initNotificationBell() {
     if (typeof Alpine === 'undefined') return;
@@ -199,6 +320,7 @@
     observeFadeIn();
     initTooltips();
     animateCounters();
+    initDomNotificationBells();
     initNotificationBell();
   }
 

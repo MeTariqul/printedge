@@ -68,7 +68,8 @@
             <a href="{% url 'admin_users' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_users' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-people-fill"></i> Customers</a>
             {% endif %}
             {% if request.user.can_edit_pricing %}
-            <a href="{% url 'admin_services' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_services' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-tags-fill"></i> Pricing</a>
+            <a href="{% url 'admin_services' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_services' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-briefcase-fill"></i> Services</a>
+            <a href="{% url 'admin_coupons' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_coupons' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-ticket-perforated-fill"></i> Coupons</a>
             <a href="{% url 'admin_inventory' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_inventory' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-box-seam-fill"></i> Inventory</a>
             <a href="{% url 'admin_financial' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_financial' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-wallet-fill"></i> Finance</a>
             {% endif %}
@@ -84,7 +85,9 @@
             <a href="{% url 'admin_mail_logs' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_logs' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-envelope-paper"></i> Email Logs</a>
             <a href="{% url 'admin_mail_templates' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_templates' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-file-earmark-text"></i> Templates</a>
             <a href="{% url 'admin_mail_settings' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_settings' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-gear"></i> Settings</a>
+            {% if request.user.can_manage_users %}
             <a href="{% url 'admin_staff' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_staff' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-person-gear"></i> Staff</a>
+            {% endif %}
         </nav>
         <div class="p-4 border-t border-surface-border pb-safe">
             <div class="flex items-center gap-3 p-2 rounded-lg bg-surface">
@@ -102,7 +105,7 @@
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-surface-border bg-canvas-alt z-30 pt-safe lg:pt-0">
+        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-surface-border bg-canvas-alt z-30 pt-safe lg:pt-0" style="position: relative !important; overflow: visible !important;">
             <div class="flex items-center gap-4 flex-1">
                 <button type="button" @click="sidebarOpen=!sidebarOpen" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg border border-surface-border"><i class="bi bi-list text-xl"></i></button>
                 <button type="button" @click="searchOpen=true" class="flex items-center justify-center w-10 h-10 rounded-lg border border-surface-border lg:hidden min-h-[44px] min-w-[44px]" aria-label="Search"><i class="bi bi-search"></i></button>
@@ -112,7 +115,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <a href="{% url 'public_index' %}" target="_blank" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border border-surface-border hover:bg-surface"><i class="bi bi-box-arrow-up-right"></i> Site</a>
-                {% include "partials/notifications_bell.html" %}
+                {% include "partials/notifications_bell.html" with bell_uid="admin" %}
             </div>
         </header>
 

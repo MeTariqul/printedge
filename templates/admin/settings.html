@@ -123,6 +123,38 @@
             {% endif %}
         </div>
 
+        <!-- ── Payment Settings ────────────────────────────────────────── -->
+        <div class="premium-card rounded-2xl p-8">
+            <h2 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="bi bi-wallet2"></i></span>
+                Payment Settings
+            </h2>
+            <p class="text-xs text-neutral-500 mb-6">Mobile banking numbers for customer payments. Leave blank to hide a method.</p>
+            <div class="grid sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl border border-white/10 bg-pink-500/5">
+                    <label class="flex items-center gap-2 text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                        <i class="bi bi-phone text-pink-400 text-base"></i> bKash Number
+                    </label>
+                    <input type="text" name="bkash_number" value="{{ site.bkash_number }}" placeholder="017XXXXXXXXX"
+                           class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-pink-500 focus:ring-1 focus:ring-pink-500/30 outline-none transition-colors placeholder-slate-500 text-sm">
+                </div>
+                <div class="p-4 rounded-xl border border-white/10 bg-orange-500/5">
+                    <label class="flex items-center gap-2 text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                        <i class="bi bi-phone text-orange-400 text-base"></i> Nagad Number
+                    </label>
+                    <input type="text" name="nagad_number" value="{{ site.nagad_number }}" placeholder="017XXXXXXXXX"
+                           class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none transition-colors placeholder-slate-500 text-sm">
+                </div>
+                <div class="p-4 rounded-xl border border-white/10 bg-purple-500/5">
+                    <label class="flex items-center gap-2 text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                        <i class="bi bi-phone text-purple-400 text-base"></i> Rocket Number
+                    </label>
+                    <input type="text" name="rocket_number" value="{{ site.rocket_number }}" placeholder="017XXXXXXXXX"
+                           class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 outline-none transition-colors placeholder-slate-500 text-sm">
+                </div>
+            </div>
+        </div>
+
         <!-- ── Order & System Settings ──────────────────────────────────── -->
         <div class="premium-card rounded-2xl p-8">
             <h2 class="text-lg font-bold text-white mb-6 flex items-center gap-2">

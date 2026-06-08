@@ -1,0 +1,168 @@
+{% extends "admin_base.html" %}
+{% block title %}Coupons | PrintEdge Admin{% endblock %}
+{% block breadcrumb %}Coupons{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-semibold">Coupons & Discounts</h1>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- List -->
+    <div class="lg:col-span-2 space-y-4">
+        {% for coupon in coupons %}
+        <div class="card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 {% if not coupon.is_active %}opacity-60{% endif %}">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <h3 class="font-bold text-lg text-primary">{{ coupon.code }}</h3>
+                    {% if coupon.is_active and coupon.is_valid %}
+                        <span class="badge bg-emerald-500/10 text-emerald-400">Active</span>
+                    {% else %}
+                        <span class="badge bg-red-500/10 text-red-400">Inactive</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-text-muted">
+                    Discount: 
+                    {% if coupon.discount_type == 'percentage' %}
+                        {{ coupon.discount_value|floatformat:0 }}%
+                    {% else %}
+                        ৳{{ coupon.discount_value|floatformat:0 }}
+                    {% endif %}
+                    | Min order: ৳{{ coupon.min_order_amount|floatformat:0 }}
+                </p>
+                <p class="text-xs text-text-muted mt-1">
+                    Used: {{ coupon.used_count }} {% if coupon.max_uses %}/ {{ coupon.max_uses }}{% endif %}
+                    | Valid: {{ coupon.valid_from|date:"M d, Y" }} - {% if coupon.valid_to %}{{ coupon.valid_to|date:"M d, Y" }}{% else %}Forever{% endif %}
+                </p>
+            </div>
+            
+            <div class="flex gap-2 shrink-0">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle">
+                    <input type="hidden" name="coupon_id" value="{{ coupon.pk }}">
+                    <button class="btn-secondary py-1 px-3 text-xs">
+                        {% if coupon.is_active %}Disable{% else %}Enable{% endif %}
+                    </button>
+                </form>
+                <button type="button" class="btn-secondary py-1 px-3 text-xs" onclick="editCoupon('{{ coupon.pk }}', '{{ coupon.code }}', '{{ coupon.discount_type }}', '{{ coupon.discount_value }}', '{{ coupon.min_order_amount|default_if_none:"" }}', '{{ coupon.max_uses|default_if_none:"" }}', '{{ coupon.valid_from|date:"Y-m-d" }}', '{{ coupon.valid_to|date:"Y-m-d" }}')">
+                    Edit
+                </button>
+                {% if request.user.is_full_admin %}
+                <form method="post" onsubmit="return confirm('Delete this coupon?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="coupon_id" value="{{ coupon.pk }}">
+                    <button class="text-red-400 hover:text-red-300 p-2"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="card p-8 text-center text-text-muted">
+            <i class="bi bi-ticket-perforated text-4xl mb-3 block opacity-50"></i>
+            <p>No coupons created yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Create form -->
+    <div class="card p-6 h-fit sticky top-24">
+        <h3 class="font-semibold mb-4">Create New Coupon</h3>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            
+            <div>
+                <label class="block text-xs text-text-muted mb-1">Coupon Code</label>
+                <input type="text" name="code" required class="form-input uppercase" placeholder="e.g. SUMMER20">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-text-muted mb-1">Type</label>
+                    <select name="discount_type" class="form-input">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (৳)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-text-muted mb-1">Value</label>
+                    <input type="number" name="discount_value" required step="0.01" min="0" class="form-input" placeholder="e.g. 10">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-xs text-text-muted mb-1">Min Order Amount (৳) [Optional]</label>
+                <input type="number" name="min_order_amount" min="0" step="0.01" class="form-input">
+            </div>
+            
+            <div>
+                <label class="block text-xs text-text-muted mb-1">Max Uses (Leave blank for unlimited)</label>
+                <input type="number" name="max_uses" min="0" class="form-input">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-text-muted mb-1">Valid From</label>
+                    <input type="date" name="valid_from" class="form-input">
+                </div>
+                <div>
+                    <label class="block text-xs text-text-muted mb-1">Valid To</label>
+                    <input type="date" name="valid_to" class="form-input">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary w-full mt-4">Create Coupon</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function editCoupon(id, code, type, value, minAmt, maxUses, validFrom, validTo) {
+    const form = document.querySelector('form');
+    form.querySelector('[name=action]').value = 'edit';
+    
+    let idField = form.querySelector('input[name=coupon_id]');
+    if (!idField) {
+        idField = document.createElement('input');
+        idField.type = 'hidden';
+        idField.name = 'coupon_id';
+        form.appendChild(idField);
+    }
+    idField.value = id;
+    
+    form.querySelector('[name=code]').value = code;
+    form.querySelector('[name=discount_type]').value = type;
+    form.querySelector('[name=discount_value]').value = value;
+    form.querySelector('[name=min_order_amount]').value = minAmt;
+    form.querySelector('[name=max_uses]').value = maxUses;
+    form.querySelector('[name=valid_from]').value = validFrom;
+    form.querySelector('[name=valid_to]').value = validTo;
+    
+    const submitBtn = form.querySelector('button[type=submit]');
+    submitBtn.textContent = 'Update Coupon';
+    submitBtn.classList.remove('btn-primary');
+    submitBtn.classList.add('bg-amber-600', 'text-white', 'hover:bg-amber-700');
+    
+    if (!document.getElementById('cancel-edit-btn')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.id = 'cancel-edit-btn';
+        cancelBtn.className = 'btn-secondary w-full mt-2';
+        cancelBtn.textContent = 'Cancel Edit';
+        cancelBtn.onclick = function() {
+            form.reset();
+            form.querySelector('[name=action]').value = 'create';
+            if (idField) idField.remove();
+            submitBtn.textContent = 'Create Coupon';
+            submitBtn.classList.add('btn-primary');
+            submitBtn.classList.remove('bg-amber-600', 'text-white', 'hover:bg-amber-700');
+            this.remove();
+        };
+        form.appendChild(cancelBtn);
+    }
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
+{% endblock %}

@@ -9,7 +9,8 @@ class Command(BaseCommand):
     help = 'Seed initial data: admin user, pricing rules, inventory, add-ons'
 
     def handle(self, *args, **options):
-        from core.models import PricingRule, AddonService, InventoryItem, SiteSettings
+        from core.models import PricingRule, AddonService, InventoryItem, SiteSettings, EmailTemplate
+        from core.email_templates import seed_default_email_templates
 
         # 1. Super admin (primary)
         admin_email = 'admin@printedge.com'
@@ -78,7 +79,21 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'Inventory: {name} - {stock} {unit}'))
 
         # 5. Site settings
+        seed_default_email_templates()
+        self.stdout.write(self.style.SUCCESS('Email templates seeded'))
         site = SiteSettings.get()
+        updated = []
+        if not site.bkash_number:
+            site.bkash_number = '01700000000'
+            updated.append('bkash_number')
+        if not site.nagad_number:
+            site.nagad_number = '01700000001'
+            updated.append('nagad_number')
+        if not site.rocket_number:
+            site.rocket_number = '01700000002'
+            updated.append('rocket_number')
+        if updated:
+            site.save(update_fields=updated)
         self.stdout.write(self.style.SUCCESS(f'Site settings loaded: {site.business_name}'))
 
         self.stdout.write(self.style.SUCCESS(

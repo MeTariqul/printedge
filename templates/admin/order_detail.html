@@ -101,6 +101,7 @@
             </div>
             <div class="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 flex flex-wrap justify-between items-center gap-3">
                 <a href="{% url 'admin_order_invoice' order.pk %}" class="text-sm text-emerald-400 font-semibold min-h-[44px] inline-flex items-center gap-1"><i class="bi bi-receipt"></i> Invoice PDF</a>
+                <a href="{% url 'admin_thermal_receipt' order.pk %}" target="_blank" class="text-sm text-amber-400 font-semibold min-h-[44px] inline-flex items-center gap-1"><i class="bi bi-printer"></i> Print Receipt</a>
                 {% if order.has_stored_file %}
                 <a href="{% url 'admin_order_download_file' order.pk %}" class="text-sm text-brand-400 font-semibold min-h-[44px] inline-flex items-center">{{ order.file_name|default:"Download file" }}</a>
                 {% if can_delete_file %}
@@ -121,6 +122,25 @@
             <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
                 <i class="bi bi-wallet2 text-emerald-400"></i> Payment
             </h3>
+            {% if order.payment_status == 'pending_review' and order.payment_screenshot %}
+            <div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                <p class="text-sm font-bold text-amber-400 mb-3">Screenshot pending review</p>
+                <img src="{{ order.payment_screenshot.url }}" alt="Payment screenshot" class="max-w-full max-h-64 rounded-lg border border-slate-700 mb-4">
+                <div class="flex flex-wrap gap-3">
+                    <form method="post" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve_payment">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-bold border border-emerald-500/30 min-h-[44px]">Approve Payment</button>
+                    </form>
+                    <form method="post" class="inline flex flex-wrap items-end gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject_payment">
+                        <input type="text" name="payment_rejection_reason" placeholder="Rejection reason" class="px-3 py-2 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm min-h-[44px]">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 text-sm font-bold border border-red-500/30 min-h-[44px]">Reject</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
             <form method="post" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="payment">

@@ -1,0 +1,101 @@
+{% load humanize %}
+<div class="responsive-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-blue-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-receipt text-blue-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Today's Orders</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ today_orders_count }}">0</div>
+      <div class="text-xs font-bold mt-1 {% if revenue_change >= 0 %}text-emerald-400{% else %}text-red-400{% endif %}">
+        {% if revenue_change >= 0 %}<i class="bi bi-arrow-up-short"></i>{% else %}<i class="bi bi-arrow-down-short"></i>{% endif %}
+        {{ revenue_change|floatformat:1 }}% vs yesterday
+      </div>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-emerald-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-currency-dollar text-emerald-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Today's Revenue</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary"><span class="counter" data-target="{{ today_revenue|floatformat:0 }}">0</span></div>
+      <div class="text-xs font-bold text-text-muted mt-1">Paid orders</div>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-amber-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-clock-history text-amber-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Pending Orders</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ pending_count }}">0</div>
+      <div class="text-xs font-bold text-text-muted mt-1">Awaiting action</div>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-purple-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-people text-purple-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Active Customers</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ active_customers }}">0</div>
+      <div class="text-xs font-bold text-text-muted mt-1">Today</div>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-cyan-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-file-earmark-text text-cyan-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Pages Printed</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ pages_today }}">0</div>
+      <div class="text-xs font-bold text-text-muted mt-1">Today total</div>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-red-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-envelope-x text-red-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Emails Failed</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ failed_emails_24h }}">0</div>
+      <div class="text-xs font-bold text-text-muted mt-1">Last 24 hours</div>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-orange-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-box-seam text-orange-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Low Stock</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ low_stock_count }}">0</div>
+      <a href="{% url 'admin_inventory' %}" class="text-xs font-bold text-orange-400 hover:text-orange-300 mt-1 inline-block">Manage →</a>
+    </div>
+  </div>
+
+  <div class="premium-card p-5 rounded-2xl relative overflow-hidden group min-h-[120px]">
+    <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-emerald-500/10 blur-xl"></div>
+    <div class="relative z-10">
+      <div class="flex items-center gap-2 mb-1">
+        <i class="bi bi-check2-circle text-emerald-400"></i>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-widest">Completed Today</span>
+      </div>
+      <div class="text-3xl font-bold text-text-primary counter" data-target="{{ orders_completed_today }}">0</div>
+      <div class="text-xs font-bold text-text-muted mt-1">Delivered</div>
+    </div>
+  </div>
+</div>

@@ -19,7 +19,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from .models import (
     User, WalkInCustomer, Order, OrderFile, UserAddress,
-    OrderStatusLog, AuditLog, Notification, SiteSettings, AddonService, PromoCode,
+    OrderStatusLog, AuditLog, Notification, SiteSettings, AddonService, Coupon,
 )
 from .decorators import login_required_custom, admin_required, permission_required, write_staff_required
 from .permissions import user_has_permission

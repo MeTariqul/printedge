@@ -4,18 +4,32 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-fade-in">
 
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
             <h1 class="text-3xl md:text-4xl font-display font-bold text-white mb-2">My Orders</h1>
-            <p class="text-neutral-500 font-medium">{{ orders|length }} total order{{ orders|length|pluralize }}</p>
+            <p class="text-neutral-500 font-medium">{{ page_obj.paginator.count }} total order{{ page_obj.paginator.count|pluralize }}</p>
         </div>
-        <a href="{% url 'user_new_order' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] min-h-[44px]">
-            <i class="bi bi-plus-lg text-lg"></i> New Order
-        </a>
+        <div class="flex flex-wrap items-center gap-3">
+            <form method="get" class="flex items-center gap-2">
+                <label class="text-xs font-bold text-neutral-400 uppercase tracking-wider" for="statusFilter">Filter</label>
+                <select name="status" id="statusFilter" onchange="this.form.submit()" class="bg-white/10 border border-white/20 text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2.5 min-h-[44px]">
+                    <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
+                    {% for key, label in status_choices %}
+                    <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                {% if status_filter %}
+                <a href="{% url 'user_orders' %}" class="text-xs font-bold text-neutral-400 hover:text-white underline">Clear</a>
+                {% endif %}
+            </form>
+            <a href="{% url 'user_new_order' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] min-h-[44px]">
+                <i class="bi bi-plus-lg text-lg"></i> New Order
+            </a>
+        </div>
     </div>
 
     <!-- Desktop Table View -->
-    <div class="desktop-only">
+    <div class="hidden md:block desktop-only">
         <div class="premium-card rounded-3xl overflow-hidden relative">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -30,7 +44,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
-                        {% for o in orders %}
+                        {% for o in page_obj %}
                         <tr class="hover:bg-white/[0.02] transition-colors group">
                             <td class="p-4 pl-6 md:pl-8 font-display font-bold text-white text-sm whitespace-nowrap">{{ o.order_number }}</td>
                             <td class="p-4 text-sm font-medium text-neutral-300 max-w-[200px] truncate" title="{{ o.file_name }}">{{ o.file_name|default:"Physical Doc" }}</td>
@@ -46,9 +60,16 @@
                                 </span>
                             </td>
                             <td class="p-4 pr-6 md:pr-8 text-right">
-                                <a href="{% url 'user_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-brand-500 transition-colors min-h-[44px] min-w-[44px]">
-                                    <i class="bi bi-chevron-right text-xs"></i>
-                                </a>
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{% url 'user_order_detail' o.pk %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-brand-500 transition-colors min-h-[44px] min-w-[44px]" title="View Details">
+                                        <i class="bi bi-chevron-right text-xs"></i>
+                                    </a>
+                                    {% if o.status == 'delivered' or o.status == 'ready' %}
+                                    <a href="{% url 'user_new_order' %}?reorder={{ o.pk }}" class="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-white/5 text-neutral-400 hover:text-white hover:bg-brand-500 transition-colors text-xs font-bold min-h-[44px]" title="Reorder">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
@@ -72,8 +93,8 @@
     </div>
 
     <!-- Mobile Card View -->
-    <div class="mobile-only space-y-4">
-        {% for o in orders %}
+    <div class="md:hidden mobile-only space-y-4">
+        {% for o in page_obj %}
         <div class="mobile-order-card">
             <div class="mobile-order-header">
                 <div>
@@ -91,9 +112,16 @@
                     <span class="mobile-order-label">Pages × Copies</span>
                     <span class="mobile-order-value">{{ o.pages }}p × {{ o.copies }}</span>
                 </div>
+                <div class="mobile-order-detail">
+                    <span class="mobile-order-label">Status</span>
+                    <span class="mobile-order-value">{{ o.get_status_display }}</span>
+                </div>
             </div>
             <div class="mobile-order-actions">
                 <a href="{% url 'user_order_detail' o.pk %}" class="flex-1 text-center py-2 px-4 rounded-lg bg-white/5 text-brand-400 font-semibold text-sm min-h-[44px] flex items-center justify-center">View</a>
+                {% if o.status == 'delivered' or o.status == 'ready' %}
+                <a href="{% url 'user_new_order' %}?reorder={{ o.pk }}" class="flex-1 text-center py-2 px-4 rounded-lg bg-brand-500/10 text-brand-400 font-semibold text-sm min-h-[44px] flex items-center justify-center">Reorder</a>
+                {% endif %}
             </div>
         </div>
         {% empty %}
@@ -105,6 +133,19 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="mt-8 flex items-center justify-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="px-4 py-2 rounded-lg bg-white/5 text-neutral-300 hover:bg-white/10 font-semibold text-sm min-h-[44px] inline-flex items-center">Previous</a>
+        {% endif %}
+        <span class="px-4 py-2 rounded-lg bg-brand-500/10 text-brand-400 font-bold text-sm min-h-[44px] inline-flex items-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="px-4 py-2 rounded-lg bg-white/5 text-neutral-300 hover:bg-white/10 font-semibold text-sm min-h-[44px] inline-flex items-center">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
 
 </div>
 {% endblock %}

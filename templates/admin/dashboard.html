@@ -1,326 +1,280 @@
 {% extends "admin_base.html" %}
+{% load humanize %}
 {% block title %}Dashboard | PrintEdge Admin{% endblock %}
-{% block breadcrumb %}Overview{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- Header -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+<div class="max-w-7xl mx-auto space-y-8">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-        <h1 class="text-3xl font-semibold text-primary mb-2">
-            Welcome back, {{ request.user.first_name }}
-        </h1>
-        <p class="text-text-muted">Here's what's happening at PrintEdge today.</p>
+      <h1 class="text-2xl lg:text-3xl font-bold text-white mb-1">Dashboard</h1>
+      <p class="text-slate-400 text-sm">Welcome back, {{ request.user.first_name|default:request.user.email }}</p>
     </div>
-</div>
+    <div class="flex items-center gap-3 text-xs text-slate-500">
+      <span>Cached for 60s</span>
+      <a href="?range={{ chart_range }}" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 min-h-[36px]">Refresh</a>
+    </div>
+  </div>
 
-<!-- Mobile KPI Cards -->
-<div class="mobile-only grid grid-cols-2 gap-4 mb-6">
-    <div class="mobile-kpi-card">
-        <div class="mobile-kpi-icon"><i class="bi bi-receipt"></i></div>
-        <div class="mobile-kpi-value">{{ today_orders_count }}</div>
-        <div class="mobile-kpi-label">Orders Today</div>
-    </div>
-    <div class="mobile-kpi-card">
-        <div class="mobile-kpi-icon"><i class="bi bi-currency-dollar"></i></div>
-        <div class="mobile-kpi-value">৳{{ today_revenue|floatformat:0 }}</div>
-        <div class="mobile-kpi-label">Revenue</div>
-    </div>
-    <div class="mobile-kpi-card">
-        <div class="mobile-kpi-icon"><i class="bi bi-clock"></i></div>
-        <div class="mobile-kpi-value">{{ pending_count }}</div>
-        <div class="mobile-kpi-label">Pending</div>
-    </div>
-    <div class="mobile-kpi-card">
-        <div class="mobile-kpi-icon"><i class="bi bi-people"></i></div>
-        <div class="mobile-kpi-value">{{ active_customers }}</div>
-        <div class="mobile-kpi-label">Customers</div>
-    </div>
-</div>
+  {% include "admin/dashboard/kpi_row.html" %}
 
-<!-- Desktop KPI Cards -->
-<div class="desktop-only grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-6 mb-10">
-    <!-- Orders Today -->
-    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-info-bg rounded-full blur-2xl group-hover:bg-info-border transition-colors"></div>
-        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2">Orders Today</p>
-        <p class="text-4xl font-bold text-text-primary mb-2" data-counter="{{ today_orders_count }}">0</p>
-        <div class="flex items-center gap-1.5 text-xs font-bold {% if revenue_change >= 0 %}text-success-text{% else %}text-danger-text{% endif %} relative z-10">
-            <i class="bi bi-arrow-{% if revenue_change >= 0 %}up{% else %}down{% endif %}-right"></i>
-            {{ revenue_change }}% vs yesterday
+  {% if db_latency %}
+  <div class="text-xs text-slate-500">DB latency: {{ db_latency }} ms</div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-white">Revenue Trend</h3>
+          <p class="text-xs text-slate-400 mt-1">Last {{ chart_range }} days</p>
         </div>
-    </div>
-
-    <!-- Revenue -->
-    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-400/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition-colors"></div>
-        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Revenue Today</p>
-        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10"><span class="text-xl text-text-secondary mr-1">৳</span><span data-counter="{{ today_revenue|floatformat:0 }}">0</span></p>
-        <div class="flex items-center gap-1.5 text-xs font-bold text-brand-400 relative z-10">
-            <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span> Live updating
+        <div class="flex gap-2 flex-wrap">
+          {% for b in chart_backtests %}
+          <a href="?range={{ b.value }}" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors min-h-[36px] {% if chart_range == b.value %}bg-cyan-500 text-slate-900{% else %}bg-slate-800 text-slate-400 hover:bg-slate-700{% endif %}">
+            {{ b.label }}
+          </a>
+          {% endfor %}
         </div>
+      </div>
+      <div class="p-4 md:p-6">
+        <canvas id="revenueChart" height="220"></canvas>
+      </div>
     </div>
-
-    <!-- Pending -->
-    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-warning-bg rounded-full blur-2xl group-hover:bg-warning-border transition-colors"></div>
-        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pending</p>
-        <p class="text-4xl font-display font-bold {% if pending_count > 10 %}text-warning-text{% else %}text-text-primary{% endif %} mb-2 relative z-10">{{ pending_count }}</p>
-        {% if pending_count > 0 %}
-        <a href="{% url 'admin_orders' %}?status=pending" class="text-xs font-bold text-warning-text hover:text-warning-text transition-colors">View Queue →</a>
-        {% else %}
-        <p class="text-xs font-bold text-text-muted relative z-10">All caught up!</p>
-        {% endif %}
+    <div class="premium-card rounded-2xl overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-slate-700/50">
+        <h3 class="text-lg font-bold text-white">Order Status</h3>
+        <p class="text-xs text-slate-400 mt-1">Current distribution</p>
+      </div>
+      <div class="p-4 md:p-6">
+        <canvas id="statusChart" height="220"></canvas>
+      </div>
     </div>
+  </div>
 
-    <!-- Customers -->
-    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-colors"></div>
-        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Customers</p>
-        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10">{{ active_customers }}</p>
-        <p class="text-xs font-bold text-text-muted relative z-10">Active today</p>
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-slate-700/50">
+        <h3 class="text-lg font-bold text-white">Daily Order Volume</h3>
+        <p class="text-xs text-slate-400 mt-1">Last 14 days — online vs walk-in</p>
+      </div>
+      <div class="p-4 md:p-6">
+        <canvas id="volumeChart" height="220"></canvas>
+      </div>
     </div>
-
-    <!-- Pages -->
-    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-success-bg rounded-full blur-2xl group-hover:bg-success-border transition-colors"></div>
-        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Pages Printed</p>
-        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10">{{ pages_today }}</p>
-        <p class="text-xs font-bold text-text-muted relative z-10">Today total</p>
+    <div class="premium-card rounded-2xl overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-slate-700/50">
+        <h3 class="text-lg font-bold text-white">Print Types</h3>
+        <p class="text-xs text-slate-400 mt-1">Today's mix</p>
+      </div>
+      <div class="p-4 md:p-6">
+        <canvas id="printTypeChart" height="220"></canvas>
+      </div>
     </div>
+  </div>
 
-    <!-- Avg Value -->
-    <div class="premium-card p-6 rounded-2xl relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl group-hover:bg-pink-500/20 transition-colors"></div>
-        <p class="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-2 relative z-10">Avg Value</p>
-        <p class="text-4xl font-display font-bold text-text-primary mb-2 relative z-10"><span class="text-xl text-text-secondary mr-1">৳</span>{{ avg_order_value|floatformat:0 }}</p>
-        <p class="text-xs font-bold text-text-muted relative z-10">Per order</p>
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-slate-700/50">
+        <h3 class="text-lg font-bold text-white">Top Customers</h3>
+        <p class="text-xs text-slate-400 mt-1">This month by revenue</p>
+      </div>
+      <div class="p-4 md:p-6">
+        <canvas id="topCustomersChart" height="220"></canvas>
+      </div>
     </div>
-</div>
-
-<!-- Charts Row -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
-    <!-- Revenue Trend (takes 2 cols) -->
-    <div class="xl:col-span-2 premium-card p-6 md:p-8 rounded-3xl relative">
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h3 class="text-xl font-bold text-text-primary">Revenue Trend</h3>
-                <p class="text-sm text-text-muted font-medium mt-1">Last {{ chart_range }} days</p>
-            </div>
-            <div class="flex gap-2">
-                <a href="?range=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range != '30' %}bg-primary text-canvas-dark{% else %}bg-surface text-text-muted{% endif %}">7d</a>
-                <a href="?range=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if chart_range == '30' %}bg-primary text-canvas-dark{% else %}bg-surface text-text-muted{% endif %}">30d</a>
-            </div>
-        </div>
-        <canvas id="revenueChart" height="120"></canvas>
+    <div class="premium-card rounded-2xl overflow-hidden">
+      <div class="p-5 md:p-6 border-b border-slate-700/50">
+        <h3 class="text-lg font-bold text-white">Revenue by Category</h3>
+        <p class="text-xs text-slate-400 mt-1">This month</p>
+      </div>
+      <div class="p-4 md:p-6">
+        <canvas id="categoryRevenueChart" height="220"></canvas>
+      </div>
     </div>
+  </div>
 
-    <!-- Order Status Distribution -->
-    <div class="premium-card p-6 md:p-8 rounded-3xl relative">
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h3 class="text-xl font-bold text-text-primary">Status</h3>
-                <p class="text-sm text-text-muted font-medium mt-1">Current distribution</p>
-            </div>
-            <div class="p-2 rounded-lg bg-surface border border-surface-border">
-                <i class="bi bi-pie-chart-fill text-info-text"></i>
-            </div>
-        </div>
-        <canvas id="statusChart" height="200"></canvas>
+  {% include "admin/dashboard/reminders_row.html" with items=reminders %}
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="xl:col-span-2">
+      {% include "admin/dashboard/activity_feed.html" with events=recent_activity %}
     </div>
-    <div class="premium-card p-6 md:p-8 rounded-3xl xl:col-span-3">
-        <h3 class="text-xl font-bold text-text-primary mb-4">Orders per hour (today)</h3>
-        <canvas id="hourChart" height="80"></canvas>
-    </div>
-</div>
-
-<div class="premium-card p-4 rounded-lg mb-6 flex items-center justify-between" id="systemStatusWidget">
-    <span class="text-sm text-text-muted"><i class="bi bi-hdd-network"></i> System status</span>
-    <span class="text-sm font-bold text-text-primary" id="systemStatusText">Loading…</span>
-</div>
-
-<!-- Recent Orders + Actions -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <!-- Recent Orders (2 cols) -->
-    <div class="xl:col-span-2 premium-card rounded-3xl overflow-hidden relative">
-        <div class="p-6 md:p-8 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between bg-surface gap-4">
-            <h3 class="text-xl font-bold text-text-primary">Recent Orders</h3>
-            <a href="{% url 'admin_orders' %}" class="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-dark transition-colors min-h-[44px]">
-                View All <i class="bi bi-arrow-right text-xs"></i>
-            </a>
-        </div>
-        
-        <!-- Desktop Table View -->
-        <div class="hidden md:block table-scroll">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-widest font-bold border-b border-surface-border">
-                        <th class="p-4 pl-6 md:pl-8">Order ID</th>
-                        <th class="p-4">Customer</th>
-                        <th class="p-4">Amount</th>
-                        <th class="p-4">Status</th>
-                        <th class="p-4 pr-6 md:pr-8 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-surface-border">
-                    {% for o in recent_orders %}
-                    <tr class="hover:bg-surface transition-colors group">
-                        <td class="p-4 pl-6 md:pl-8" data-label="Order">
-                            <div class="font-display font-bold text-text-primary text-sm">{{ o.order_number }}</div>
-                            <div class="text-[10px] font-bold tracking-widest mt-1">
-                                {% if o.source == 'offline' %}<span class="text-info-text">Walk-in</span>{% else %}<span class="text-primary">Online</span>{% endif %}
-                            </div>
-                        </td>
-                        <td class="p-4" data-label="Customer">
-                            <div class="text-sm text-text-primary font-bold">{{ o.customer_name }}</div>
-                            <div class="text-[10px] text-text-muted font-medium">{{ o.customer_phone }}</div>
-                        </td>
-                        <td class="p-4 font-bold text-text-primary text-sm" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
-                        <td class="p-4" data-label="Status">
-                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border
-                                {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
-                                {% elif o.status == 'printing' %}status-printing
-                                {% elif o.status == 'cancelled' %}status-cancelled
-                                {% else %}status-pending{% endif %}">
-                                {{ o.get_status_display }}
-                            </span>
-                        </td>
-                        <td class="p-4 pr-6 md:pr-8 text-right" data-label="">
-                            <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-surface text-text-muted hover:bg-primary hover:text-canvas-dark transition-all shadow-sm" aria-label="View order">
-                                <i class="bi bi-eye text-sm"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="p-12 text-center text-text-muted font-medium">No orders yet. Create a walk-in order to get started!</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Mobile Card View -->
-        <div class="md:hidden divide-y divide-surface-border">
-            {% for o in recent_orders %}
-            <div class="p-5 hover:bg-surface transition-colors">
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <div class="font-display font-bold text-text-primary text-sm">{{ o.order_number }}</div>
-                        <div class="text-[10px] font-bold {% if o.source == 'offline' %}text-info-text{% else %}text-primary{% endif %} uppercase">
-                            {{ o.get_source_display }}
-                        </div>
-                    </div>
-                    <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
-                        {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
-                        {% elif o.status == 'printing' %}status-printing
-                        {% elif o.status == 'cancelled' %}status-cancelled
-                        {% else %}status-pending{% endif %}">
-                        {{ o.get_status_display }}
-                    </span>
-                </div>
-                <div class="space-y-1 text-xs">
-                    <div class="flex justify-between">
-                        <span class="text-text-muted">Customer</span>
-                        <span class="text-text-primary font-medium">{{ o.customer_name }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-text-muted">Amount</span>
-                        <span class="text-text-primary font-bold">৳{{ o.total_amount|floatformat:0 }}</span>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 border-t border-surface-border">
-                    <a href="{% url 'admin_order_detail' o.pk %}" class="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:text-primary-dark transition-colors min-h-[44px]">
-                        <i class="bi bi-eye"></i> View Details
-                    </a>
-                </div>
-            </div>
-            {% empty %}
-            <div class="p-8 text-center">
-                <div class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
-                    <i class="bi bi-receipt text-2xl text-text-muted"></i>
-                </div>
-                <p class="text-text-muted font-medium">No orders yet. Create a walk-in order to get started!</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Right Column: Quick Actions -->
     <div class="space-y-6">
-        {% if low_stock_count %}
-        <div class="premium-card p-6 rounded-3xl border-l-4 border-l-warning" style="border-color: var(--color-warning-text);">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-warning-bg rounded-full blur-2xl"></div>
-            <div class="flex items-center gap-4 relative z-10">
-                <div class="w-12 h-12 rounded-2xl bg-warning-bg border border-warning-border flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-exclamation-triangle-fill" style="color: var(--color-warning-text);"></i>
-                </div>
-                <div class="flex-1">
-                    <h4 class="text-base font-bold text-text-primary mb-1">{{ low_stock_count }} Low Stock Alert{{ low_stock_count|pluralize }}</h4>
-                    <p class="text-xs font-medium text-text-muted">Inventory requires attention</p>
-                </div>
-                <a href="{% url 'admin_inventory' %}" class="w-8 h-8 flex items-center justify-center rounded-full bg-surface" style="color: var(--color-warning-text);">
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
+      <div class="premium-card rounded-2xl p-5">
+        <h3 class="text-lg font-bold text-white mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <a href="{% url 'admin_walkin_order' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+            <i class="bi bi-plus-circle"></i> New Order
+          </a>
+           <a href="{% url 'admin_mail_compose' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+             <i class="bi bi-envelope-plus"></i> Compose Email
+           </a>
+           <a href="{% url 'admin_coupons' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+             <i class="bi bi-tags"></i> Coupons
+           </a>
+           <a href="{% url 'admin_services' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+             <i class="bi bi-grid"></i> Services
+           </a>
+          <a href="{% url 'admin_system_status' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+            <i class="bi bi-hdd-network"></i> System Status
+          </a>
+          <a href="{% url 'admin_inventory' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+            <i class="bi bi-box-seam"></i> Inventory
+          </a>
         </div>
-        {% endif %}
+      </div>
 
-        <!-- Quick Actions -->
-        <div class="premium-card p-6 md:p-8 rounded-3xl relative">
-            <h4 class="text-lg font-bold text-text-primary mb-6">Quick Actions</h4>
-            <div class="grid grid-cols-2 gap-4">
-                <a href="{% url 'admin_walkin_order' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/10 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-plus-lg text-xl text-primary"></i></div>
-                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Walk-in</span>
-                </a>
-                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-info-border hover:bg-info-bg transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-list-task text-xl text-info-text"></i></div>
-                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Orders</span>
-                </a>
-                <a href="{% url 'admin_inventory' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-purple-500/30 hover:bg-purple-500/10 transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-box-seam text-xl text-purple-400"></i></div>
-                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Inventory</span>
-                </a>
-                <a href="{% url 'admin_reports' %}" class="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-surface border border-surface-border hover:border-success-border hover:bg-success-bg transition-all group">
-                    <div class="w-12 h-12 rounded-full bg-canvas-alt flex items-center justify-center group-hover:scale-110 transition-transform"><i class="bi bi-bar-chart text-xl text-success-text"></i></div>
-                    <span class="text-xs font-bold text-text-muted group-hover:text-text-primary transition-colors uppercase tracking-widest">Reports</span>
-                </a>
-            </div>
-        </div>
+      {% include "admin/dashboard/health_grid.html" with items=health_items %}
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const gridColor = 'rgba(148,163,184,0.15)';
-const textColor = '#94a3b8';
-new Chart(document.getElementById('revenueChart'), {
-  type: 'line',
-  data: {
-    labels: {{ revenue_labels_json|safe }},
-    datasets: [{ label: 'Revenue (৳)', data: {{ revenue_trend_json|safe }}, borderColor: '#00B4D8', backgroundColor: 'rgba(0,180,216,0.15)', fill: true, tension: 0.35 }]
-  },
-  options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }
-});
-new Chart(document.getElementById('statusChart'), {
-  type: 'doughnut',
-  data: {
-    labels: {{ chart_status_labels_json|safe }},
-    datasets: [{ data: {{ chart_status_json|safe }}, backgroundColor: ['#f59e0b','#3b82f6','#10b981','#64748b','#ef4444'] }]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor } } } }
-});
-new Chart(document.getElementById('hourChart'), {
-  type: 'bar',
-  data: {
-    labels: Array.from({length:24}, (_,i) => i + ':00'),
-    datasets: [{ label: 'Orders', data: {{ orders_per_hour_json|safe }}, backgroundColor: '#1E3A5F' }]
-  },
-  options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor, maxTicksLimit: 12 }, grid: { display: false } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }
-});
-fetch('/api/system-status/').then(r => r.json()).then(d => {
-  document.getElementById('systemStatusText').textContent = d.database + ' · Django ' + d.django_version;
-}).catch(() => { document.getElementById('systemStatusText').textContent = 'Unavailable'; });
+  const gridColor = 'rgba(148,163,184,0.12)';
+  const textColor = '#94a3b8';
+  Chart.defaults.color = textColor;
+  Chart.defaults.font = { family: 'Inter, ui-sans-serif, system-ui, sans-serif', size: 12 };
+  Chart.defaults.plugins.tooltip.backgroundColor = '#0f172a';
+  Chart.defaults.plugins.tooltip.borderColor = '#334155';
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 8;
+  Chart.defaults.plugins.tooltip.titleFont = { weight: 'bold' };
+
+  function makeGrid() {
+    return { color: gridColor, drawBorder: false };
+  }
+
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+      labels: {{ revenue_labels_json|safe }},
+      datasets: [{
+        label: 'Revenue (৳)',
+        data: {{ revenue_trend_json|safe }},
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6,182,212,0.15)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: textColor }, grid: makeGrid() },
+        y: { ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ chart_status_labels_json|safe }},
+      datasets: [{
+        data: {{ chart_status_json|safe }},
+        backgroundColor: ['#f59e0b','#3b82f6','#10b981','#64748b','#ef4444'],
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } } }
+    }
+  });
+
+  new Chart(document.getElementById('volumeChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ daily_volume_labels_json|safe }},
+      datasets: [
+        { label: 'Online', data: {{ daily_volume_online_json|safe }}, backgroundColor: '#06b6d4', borderRadius: 4 },
+        { label: 'Walk-in', data: {{ daily_volume_walkin_json|safe }}, backgroundColor: '#f97316', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { usePointStyle: true } } },
+      scales: {
+        x: { stacked: true, ticks: { color: textColor }, grid: { display: false } },
+        y: { stacked: true, ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('printTypeChart'), {
+    type: 'pie',
+    data: {
+      labels: {{ print_type_labels_json|safe }},
+      datasets: [{ data: {{ print_type_values_json|safe }}, backgroundColor: ['#1E3A5F','#06b6d4','#f97316','#8b5cf6'], borderWidth: 0, hoverOffset: 8 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } } }
+    }
+  });
+
+  new Chart(document.getElementById('topCustomersChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ top_customer_names_json|safe }},
+      datasets: [{ label: 'Revenue (৳)', data: {{ top_customer_counts_json|safe }}, backgroundColor: '#8b5cf6', borderRadius: 6 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true },
+        y: { ticks: { color: textColor }, grid: { display: false } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('categoryRevenueChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ category_labels_json|safe }},
+      datasets: [{ label: 'Revenue (৳)', data: {{ category_values_json|safe }}, backgroundColor: '#10b981', borderRadius: 6 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: textColor }, grid: { display: false } },
+        y: { ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true }
+      }
+    }
+  });
+
+  document.querySelectorAll('.counter').forEach((el) => {
+    const target = parseInt(el.getAttribute('data-target'), 10) || 0;
+    const duration = 1200;
+    const start = performance.now();
+    function step(ts) {
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(eased * target).toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
 </script>
 {% endblock %}

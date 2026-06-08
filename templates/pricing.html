@@ -104,6 +104,78 @@
 
     </div>
 
+    <!-- Services Pricing Table & Cards -->
+    <div class="max-w-6xl mx-auto mb-24 animate-slide-up" style="animation-delay: 0.15s;">
+        <div class="premium-card rounded-3xl p-8 md:p-12">
+            <h3 class="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center">
+                    <i class="bi bi-table text-brand-400"></i>
+                </div>
+                Services & Pricing
+            </h3>
+
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto rounded-2xl border border-white/10">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-white/5">
+                            <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider">Service</th>
+                            <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider text-right">Starting Price</th>
+                            <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for service in services %}
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-5 font-semibold text-white">{{ service.name }}</td>
+                            <td class="px-6 py-5">
+                                <span class="px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 text-xs font-bold border border-brand-500/20">{{ service.get_category_display }}</span>
+                            </td>
+                            <td class="px-6 py-5 text-right">
+                                <span class="text-xl font-bold text-primary">৳{{ service.base_price|floatformat:0 }}</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <a href="{% url 'user_new_order' %}?service={{ service.pk }}"
+                                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 text-white font-bold text-sm hover:bg-brand-500 transition-colors shadow-lg shadow-brand-500/20">
+                                    <i class="bi bi-cart-fill"></i> Order Now
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-text-muted font-medium">No services configured yet. Please check back later.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="md:hidden grid grid-cols-1 gap-4">
+                {% for service in services %}
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition-colors">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h4 class="font-bold text-white text-base">{{ service.name }}</h4>
+                            <span class="px-2.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 text-xs font-bold border border-brand-500/20 mt-1 inline-block">{{ service.get_category_display }}</span>
+                        </div>
+                        <span class="text-xl font-bold text-primary">৳{{ service.base_price|floatformat:0 }}</span>
+                    </div>
+                    <a href="{% url 'user_new_order' %}?service={{ service.pk }}"
+                       class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-600 text-white font-bold text-sm hover:bg-brand-500 transition-colors">
+                        <i class="bi bi-cart-fill"></i> Order Now
+                    </a>
+                </div>
+                {% empty %}
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-text-muted font-medium">
+                    No services configured yet. Please check back later.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
     <!-- Add-ons Section -->
     <div class="max-w-4xl mx-auto mb-24 animate-slide-up" style="animation-delay: 0.3s;">
         <div class="premium-card rounded-3xl p-8 md:p-12">

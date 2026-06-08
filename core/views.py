@@ -1,11 +1,14 @@
+from django.db.models import Sum, Count, Q, F
+from django.db.models.functions import TruncDay
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
 from django.utils import timezone
-from django.db.models import Sum, Count, Q
+from django.utils.timesince import timesince
 import json
 from datetime import timedelta
 from decimal import Decimal
@@ -24,6 +27,8 @@ from .utils import safe_int, validate_upload_file, validate_payment_screenshot, 
 from .audit_helpers import log_audit
 from .user_helpers import create_user_account, set_user_password, validate_password_strength
 from .order_files import apply_order_delivered, delete_order_file, save_order_file_metadata
+from .storage import supabase_storage_enabled, supabase_project_url
+from .system_utils import get_database_status
 from .page_detection import detect_pages
 from .pricing_options import get_active_pricing_options
 from .notifications import (
@@ -576,54 +581,56 @@ def admin_dashboard(request):
     yesterday = today - timedelta(days=1)
     week_ago = today - timedelta(days=7)
     two_weeks_ago = today - timedelta(days=14)
+    month_start = today.replace(day=1)
 
-    cache_key = f'admin_dashboard:{today.isoformat()}'
+    cache_key = f'admin_dashboard:{today.isoformat()}:{request.GET.get("range","7")}'
     cached = cache.get(cache_key)
     if cached:
         return cached
 
-    today_orders = Order.objects.filter(created_at__date=today)
+    from django.db.models.functions import TruncDay
+
+    today_orders = Order.objects.filter(created_at__date=today).select_related('customer', 'walkin_customer')
     yesterday_orders = Order.objects.filter(created_at__date=yesterday)
 
     today_revenue = today_orders.aggregate(s=Sum('total_amount'))['s'] or 0
     yesterday_revenue = yesterday_orders.aggregate(s=Sum('total_amount'))['s'] or 0
-
     revenue_change = 0
     if yesterday_revenue > 0:
         revenue_change = round(((today_revenue - yesterday_revenue) / yesterday_revenue) * 100, 1)
 
+    yesterday_orders_count = yesterday_orders.count()
+    orders_today_count = today_orders.count()
     pending_count = Order.objects.filter(status__in=['pending', 'confirmed']).count()
-    active_customers = User.objects.filter(
-        orders__created_at__date=today
-    ).distinct().count()
-
+    active_customers = User.objects.filter(orders__created_at__date=today).distinct().count()
     pages_today = today_orders.aggregate(p=Sum('total_sheets'))['p'] or 0
-
-    avg_order_value = today_orders.aggregate(a=Sum('total_amount'))['a'] or 0
-    count = today_orders.count()
-    avg_order_value = round(avg_order_value / count, 0) if count else 0
-
     orders_completed_today = today_orders.filter(status='delivered').count()
     failed_emails_24h = EmailLog.objects.filter(
         created_at__gte=timezone.now() - timedelta(hours=24),
         status='failed'
     ).count()
+    low_stock_count = ServiceVariant.objects.filter(stock__lt=F('low_stock_threshold')).count()
+
+    ready_not_picked = Order.objects.filter(
+        status='ready', updated_at__lt=timezone.now() - timedelta(hours=24)
+    ).count()
+    pending_payment_reviews = Order.objects.filter(payment_status='pending_review').count()
+    files_cleanup_48h = Order.objects.filter(
+        file__isnull=False, file_deleted_at__isnull=True,
+        updated_at__lt=timezone.now() - timedelta(hours=48),
+    ).count()
 
     chart_range = request.GET.get('range', '7')
-    days_back = 29 if chart_range == '30' else 6
-    revenue_trend = []
-    labels = []
-    for i in range(days_back, -1, -1):
-        d = today - timedelta(days=i)
-        rev = Order.objects.filter(created_at__date=d).aggregate(s=Sum('total_amount'))['s'] or 0
-        revenue_trend.append(float(rev))
-        labels.append(d.strftime('%b %d') if chart_range == '30' else d.strftime('%a'))
+    days_back = 29 if chart_range == '30' else (89 if chart_range == '90' else 6)
+    start_date = today - timedelta(days=days_back)
 
-    orders_per_hour = [0] * 24
-    for o in today_orders:
-        h = o.created_at.hour
-        if 0 <= h < 24:
-            orders_per_hour[h] += 1
+    revenue_by_day = Order.objects.filter(created_at__date__gte=start_date).annotate(
+        day=TruncDay('created_at')
+    ).values('day').annotate(
+        revenue=Sum('total_amount')
+    ).order_by('day')
+    revenue_trend = [float(row['revenue'] or 0) for row in revenue_by_day]
+    labels = [row['day'].strftime('%b %d') for row in revenue_by_day]
 
     status_counts = {
         s[0]: Order.objects.filter(status=s[0]).count()
@@ -637,89 +644,230 @@ def admin_dashboard(request):
         'Other': status_counts.get('cancelled', 0) + status_counts.get('on_hold', 0),
     }
 
-    daily_volume = []
-    online_vs_walkin_labels = []
-    online_data = []
-    walkin_data = []
-    for i in range(13, -1, -1):
-        d = today - timedelta(days=i)
-        online_vs_walkin_labels.append(d.strftime('%b %d'))
-        online_data.append(Order.objects.filter(created_at__date=d, source='online').count())
-        walkin_data.append(Order.objects.filter(created_at__date=d, source='offline').count())
+    volume_by_day = Order.objects.filter(created_at__date__gte=two_weeks_ago).annotate(
+        day=TruncDay('created_at')
+    ).values('day', 'source').annotate(
+        cnt=Count('id')
+    ).order_by('day', 'source')
+    volume_map = {}
+    for row in volume_by_day:
+        day_str = row['day'].strftime('%b %d')
+        volume_map.setdefault(day_str, {'online': 0, 'offline': 0})
+        volume_map[day_str][row['source']] = row['cnt']
+    volume_labels = sorted(volume_map.keys())
+    online_data = [volume_map[d]['online'] for d in volume_labels]
+    walkin_data = [volume_map[d]['offline'] for d in volume_labels]
+
+    category_map = {}
+    for sv in ServiceVariant.objects.select_related('service').all():
+        cat = sv.service.category if sv.service else 'Other'
+        category_map[cat] = category_map.get(cat, 0) + float(sv.price or 0)
+    category_labels = list(category_map.keys())
+    category_values = list(category_map.values())
+
+    chart_backtests = [
+        {'label': '7d', 'value': '7'},
+        {'label': '30d', 'value': '30'},
+        {'label': '90d', 'value': '90'},
+    ]
 
     top_customers = User.objects.annotate(
-        order_count=Count('orders', filter=Q(orders__created_at__date__gte=week_ago))
-    ).filter(order_count__gt=0).order_by('-order_count')[:5]
+        order_count=Count('orders', filter=Q(orders__created_at__date__gte=month_start)),
+        revenue_sum=Sum('orders__total_amount', filter=Q(orders__created_at__date__gte=month_start)),
+    ).filter(order_count__gt=0).order_by('-revenue_sum')[:5]
     top_customer_names = [c.get_full_name() or c.email for c in top_customers]
-    top_customer_counts = [c.order_count for c in top_customers]
+    top_customer_counts = [float(c.revenue_sum or 0) for c in top_customers]
 
-    print_type_data = {
-        'B&W': today_orders.filter(print_type='bw').count(),
-        'Color': today_orders.filter(print_type='color').count(),
-    }
-    print_type_labels = list(print_type_data.keys())
-    print_type_values = list(print_type_data.values())
+    print_type_agg = OrderFile.objects.filter(
+        created_at__date=today
+    ).values('print_type', 'sides').annotate(
+        cnt=Count('id')
+    ).order_by('-cnt')
+    print_type_labels = [
+        f"{'B&W' if r['print_type']=='bw' else 'Color'} {'Single' if r['sides']=='single' else 'Double'}"
+        for r in print_type_agg
+    ]
+    print_type_values = [r['cnt'] for r in print_type_agg]
 
-    low_stock = InventoryItem.objects.all()
-    low_stock_count = sum(1 for i in low_stock if i.status[0] in ('warning', 'danger'))
-    low_stock_items = [i for i in low_stock if i.status[0] in ('warning', 'danger')][:5]
+    recent_orders = Order.objects.select_related('customer', 'walkin_customer').order_by('-created_at')[:10]
 
-    recent_orders = Order.objects.select_related('customer', 'walkin_customer').order_by('-created_at')[:8]
+    activity_events = []
 
-    recent_activity = AuditLog.objects.select_related('user').order_by('-timestamp')[:15]
+    def _relative_time(dt):
+        now = timezone.now()
+        delta = now - dt
+        if delta.days > 0:
+            return "{} day{} ago".format(delta.days, 's' if delta.days != 1 else '')
+        if delta.seconds >= 3600:
+            hours = delta.seconds // 3600
+            return "{} hour{} ago".format(hours, 's' if hours != 1 else '')
+        if delta.seconds >= 60:
+            mins = delta.seconds // 60
+            return "{} min ago".format(mins)
+        return "Just now"
 
-    ready_not_picked = Order.objects.filter(status='ready', updated_at__lt=timezone.now() - timedelta(hours=24)).count()
-    pending_payment_reviews = Order.objects.filter(payment_status='pending_review').count()
+    for o in recent_orders:
+        customer_label = o.customer_name
+        if not customer_label and o.walkin_customer:
+            customer_label = o.walkin_customer.name
+        if not customer_label:
+            customer_label = 'Guest'
+        activity_events.append({
+            'link': reverse('admin_order_detail', args=[o.pk]),
+            'icon': 'bi bi-cart-plus',
+            'text': "New order #{} placed by {}".format(o.order_number, customer_label),
+            'timestamp': o.created_at,
+            'time': _relative_time(o.created_at),
+        })
 
-    db_healthy = True
-    storage_healthy = True
-    email_healthy = True
-    cache_healthy = True
-    supabase_auth_healthy = True
+    recent_status_logs = OrderStatusLog.objects.select_related('order', 'changed_by').order_by('-timestamp')[:10]
+    for log in recent_status_logs:
+        activity_events.append({
+            'link': reverse('admin_order_detail', args=[log.order_id]),
+            'icon': 'bi bi-arrow-repeat',
+            'text': "Order #{} status changed to {}".format(log.order.order_number, log.new_status.replace('_', ' ').title()),
+            'timestamp': log.timestamp,
+            'time': _relative_time(log.timestamp),
+        })
+
+    recent_audit = AuditLog.objects.select_related('user').order_by('-timestamp')[:10]
+    for entry in recent_audit:
+        if 'payment' in entry.action.lower():
+            icon = 'bi bi-wallet2'
+        elif 'user' in entry.action.lower():
+            icon = 'bi bi-person-plus'
+        else:
+            icon = 'bi bi-gear'
+        res_id = entry.resource_id or ''
+        try:
+            res_id_int = int(res_id)
+        except (TypeError, ValueError):
+            res_id_int = None
+        link = reverse('admin_order_detail', args=[res_id_int]) if res_id_int and entry.resource_type == 'order' else '#'
+        activity_events.append({
+            'link': link,
+            'icon': icon,
+            'text': entry.action.replace('_', ' ').title(),
+            'timestamp': entry.timestamp,
+            'time': _relative_time(entry.timestamp),
+        })
+
+    combined_activity = sorted(
+        [e for e in activity_events if e.get('timestamp')],
+        key=lambda x: x.get('timestamp', timezone.now()),
+        reverse=True
+    )[:5]
+
+    db_status = get_database_status()
+    db_healthy = db_status.get('default', {}).get('connected', False)
+    db_latency = db_status.get('default', {}).get('latency_ms')
+
+    storage_healthy = supabase_storage_enabled()
+    email_healthy = EmailLog.objects.filter(status='failed', created_at__gte=timezone.now() - timedelta(hours=24)).count() == 0
+    cache_healthy = bool(cache)
+    supabase_auth_healthy = bool(supabase_project_url())
 
     ctx = {
-        'today_orders_count': count,
-        'yesterday_orders_count': yesterday_orders.count(),
+        'today_orders_count': orders_today_count,
+        'yesterday_orders_count': yesterday_orders_count,
         'today_revenue': today_revenue,
         'yesterday_revenue': yesterday_revenue,
         'revenue_change': revenue_change,
         'pending_count': pending_count,
         'active_customers': active_customers,
         'pages_today': pages_today,
-        'avg_order_value': avg_order_value,
+        'avg_order_value': round(today_revenue / orders_today_count, 0) if orders_today_count else 0,
         'orders_completed_today': orders_completed_today,
         'failed_emails_24h': failed_emails_24h,
+        'low_stock_count': low_stock_count,
         'revenue_trend_json': json.dumps(revenue_trend),
         'revenue_labels_json': json.dumps(labels),
         'chart_range': chart_range,
-        'orders_per_hour_json': json.dumps(orders_per_hour),
-        'status_counts': status_counts,
         'chart_status_json': json.dumps(list(chart_status.values())),
         'chart_status_labels_json': json.dumps(list(chart_status.keys())),
-        'status_counts_json': json.dumps(list(status_counts.values())),
-        'low_stock_count': low_stock_count,
-        'low_stock_items': low_stock_items,
-        'recent_orders': recent_orders[:10],
-        'accepting_orders': SiteSettings.get().accepting_orders,
-        'unread_count': Notification.objects.filter(
-            recipient=request.user, is_read=False
-        ).count() if hasattr(request.user, 'notifications') else 0,
-        'daily_volume_labels_json': json.dumps(online_vs_walkin_labels),
+        'daily_volume_labels_json': json.dumps(volume_labels),
         'daily_volume_online_json': json.dumps(online_data),
         'daily_volume_walkin_json': json.dumps(walkin_data),
         'top_customer_names_json': json.dumps(top_customer_names),
         'top_customer_counts_json': json.dumps(top_customer_counts),
         'print_type_labels_json': json.dumps(print_type_labels),
         'print_type_values_json': json.dumps(print_type_values),
-        'recent_activity': recent_activity,
+        'category_labels_json': json.dumps(category_labels),
+        'category_values_json': json.dumps(category_values),
+        'chart_backtests': chart_backtests,
+        'recent_orders': recent_orders,
+        'recent_activity': combined_activity,
         'ready_not_picked': ready_not_picked,
         'pending_payment_reviews': pending_payment_reviews,
+        'files_cleanup_48h': files_cleanup_48h,
         'db_healthy': db_healthy,
+        'db_latency': db_latency,
         'storage_healthy': storage_healthy,
         'email_healthy': email_healthy,
         'cache_healthy': cache_healthy,
         'supabase_auth_healthy': supabase_auth_healthy,
         'site_settings': SiteSettings.get(),
+        'reminders': [
+            {
+                'label': 'Ready for Pickup',
+                'sub': f'{ready_not_picked} orders waiting >24h',
+                'count': ready_not_picked,
+                'href': '{% url "admin_orders" %}?status=ready',
+                'icon': 'bi bi-bag-check',
+                'badge_class': 'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+            },
+            {
+                'label': 'Pending Payment Review',
+                'sub': f'{pending_payment_reviews} awaiting approval',
+                'count': pending_payment_reviews,
+                'href': '{% url "admin_orders" %}?payment=pending_review',
+                'icon': 'bi bi-wallet2',
+                'badge_class': 'bg-brand-500/15 text-cyan-400 border border-cyan-500/25',
+            },
+            {
+                'label': 'Low Stock',
+                'sub': f'{low_stock_count} items below threshold',
+                'count': low_stock_count,
+                'href': '{% url "admin_inventory" %}',
+                'icon': 'bi bi-box-seam',
+                'badge_class': 'bg-red-500/15 text-red-400 border border-red-500/25',
+            },
+            {
+                'label': 'File Cleanup Soon',
+                'sub': f'{files_cleanup_48h} files eligible in 48h',
+                'count': files_cleanup_48h,
+                'href': '{% url "admin_system_status" %}',
+                'icon': 'bi bi-file-earmark-x',
+                'badge_class': 'bg-slate-500/15 text-slate-300 border border-slate-500/25',
+            },
+        ],
+        'health_items': [
+            {
+                'label': 'Database',
+                'sub': f'{"Connected" if db_healthy else "Offline"}' + (f' · {db_latency}ms' if db_latency else ''),
+                'dot_class': 'bg-emerald-400' if db_healthy else 'bg-red-400',
+            },
+            {
+                'label': 'Storage',
+                'sub': 'Supabase S3',
+                'dot_class': 'bg-emerald-400' if storage_healthy else 'bg-red-400',
+            },
+            {
+                'label': 'Email',
+                'sub': 'Brevo API',
+                'dot_class': 'bg-emerald-400' if email_healthy else 'bg-red-400',
+            },
+            {
+                'label': 'Cache',
+                'sub': cache.__class__.__name__,
+                'dot_class': 'bg-emerald-400' if cache_healthy else 'bg-red-400',
+            },
+            {
+                'label': 'Supabase Auth',
+                'sub': 'Configured' if supabase_auth_healthy else 'Not configured',
+                'dot_class': 'bg-emerald-400' if supabase_auth_healthy else 'bg-amber-400',
+            },
+        ],
     }
 
     response = render(request, 'admin/dashboard.html', ctx)

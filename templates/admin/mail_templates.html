@@ -43,7 +43,7 @@
                     <td class="p-3 pr-5">
                         <button type="button" onclick="previewTemplate('{{ tpl.html_body|escapejs }}')" class="text-[10px] text-brand-400 hover:underline">Preview</button>
                         {% if request.user.is_full_admin %}
-                        <button type="button" onclick="editTemplate({{ tpl.id }}, '{{ tpl.name|escapejs }}', '{{ tpl.subject|escapejs }}')" class="text-[10px] text-amber-400 hover:underline ml-2">Edit</button>
+                        <button type="button" onclick="editTemplate({{ tpl.id }}, '{{ tpl.name|escapejs }}', '{{ tpl.subject|escapejs }}', '{{ tpl.html_body|escapejs }}')" class="text-[10px] text-amber-400 hover:underline ml-2">Edit</button>
                         <form method="post" class="inline" onsubmit="return confirm('Delete this template?');">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="template_id" value="{{ tpl.id }}"><button type="submit" class="text-[10px] text-red-400 hover:underline ml-2">Delete</button></form>
                         {% endif %}
                     </td>
@@ -112,12 +112,13 @@ function openAddModal() {
     document.getElementById('modalBody').value = '';
     document.getElementById('addModal').style.display = 'flex';
 }
-function editTemplate(id, name, subject) {
+function editTemplate(id, name, subject, body) {
     document.getElementById('modalAction').value = 'edit';
     document.getElementById('modalTemplateId').value = id;
     document.getElementById('modalTitle').textContent = 'Edit Template';
     document.getElementById('modalName').value = name;
     document.getElementById('modalSubject').value = subject;
+    document.getElementById('modalBody').value = body || '';
     document.getElementById('addModal').style.display = 'flex';
 }
 function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }

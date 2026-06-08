@@ -1,6 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Create Account | Print-Edge{% endblock %}
 
+{% block extra_js %}
+<script>
+(function() {
+    const form = document.getElementById('registerForm');
+    const phoneInput = document.getElementById('id_phone');
+    const emailInput = document.getElementById('id_email');
+    const pass1Input = document.getElementById('id_password');
+    const pass2Input = document.getElementById('id_password2');
+    const allowedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'live.com', 'msn.com', 'g.bracu.ac.bd'];
+    const phonePattern = /^01[3-9]\d{8}$/;
+
+    function validatePhone() {
+        const val = phoneInput.value.trim();
+        if (!phonePattern.test(val)) {
+            phoneInput.setCustomValidity('Enter a valid Bangladeshi phone number (01XXXXXXXXX)');
+        } else {
+            phoneInput.setCustomValidity('');
+        }
+    }
+
+    function validateEmail() {
+        const val = emailInput.value.trim().toLowerCase();
+        const domain = val.split('@')[1] || '';
+        if (!allowedDomains.includes(domain)) {
+            emailInput.setCustomValidity('Please use an email from a popular provider (Gmail, Yahoo, Outlook, etc.)');
+        } else {
+            emailInput.setCustomValidity('');
+        }
+    }
+
+    function validatePasswords() {
+        if (pass1Input.value.length > 0 && pass1Input.value !== pass2Input.value) {
+            pass2Input.setCustomValidity('Passwords do not match');
+        } else {
+            pass2Input.setCustomValidity('');
+        }
+        if (pass1Input.value.length > 0 && pass1Input.value.length < 8) {
+            pass1Input.setCustomValidity('Password must be at least 8 characters');
+        } else {
+            pass1Input.setCustomValidity('');
+        }
+    }
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', validatePhone);
+        phoneInput.addEventListener('blur', validatePhone);
+    }
+    if (emailInput) {
+        emailInput.addEventListener('input', validateEmail);
+        emailInput.addEventListener('blur', validateEmail);
+    }
+    if (pass1Input && pass2Input) {
+        pass1Input.addEventListener('input', validatePasswords);
+        pass2Input.addEventListener('input', validatePasswords);
+    }
+    if (form) {
+        form.addEventListener('submit', function() {
+            validatePhone();
+            validateEmail();
+            validatePasswords();
+            if (!form.checkValidity()) {
+                form.reportValidity();
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="fixed inset-0 overflow-hidden pointer-events-none mix-blend-screen z-[-1]">
     <div class="absolute top-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-600/20 blur-[120px]"></div>
@@ -17,7 +86,7 @@
         </div>
 
         <div class="premium-card rounded-3xl p-8 shadow-2xl">
-            <form method="post" class="space-y-6">
+            <form method="post" id="registerForm" class="space-y-6">
                 {% csrf_token %}
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -25,14 +94,14 @@
                         <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">First Name</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-person text-neutral-500"></i></div>
-                            <input type="text" name="first_name" required autofocus class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="First Name">
+                            <input type="text" name="first_name" id="id_first_name" required autofocus class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="First Name">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Last Name</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-person text-neutral-500"></i></div>
-                            <input type="text" name="last_name" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="Last Name">
+                            <input type="text" name="last_name" id="id_last_name" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="Last Name">
                         </div>
                     </div>
                 </div>
@@ -41,7 +110,7 @@
                     <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Email Address</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-envelope text-neutral-500"></i></div>
-                        <input type="email" name="email" required autocomplete="email" class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="student@example.com">
+                        <input type="email" name="email" id="id_email" required autocomplete="email" class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="student@example.com">
                     </div>
                 </div>
 
@@ -49,7 +118,7 @@
                     <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Phone Number</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-telephone text-neutral-500"></i></div>
-                        <input type="tel" name="phone" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="01XXXXXXXXX">
+                        <input type="tel" name="phone" id="id_phone" required class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="01XXXXXXXXX">
                     </div>
                 </div>
 
@@ -58,7 +127,7 @@
                         <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Password</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-lock text-neutral-500"></i></div>
-                            <input :type="show ? 'text' : 'password'" name="password" required autocomplete="new-password" class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="••••••••">
+                            <input :type="show ? 'text' : 'password'" name="password" id="id_password" required autocomplete="new-password" class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="••••••••">
                             <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-500 hover:text-white transition-colors">
                                 <i class="bi" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
                             </button>
@@ -69,7 +138,7 @@
                         <label class="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">Confirm Password</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="bi bi-lock text-neutral-500"></i></div>
-                            <input :type="show ? 'text' : 'password'" name="password2" required autocomplete="new-password" class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="••••••••">
+                            <input :type="show ? 'text' : 'password'" name="password2" id="id_password2" required autocomplete="new-password" class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:border-brand-500 focus:bg-white/10 transition-colors outline-none font-medium" placeholder="••••••••">
                             <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-500 hover:text-white transition-colors">
                                 <i class="bi" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
                             </button>

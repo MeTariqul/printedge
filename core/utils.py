@@ -122,3 +122,12 @@ def validate_payment_screenshot(uploaded_file):
     if ext == '.png' and not header.startswith(b'\x89PNG'):
         return 'Invalid image file. Please upload a valid screenshot.'
     return None
+
+
+def get_payment_methods(site):
+    """Return (slug, label, number, icon_class) tuples for mobile payment options."""
+    return [
+        ('bkash', 'bKash', (site.bkash_number or '').strip(), 'bi-phone'),
+        ('nagad', 'Nagad', (site.nagad_number or '').strip(), 'bi-wallet2'),
+        ('rocket', 'Rocket', (site.rocket_number or '').strip(), 'bi-bank'),
+    ]

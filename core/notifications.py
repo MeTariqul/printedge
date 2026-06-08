@@ -4,17 +4,33 @@ import logging
 from typing import Optional
 from django.urls import reverse
 from django.conf import settings
+from django.utils import timezone
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 from .models import User, Notification, Order, EmailLog
-from .email_utils import send_brevo_email
+from .email_utils import send_brevo_email, send_db_email
 
 logger = logging.getLogger(__name__)
 
 
-def send_notification(recipient: User, verb: str, target_type: str, target_id: Optional[int], target_url: str, actor: Optional[User] = None, description: str = '', send_email: bool = True) -> None:
+def send_notification(recipient: User, verb: str, target_type: str, target_id: Optional[int], target_url: str, actor: Optional[User] = None, description: str = '', send_email: bool = True, toggle_name: Optional[str] = None) -> None:
     """Create a notification and optionally send email via Brevo."""
+    from .models import SiteSettings
+
+    if toggle_name:
+        site = SiteSettings.get()
+        toggle_map = {
+            'send_email_on_registration': site.send_email_on_registration,
+            'send_email_on_order_placed': site.send_email_on_order_placed,
+            'send_email_on_status_change': site.send_email_on_status_change,
+            'send_email_on_payment_approved': site.send_email_on_payment_approved,
+            'send_email_on_payment_rejected': site.send_email_on_payment_rejected,
+            'send_email_on_admin_approval': site.send_email_on_admin_approval,
+        }
+        if not toggle_map.get(toggle_name, True):
+            send_email = False
+
     if not recipient or recipient.is_anonymous:
         return None
 
@@ -32,15 +48,18 @@ def send_notification(recipient: User, verb: str, target_type: str, target_id: O
     if send_email and getattr(recipient, 'notification_email', True) and recipient.email:
         subject = f'PrintEdge - {verb}'
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@printedge.com')
-        html_message = render_to_string('emails/notification.html', {
-            'recipient': recipient,
-            'verb': verb,
-            'description': description,
-            'target_url': target_url,
-        })
-        text_message = strip_tags(html_message)
-
-        success, result = send_brevo_email(recipient.email, subject, html_message, text_message)
+        try:
+            html_message = render_to_string('emails/notification.html', {
+                'recipient': recipient,
+                'verb': verb,
+                'description': description,
+                'target_url': target_url,
+            })
+            text_message = strip_tags(html_message)
+            success, result = send_brevo_email(recipient.email, subject, html_message, text_message)
+        except Exception as exc:
+            logger.warning('Notification email failed for %s: %s', recipient.email, exc)
+            success, result = False, str(exc)
 
         EmailLog.objects.create(
             recipient=recipient.email,
@@ -64,11 +83,17 @@ def notify_staff_of_new_user(user: User) -> None:
             target_id=user.id,
             target_url=reverse('admin_user_detail', args=[user.id]),
             actor=user,
+            toggle_name='send_email_on_registration',
         )
 
 
 def notify_new_online_order(order: Order) -> None:
     """Notify customer and staff about new online order."""
+    from .models import SiteSettings
+    site = SiteSettings.get()
+    send_email_customer = site.send_email_on_order_placed
+    send_email_staff = site.send_email_on_order_placed
+
     # Notify customer
     if order.customer:
         send_notification(
@@ -79,6 +104,8 @@ def notify_new_online_order(order: Order) -> None:
             target_url=reverse('user_order_detail', args=[order.id]),
             actor=order.customer,
             description=f'Order for {order.pages} pages × {order.copies} copies',
+            send_email=send_email_customer,
+            toggle_name='send_email_on_order_placed',
         )
 
     # Notify staff
@@ -92,11 +119,16 @@ def notify_new_online_order(order: Order) -> None:
             target_url=reverse('admin_order_detail', args=[order.id]),
             actor=order.customer,
             description=f'{order.customer.get_full_name() or order.customer.email}',
+            send_email=send_email_staff,
+            toggle_name='send_email_on_order_placed',
         )
 
 
 def notify_new_walkin_order(order: Order, staff_member: User) -> None:
     """Notify staff about new walk-in order."""
+    from .models import SiteSettings
+    site = SiteSettings.get()
+    send_email = site.send_email_on_order_placed
     staff = User.objects.filter(is_staff=True)
     for admin in staff:
         send_notification(
@@ -107,6 +139,8 @@ def notify_new_walkin_order(order: Order, staff_member: User) -> None:
             target_url=reverse('admin_order_detail', args=[order.id]),
             actor=staff_member,
             description=f'Walk-in order created',
+            send_email=send_email,
+            toggle_name='send_email_on_order_placed',
         )
 
 
@@ -121,7 +155,15 @@ def notify_order_status_change(order: Order, old_status: str, changed_by: User) 
             target_url=reverse('user_order_detail', args=[order.id]),
             actor=changed_by,
             description=f'Status: {old_status} → {order.get_status_display()}',
+            send_email=False,
         )
+        # Send custom order update email
+        tracking_url = reverse('user_order_detail', args=[order.id])
+        send_db_email('order_update', order.customer.email, {
+            'order': order,
+            'tracking_url': tracking_url,
+            'now': timezone.now()
+        })
 
 
 def notify_payment_submitted(order: Order, customer: User) -> None:
@@ -136,10 +178,11 @@ def notify_payment_submitted(order: Order, customer: User) -> None:
             target_url=reverse('admin_order_detail', args=[order.id]),
             actor=customer,
             description=f'Payment for order #{order.order_number}',
+            send_email=False,
         )
 
 
-def notify_payment_approved(order: Order, customer: User, approved_by: User) -> None:
+def notify_payment_approved(order: Order, customer: User, approved_by: User, send_email: bool = True) -> None:
     """Notify customer that payment was approved."""
     send_notification(
         recipient=customer,
@@ -149,10 +192,11 @@ def notify_payment_approved(order: Order, customer: User, approved_by: User) -> 
         target_url=reverse('user_order_detail', args=[order.id]),
         actor=approved_by,
         description=f'Payment for order #{order.order_number} approved',
+        send_email=send_email,
     )
 
 
-def notify_payment_rejected(order: Order, customer: User, rejected_by: User, reason: str = '') -> None:
+def notify_payment_rejected(order: Order, customer: User, rejected_by: User, reason: str = '', send_email: bool = True) -> None:
     """Notify customer that payment was rejected."""
     send_notification(
         recipient=customer,
@@ -162,6 +206,7 @@ def notify_payment_rejected(order: Order, customer: User, rejected_by: User, rea
         target_url=reverse('user_order_detail', args=[order.id]),
         actor=rejected_by,
         description=f'Payment rejected. Reason: {reason}',
+        send_email=send_email,
     )
 
 

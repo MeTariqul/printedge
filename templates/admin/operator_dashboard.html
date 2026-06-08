@@ -68,7 +68,7 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-const csrf = document.querySelector('meta[name="csrf-token"]').content;
+const csrf = (window.PrintEdge && PrintEdge.getCsrfToken()) || document.querySelector('meta[name="csrf-token"]')?.content || '';
 function postStatus(id, status) {
   return fetch('/api/orders/' + id + '/status/', {
     method: 'POST',

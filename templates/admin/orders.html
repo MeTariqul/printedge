@@ -120,4 +120,66 @@
         </table>
     </div>
 </div>
+
+<!-- Mobile Card View -->
+<div class="md:hidden space-y-4">
+    {% for o in orders %}
+    <div class="premium-card p-4 rounded-2xl space-y-3">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
+                <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
+            </div>
+            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
+                {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
+                {% elif o.status == 'printing' %}status-printing
+                {% elif o.status == 'cancelled' %}status-cancelled
+                {% else %}status-pending{% endif %}">
+                {{ o.get_status_display }}
+            </span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Source</span>
+                {% if o.source == 'offline' %}
+                <span class="text-info-text font-semibold">Walk-in</span>
+                {% else %}
+                <span class="text-primary font-semibold">Online</span>
+                {% endif %}
+            </div>
+            <div>
+                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Customer</span>
+                <span class="text-text-primary font-semibold">{{ o.customer_name }}</span>
+            </div>
+            <div>
+                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Specs</span>
+                <span class="text-text-secondary">{{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}</span>
+            </div>
+            <div>
+                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Payment</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold
+                    {% if o.payment_status == 'paid' %}status-delivered
+                    {% elif o.payment_status == 'partial' %}status-pending
+                    {% else %}status-cancelled{% endif %}">
+                    {{ o.get_payment_status_display }}
+                </span>
+            </div>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-surface-border">
+            <span class="text-sm font-bold text-text-primary">৳{{ o.total_amount|floatformat:0 }}</span>
+            <a href="{% url 'admin_order_detail' o.pk %}" class="px-4 py-2 rounded-lg bg-surface border border-surface-border text-text-secondary hover:text-primary transition-colors text-xs font-bold min-h-[44px] inline-flex items-center gap-1">
+                <i class="bi bi-eye"></i> View
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="premium-card p-8 text-center rounded-2xl">
+        <div class="w-16 h-16 rounded-full bg-surface border border-surface-border flex items-center justify-center mx-auto mb-4">
+            <i class="bi bi-inbox text-2xl text-text-muted"></i>
+        </div>
+        <h4 class="text-lg font-bold text-text-primary mb-2">No orders found</h4>
+        <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

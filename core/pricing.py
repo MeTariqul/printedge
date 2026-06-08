@@ -145,8 +145,9 @@ def calculate_file_base_price(
 def calculate_order_from_files(
     file_specs,
     addon_ids=None,
+    variant_ids=None,
     is_urgent=False,
-    promo_code_obj=None,
+    coupon_obj=None,
     manual_discount=Decimal('0'),
     tier_discount_pct=Decimal('0'),
     urgent_percent=50,
@@ -196,6 +197,13 @@ def calculate_order_from_files(
             addons_price += addon.price
             addon_names.append(addon.name)
 
+    if variant_ids:
+        from .models import ServiceVariant
+        variants = ServiceVariant.objects.filter(id__in=variant_ids, is_active=True).select_related('service')
+        for variant in variants:
+            addons_price += variant.effective_price
+            addon_names.append(f"{variant.service.name} - {variant.name}")
+
     urgent_surcharge = Decimal('0')
     if is_urgent:
         pct = Decimal(str(urgent_percent))
@@ -204,11 +212,11 @@ def calculate_order_from_files(
     subtotal = base_price + addons_price + urgent_surcharge
 
     promo_discount = Decimal('0')
-    if promo_code_obj and promo_code_obj.is_valid:
-        if promo_code_obj.discount_type == 'percent':
-            promo_discount = (subtotal * promo_code_obj.discount_value / 100).quantize(Decimal('0.01'))
+    if coupon_obj and coupon_obj.is_valid:
+        if coupon_obj.discount_type == 'percentage':
+            promo_discount = (subtotal * coupon_obj.discount_value / 100).quantize(Decimal('0.01'))
         else:
-            promo_discount = promo_code_obj.discount_value
+            promo_discount = coupon_obj.discount_value
 
     total_discount = auto_discount + promo_discount + manual_discount
     total = max(subtotal - total_discount, Decimal('0'))
@@ -233,7 +241,7 @@ def calculate_order_from_files(
 def calculate_order_price(
     print_type, sides, paper_size='A4',
     pages=1, copies=1, addon_ids=None,
-    is_urgent=False, promo_code_obj=None,
+    is_urgent=False, coupon_obj=None,
     manual_discount=Decimal('0'), tier_discount_pct=Decimal('0'),
     urgent_percent=50,
 ):
@@ -249,7 +257,7 @@ def calculate_order_price(
         }],
         addon_ids=addon_ids,
         is_urgent=is_urgent,
-        promo_code_obj=promo_code_obj,
+        coupon_obj=coupon_obj,
         manual_discount=manual_discount,
         tier_discount_pct=tier_discount_pct,
         urgent_percent=urgent_percent,

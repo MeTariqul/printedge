@@ -8,7 +8,7 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 
 from .models import EmailLog
-from .email_utils import send_brevo_email
+from .email_utils import send_db_email
 
 
 def build_verification_url(request, user):
@@ -29,22 +29,11 @@ def send_verification_email(request, user):
     subject = 'Verify your email – PrintEdge'
     to_email = user.email
 
-    html_content = render_to_string('emails/verify_email.html', {
+    success, result = send_db_email('verify_email', to_email, {
         'user': user,
         'verification_url': link,
         'now': timezone.now()
     })
-    text_content = strip_tags(html_content)
-
-    success, result = send_brevo_email(to_email, subject, html_content, text_content)
-
-    EmailLog.objects.create(
-        recipient=to_email,
-        subject=subject,
-        body=text_content[:500] if text_content else '',
-        status='sent' if success else 'failed',
-        error_message='' if success else result,
-    )
 
     return success
 

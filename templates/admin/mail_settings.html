@@ -85,6 +85,30 @@
             <p class="text-xs text-slate-400 mt-2">Coming soon - requires Brevo webhook configuration.</p>
         </div>
 
-    <button type="submit" class="px-6 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors">Save Settings</button>
+    <div class="flex items-center gap-4">
+        <button type="submit" class="px-6 py-3 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors">Save Settings</button>
+        <button type="button" id="sendTestEmailBtn" class="px-6 py-3 rounded-xl bg-surface border border-surface-border text-text-secondary hover:text-white transition-colors">Send Test Email</button>
+    </div>
 </form>
+
+<script>
+document.getElementById('sendTestEmailBtn')?.addEventListener('click', function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    fetch('/api/mail/test-send/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': (window.PrintEdge && PrintEdge.getCsrfToken()) || document.querySelector('meta[name=csrf-token]')?.content || '', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+    }).then(r => r.json()).then(d => {
+        alert(d.message || 'Test email sent');
+        btn.disabled = false;
+        btn.textContent = 'Send Test Email';
+    }).catch(() => {
+        alert('Failed to send test email');
+        btn.disabled = false;
+        btn.textContent = 'Send Test Email';
+    });
+});
+</script>
 {% endblock %}

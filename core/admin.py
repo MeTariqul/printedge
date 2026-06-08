@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (User, WalkInCustomer, Order, InventoryItem,
-                     PricingRule, AddonService, PromoCode, Expense,
+                     PricingRule, AddonService, Coupon, Expense,
                      Notification, AuditLog, SiteSettings, OrderStatusLog, EmailLog, EmailTemplate)
 
 @admin.register(User)
@@ -36,8 +36,8 @@ class AddonServiceAdmin(admin.ModelAdmin):
 class InventoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'current_stock', 'unit', 'min_alert_level')
 
-@admin.register(PromoCode)
-class PromoCodeAdmin(admin.ModelAdmin):
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
     list_display = ('code', 'discount_type', 'discount_value', 'used_count', 'max_uses', 'is_active')
 
 @admin.register(Expense)

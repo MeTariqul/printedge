@@ -7,8 +7,8 @@
         </a>
         {% if user.is_authenticated %}
             {% if not user.is_admin_user %}
-                <a href="{% url 'user_new_order' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'user_new_order' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-cloud-arrow-up-fill nav-icon"></i>Upload
+                <a href="{% url 'public_services_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'public_services_page' or request.resolver_match.url_name == 'user_new_order' %}text-primary{% else %}text-text-muted{% endif %}">
+                    <i class="bi bi-briefcase-fill nav-icon"></i>Order
                 </a>
                 <a href="{% url 'user_orders' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_orders' or request.resolver_match.url_name == 'user_order_detail' %}text-primary{% else %}text-text-muted{% endif %}">
                     <i class="bi bi-receipt nav-icon"></i>Orders

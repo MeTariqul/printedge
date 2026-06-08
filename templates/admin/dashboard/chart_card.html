@@ -1,0 +1,24 @@
+<div class="premium-card rounded-2xl relative overflow-hidden">
+  <div class="p-5 md:p-6 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div>
+      <h3 class="text-lg font-bold text-text-primary">{{ title }}</h3>
+      <p class="text-xs text-text-muted font-medium mt-1">{{ subtitle|default:'' }}</p>
+    </div>
+    {% if backtests %}
+    <div class="flex gap-2 flex-wrap">
+      {% for b in backtests %}
+      <a href="?range={{ b.value }}" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors min-h-[36px]
+         {% if active == b.value %}bg-cyan-500 text-slate-900{% else %}bg-surface text-text-muted hover:bg-slate-700{% endif %}">
+        {{ b.label }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="p-4 md:p-6">
+    {% if extra_header %}
+    <div class="mb-4">{{ extra_header|safe }}</div>
+    {% endif %}
+    <canvas id="{{ canvas_id }}" height="{{ height|default:180 }}"></canvas>
+  </div>
+</div>

@@ -3,6 +3,14 @@
 {% block breadcrumb %}System Status{% endblock %}
 
 {% block content %}
+{% if messages %}
+{% for message in messages %}
+<div class="mb-6 p-4 rounded-xl {% if message.tags == 'success' %}bg-emerald-500/10 border border-emerald-500/30 text-emerald-300{% else %}bg-red-500/10 border border-red-500/30 text-red-300{% endif %} text-sm font-bold">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6" x-data="statusPage()" x-init="startAutoRefresh()">
     <div>
         <h1 class="text-2xl font-display font-bold text-white mb-1">System Status</h1>
@@ -18,6 +26,20 @@
             <input type="hidden" name="action" value="purge_now">
             <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 text-sm font-bold border border-amber-500/30 hover:bg-amber-500/30">
                 Run file purge now
+            </button>
+        </form>
+        <form method="post" class="inline" onsubmit="return confirm('Backup database as JSON? This may take a moment.')">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="backup_database">
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-300 text-sm font-bold border border-brand-500/30 hover:bg-brand-500/30">
+                <i class="bi bi-download"></i> Backup Database
+            </button>
+        </form>
+        <form method="post" class="inline" onsubmit="return confirm('Clear all cache? This will flush cached pricing and pages.')">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="clear_cache">
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-red-500/20 text-red-300 text-sm font-bold border border-red-500/30 hover:bg-red-500/30">
+                <i class="bi bi-trash"></i> Clear Cache
             </button>
         </form>
     </div>
@@ -77,9 +99,10 @@
     </h3>
     <div class="grid md:grid-cols-2 gap-4">
         {% for db_name, db_info in db_status.items %}
+        {% if db_name == 'default' %}
         <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
             <div class="flex items-center justify-between mb-2">
-                <h4 class="font-bold text-white">{{ db_name|title }} {% if db_name == 'default' %}(Primary){% elif db_name == 'supabase' %}(API){% endif %}</h4>
+                <h4 class="font-bold text-white">{{ db_name|title }} (Primary)</h4>
                 <span class="px-2 py-1 text-xs rounded-full {% if db_info.connected %}bg-emerald-500/20 text-emerald-400{% else %}bg-red-500/20 text-red-400{% endif %}">
                     {% if db_info.connected %}Connected{% else %}Error{% endif %}
                 </span>
@@ -92,6 +115,7 @@
                 <p><span class="text-slate-400">Size:</span> <span class="text-white">{{ db_info.size_mb|default:"—" }} MB</span></p>
             </div>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
 </div>

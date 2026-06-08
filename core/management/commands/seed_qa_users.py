@@ -25,11 +25,12 @@ class Command(BaseCommand):
                 user = User.objects.get(email=email)
                 user.role = role
                 user.is_staff = role != 'customer'
+                user.is_active = True
                 user.is_email_verified = True
                 if phone and user.phone != phone:
                     if not User.objects.filter(phone=phone).exclude(pk=user.pk).exists():
                         user.phone = phone
-                user.save(update_fields=['role', 'is_staff', 'is_email_verified', 'phone'])
+                user.save(update_fields=['role', 'is_staff', 'is_active', 'is_email_verified', 'phone'])
                 set_user_password(user, password)
                 self.stdout.write(f'Updated {email} ({role})')
             else:

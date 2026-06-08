@@ -1,0 +1,13 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+  {% for item in items %}
+  <div class="premium-card rounded-2xl p-4">
+    <div class="flex items-center gap-3">
+      <span class="w-2.5 h-2.5 rounded-full {{ item.dot_class }}"></span>
+      <div class="min-w-0 flex-1">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ item.label }}</p>
+        <p class="text-sm font-bold text-white truncate">{{ item.sub }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

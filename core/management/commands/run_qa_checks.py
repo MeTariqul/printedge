@@ -129,6 +129,10 @@ class Command(BaseCommand):
 
             customer_client.logout()
             unverified = User.objects.filter(email='qa_unverified@test.local').first()
+            if unverified:
+                unverified.is_active = True
+                unverified.is_email_verified = False
+                unverified.save(update_fields=['is_active', 'is_email_verified'])
             if not unverified:
                 from core.user_helpers import create_user_account
                 unverified = create_user_account(
@@ -138,6 +142,7 @@ class Command(BaseCommand):
                     last_name='User',
                     phone='01700000099',
                     role='customer',
+                    is_active=True,
                     is_email_verified=False,
                 )
             uv_client = Client(HTTP_HOST='localhost')
@@ -167,6 +172,74 @@ class Command(BaseCommand):
             cust_gate.force_login(customer)
             response = cust_gate.get('/admin/dashboard/')
             check('Customer blocked from admin', response.status_code in (302, 403), f'status={response.status_code}')
+
+            from core.models import SiteSettings
+            site = SiteSettings.get()
+            if not site.bkash_number:
+                site.bkash_number = '01700000000'
+                site.save(update_fields=['bkash_number'])
+
+            order = Order.objects.filter(customer=customer, payment_status='unpaid').first()
+            if not order:
+                from core.pricing import calculate_order_from_files
+                from core.order_line_items import create_order_with_files
+                breakdown = calculate_order_from_files(
+                    [{'print_type': 'bw', 'sides': 'single', 'paper_size': 'A4', 'pages': 1, 'copies': 1, 'ranges': []}],
+                )
+                order = create_order_with_files(
+                    order_kwargs={
+                        'source': 'online', 'customer': customer, 'print_type': 'bw',
+                        'sides': 'single', 'paper_size': 'A4', 'pages': 1, 'copies': 1,
+                        'created_by': customer,
+                    },
+                    uploaded_files=[],
+                    files_config=[{'print_type': 'bw', 'sides': 'single', 'paper_size': 'A4', 'pages': 1, 'copies': 1, 'ranges': []}],
+                    breakdown=breakdown,
+                    addon_ids=[],
+                )
+
+            response = cust_gate.get(f'/user/orders/{order.pk}/payment/')
+            check('GET payment page', response.status_code == 200, f'status={response.status_code}')
+
+            png = SimpleUploadedFile('pay.png', self._tiny_png(), content_type='image/png')
+            from django.test.utils import override_settings
+            from django.conf import settings as dj_settings
+            fs_storage = {
+                'default': {
+                    'BACKEND': 'django.core.files.storage.FileSystemStorage',
+                    'OPTIONS': {'location': dj_settings.MEDIA_ROOT},
+                },
+            }
+            with override_settings(STORAGES=fs_storage):
+                response = cust_gate.post(
+                    f'/user/orders/{order.pk}/payment/',
+                    {
+                        'payment_method': 'bkash',
+                        'payment_screenshot': png,
+                    },
+                )
+            order.refresh_from_db()
+            check(
+                'POST payment screenshot',
+                response.status_code == 302 and order.payment_status == 'pending_review',
+                f'status={response.status_code} payment={order.payment_status}',
+            )
+
+        self.stdout.write('Notification delete API...')
+        if customer:
+            from core.models import Notification
+            cust3 = Client(HTTP_HOST='localhost', enforce_csrf_checks=False)
+            cust3.force_login(customer)
+            notif2 = Notification.objects.create(
+                recipient=customer,
+                verb='delete me',
+                target_type='system',
+                target_url='/',
+                description='qa',
+            )
+            response = cust3.delete(f'/api/notifications/{notif2.pk}/delete/')
+            check('DELETE notification', response.status_code == 200, f'status={response.status_code}')
+            check('Notification removed', not Notification.objects.filter(pk=notif2.pk).exists())
 
         self.stdout.write('')
         self.stdout.write(self.style.SUCCESS(f'Passed: {len(passed)}'))

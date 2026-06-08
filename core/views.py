@@ -13,13 +13,14 @@ from decimal import Decimal
 from .models import (
     User, WalkInCustomer, Order, OrderFile, InventoryItem,
     PricingRule, AddonService, Expense, AuditLog,
-    Notification, OrderStatusLog, SiteSettings, PromoCode,
+    Notification, OrderStatusLog, SiteSettings, Coupon,
+    Service, ServiceVariant, EmailLog,
 )
 from .decorators import login_required_custom, admin_required, superadmin_required, permission_required
 from .frontend_views import extract_zip_files
 from .pricing import calculate_order_price, calculate_order_from_files
 from .order_line_items import parse_files_config, create_order_with_files, detect_pages_for_upload
-from .utils import safe_int, validate_upload_file
+from .utils import safe_int, validate_upload_file, validate_payment_screenshot, get_payment_methods
 from .audit_helpers import log_audit
 from .user_helpers import create_user_account, set_user_password, validate_password_strength
 from .order_files import apply_order_delivered, delete_order_file, save_order_file_metadata
@@ -27,7 +28,7 @@ from .page_detection import detect_pages
 from .pricing_options import get_active_pricing_options
 from .notifications import (
     notify_staff_of_new_user, notify_new_online_order, notify_order_status_change, notify_new_walkin_order,
-    notify_approve_user,
+    notify_approve_user, notify_payment_submitted, notify_payment_approved, notify_payment_rejected,
 )
 
 # ─── AUTH VIEWS ────────────────────────────────────────────────────────────────
@@ -52,6 +53,17 @@ def auth_login(request):
         if user is None:
             try:
                 u = User.objects.get(email=email)
+                if not u.is_active:
+                    messages.error(request, 'Your account has been deactivated. Contact support.')
+                    record_failed_attempt(request, 'login', django_settings.AUTH_RATE_LIMIT_WINDOW)
+                    return render(request, 'auth/login.html')
+                if u.is_banned:
+                    messages.error(request, 'Your account has been suspended.')
+                    record_failed_attempt(request, 'login', django_settings.AUTH_RATE_LIMIT_WINDOW)
+                    return render(request, 'auth/login.html')
+                if not u.is_email_verified and u.role == 'customer':
+                    messages.error(request, 'Please verify your email before logging in. Check your inbox for the verification link.')
+                    return redirect('auth_verify_pending' if request.user.is_authenticated else 'auth_login_page')
                 user = authenticate(request, username=u.username, password=password)
             except User.DoesNotExist:
                 pass
@@ -60,6 +72,9 @@ def auth_login(request):
             if user.is_banned:
                 messages.error(request, 'Your account has been suspended.')
                 return redirect('auth_login_page')
+            if not user.is_email_verified and user.role == 'customer':
+                messages.error(request, 'Please verify your email before logging in. Check your inbox for the verification link.')
+                return redirect('auth_verify_pending' if request.user.is_authenticated else 'auth_login_page')
             clear_attempts(request, 'login')
             login(request, user)
             if request.POST.get('remember'):
@@ -174,8 +189,7 @@ def auth_verify_email(request, uid, token):
         if request.user.is_authenticated and request.user.pk == user.pk:
             return redirect('user_new_order')
         return redirect('auth_login_page')
-    messages.error(request, 'Invalid or expired verification link.')
-    return redirect('auth_verify_pending' if request.user.is_authenticated else 'auth_login_page')
+    return render(request, 'auth/verify_invalid.html', {'user': user})
 
 
 def auth_logout(request):
@@ -186,23 +200,24 @@ def auth_logout(request):
 # ─── PUBLIC VIEWS ───────────────────────────────────────────────────────────────
 
 def public_index(request):
-    return render(request, 'index.html')
+    featured_services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('-created_at')[:4]
+    return render(request, 'index.html', {'featured_services': featured_services})
 
 
 def public_pricing(request):
     addons = AddonService.objects.filter(is_active=True)
-    return render(request, 'pricing.html', {'addons': addons})
+    services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
+    return render(request, 'pricing.html', {'addons': addons, 'services': services})
 
 
-def public_services(request):
+def public_services_old(request):
+    # Legacy – renders same template as public_services
+    services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
     addons = AddonService.objects.filter(is_active=True)
-    return render(request, 'services.html', {'addons': addons})
+    return render(request, 'services.html', {'services': services, 'addons': addons})
 
 
-def public_upload(request):
-    if request.user.is_authenticated:
-        return redirect('user_new_order')
-    return render(request, 'upload.html')
+
 
 def public_contact(request):
     return render(request, 'contact.html')
@@ -214,12 +229,16 @@ def public_contact(request):
 def user_dashboard(request):
     orders = Order.objects.filter(customer=request.user).order_by('-created_at')
     active = orders.filter(status__in=['pending', 'confirmed', 'printing', 'quality_check', 'ready'])
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
     stats = {
+        'total_orders': orders.count(),
+        'orders_this_month': orders.filter(created_at__date__gte=month_start).count(),
         'active_count': active.count(),
+        'pending_count': orders.filter(status='pending').count(),
         'completed_count': orders.filter(status='delivered').count(),
         'total_spent': orders.filter(status='delivered').aggregate(s=Sum('total_amount'))['s'] or 0,
     }
-    # Status pipeline data for the tracker UI
     status_steps = [
         ('pending', 'Pending', 'bi-hourglass-split'),
         ('confirmed', 'Confirmed', 'bi-check-lg'),
@@ -234,7 +253,7 @@ def user_dashboard(request):
         current_idx = status_order.index(active_order.status) if active_order.status in status_order else -1
         passed_statuses = status_order[:current_idx]
     return render(request, 'user/dashboard.html', {
-        'orders': orders[:10],
+        'orders': orders[:5],
         'active_order': active_order,
         'stats': stats,
         'status_steps': status_steps,
@@ -246,18 +265,41 @@ def _order_form_context():
     return {
         'addons': AddonService.objects.filter(is_active=True),
         'pricing_options': get_active_pricing_options(),
+        'services': Service.objects.filter(is_active=True).prefetch_related('variants'),
     }
+
+def public_services(request):
+    services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
+    return render(request, 'public/services.html', {'services': services})
 
 
 @login_required_custom
 def user_new_order(request):
     from .email_verification import customer_needs_verification
+    from .models import Service
     if customer_needs_verification(request.user):
         messages.warning(request, 'Please verify your email before placing an order.')
         return redirect('auth_verify_pending')
     site = SiteSettings.get()
     ctx = _order_form_context()
     ctx['accepting_orders'] = site.accepting_orders
+    
+    service_id = request.GET.get('service')
+    if service_id:
+        try:
+            ctx['preselected_service'] = Service.objects.get(pk=service_id)
+        except Service.DoesNotExist:
+            pass
+    else:
+        if request.method == 'GET':
+            messages.info(request, 'Please select a service first.')
+            return redirect('public_services_page')
+    preselected_service = ctx.get('preselected_service')
+    service_requires_file = preselected_service and preselected_service.requires_file
+    ctx['service_requires_file'] = service_requires_file
+    ctx['show_service_notes'] = preselected_service and not service_requires_file
+    note_categories = ['stationery', 'binding', 'lamination']
+    ctx['note_categories'] = note_categories
     if request.method == 'POST':
         if not site.accepting_orders:
             messages.error(request, 'We are temporarily not accepting new orders. Please check back later.')
@@ -293,7 +335,7 @@ def user_new_order(request):
                     return render(request, 'user/new_order.html', ctx)
                 uploads.append(f)
 
-        if not uploads:
+        if service_requires_file and not uploads:
             messages.error(request, 'Please upload at least one file.')
             return render(request, 'user/new_order.html', ctx)
 
@@ -313,16 +355,16 @@ def user_new_order(request):
             pages = int(cfg.get('pages_override') or cfg.get('pages_detected') or 1)
             cfg['pages'] = pages
 
-        promo_code_str = request.POST.get('promo_code', '').strip().upper()
+        coupon_str = request.POST.get('promo_code', '').strip().upper()
         promo_obj = None
-        if promo_code_str:
+        if coupon_str:
             try:
-                promo_obj = PromoCode.objects.get(code=promo_code_str)
+                promo_obj = Coupon.objects.get(code=coupon_str)
                 if not promo_obj.is_valid:
-                    messages.warning(request, 'Promo code is expired or invalid.')
+                    messages.error(request, 'Coupon is invalid or expired.')
                     promo_obj = None
-            except PromoCode.DoesNotExist:
-                messages.warning(request, 'Invalid promo code.')
+            except Coupon.DoesNotExist:
+                messages.error(request, 'Coupon not found.')
 
         tier_pct = Decimal(request.user.tier_discount())
         try:
@@ -330,10 +372,26 @@ def user_new_order(request):
                 files_config[:len(uploads)],
                 addon_ids=addon_ids,
                 is_urgent=is_urgent,
-                promo_code_obj=promo_obj,
+                coupon_obj=promo_obj,
                 tier_discount_pct=tier_pct,
                 urgent_percent=site.urgent_surcharge_percent,
             )
+            
+            if promo_obj and breakdown.get('total') is not None:
+                subtotal_before_discount = breakdown.get('base_price', Decimal('0')) + breakdown.get('addons_price', Decimal('0')) + breakdown.get('urgent_surcharge', Decimal('0'))
+                if promo_obj.min_order_amount is not None and subtotal_before_discount < promo_obj.min_order_amount:
+                    min_amt = promo_obj.min_order_amount
+                    breakdown = calculate_order_from_files(
+                        files_config[:len(uploads)],
+                        addon_ids=addon_ids,
+                        is_urgent=is_urgent,
+                        coupon_obj=None,
+                        tier_discount_pct=tier_pct,
+                        urgent_percent=site.urgent_surcharge_percent,
+                    )
+                    promo_obj = None
+                    messages.warning(request, f'Minimum order amount of ৳{min_amt} required for this coupon.')
+            
         except ValueError as exc:
             messages.error(request, str(exc))
             return render(request, 'user/new_order.html', ctx)
@@ -355,8 +413,9 @@ def user_new_order(request):
                     'fulfillment_type': fulfillment_type,
                     'delivery_address': delivery_address if fulfillment_type == 'delivery' else '',
                     'delivery_contact_phone': delivery_phone if fulfillment_type == 'delivery' else '',
-                    'promo_code': promo_obj,
+                    'coupon': promo_obj,
                     'created_by': request.user,
+                    'service': preselected_service if preselected_service else None,
                 },
                 uploaded_files=uploaded_pairs,
                 files_config=files_config[:len(uploads)],
@@ -404,6 +463,8 @@ def user_cancel_order(request, pk):
         order=order, old_status=old, new_status='cancelled',
         changed_by=request.user, note='Cancelled by customer.',
     )
+    from .notifications import notify_order_cancelled
+    notify_order_cancelled(order, cancelled_by=request.user)
     messages.success(request, 'Order cancelled.')
     return redirect('user_order_detail', pk=pk)
 
@@ -414,13 +475,95 @@ def user_order_detail(request, pk):
         Order.objects.prefetch_related('order_files__page_ranges'),
         pk=pk, customer=request.user,
     )
-    return render(request, 'user/order_detail.html', {'order': order})
+    status_steps = [
+        ('pending', 'Pending', 'bi-hourglass-split'),
+        ('confirmed', 'Confirmed', 'bi-check-lg'),
+        ('printing', 'Printing', 'bi-printer-fill'),
+        ('quality_check', 'Quality Check', 'bi-eye-fill'),
+        ('ready', 'Ready', 'bi-bag-check-fill'),
+        ('delivered', 'Delivered', 'bi-check-circle-fill'),
+    ]
+    status_order = ['pending', 'confirmed', 'printing', 'quality_check', 'ready', 'delivered']
+    current_idx = status_order.index(order.status) if order.status in status_order else -1
+    passed_statuses = status_order[:current_idx] if current_idx > 0 else []
+    return render(request, 'user/order_detail.html', {
+        'order': order,
+        'status_steps': status_steps,
+        'passed_statuses': passed_statuses,
+    })
+
+
+@login_required_custom
+def user_order_payment(request, pk):
+    order = get_object_or_404(Order, pk=pk, customer=request.user)
+    if order.payment_status in ('paid', 'pending_review'):
+        messages.info(request, 'Payment has already been submitted or completed for this order.')
+        return redirect('user_order_detail', pk=pk)
+    if order.status == 'cancelled':
+        messages.error(request, 'This order was cancelled.')
+        return redirect('user_order_detail', pk=pk)
+
+    site = SiteSettings.get()
+    payment_methods = get_payment_methods(site)
+    active_method = request.GET.get('method', 'bkash')
+    valid_slugs = {m[0] for m in payment_methods}
+    if active_method not in valid_slugs:
+        active_method = next((m[0] for m in payment_methods if m[2]), 'bkash')
+
+    if request.method == 'POST':
+        screenshot = request.FILES.get('payment_screenshot')
+        err = validate_payment_screenshot(screenshot)
+        if err:
+            messages.error(request, err)
+            return redirect('user_order_payment', pk=pk)
+        if hasattr(screenshot, 'seek'):
+            screenshot.seek(0)
+
+        method = request.POST.get('payment_method', active_method)
+        if method not in valid_slugs:
+            method = active_method
+        method_labels = {'bkash': 'bKash', 'nagad': 'Nagad', 'rocket': 'Rocket'}
+
+        if order.payment_screenshot:
+            order.payment_screenshot.delete(save=False)
+        order.payment_screenshot = screenshot
+        order.payment_method = method_labels.get(method, method.title())
+        order.payment_status = 'pending_review'
+        order.payment_rejection_reason = ''
+        try:
+            order.save(update_fields=[
+                'payment_screenshot', 'payment_method', 'payment_status', 'payment_rejection_reason', 'updated_at',
+            ])
+        except Exception as exc:
+            messages.error(request, f'Could not save payment screenshot. ({exc})')
+            return redirect('user_order_payment', pk=pk)
+        notify_payment_submitted(order, request.user)
+        messages.success(request, 'Payment screenshot submitted. We will review it shortly.')
+        return redirect('user_order_detail', pk=pk)
+
+    return render(request, 'user/order_payment.html', {
+        'order': order,
+        'payment_methods': payment_methods,
+        'active_method': active_method,
+    })
 
 
 @login_required_custom
 def user_orders(request):
     orders = Order.objects.filter(customer=request.user).order_by('-created_at')
-    return render(request, 'user/orders.html', {'orders': orders})
+    status_filter = request.GET.get('status', '').strip()
+    if status_filter and status_filter in dict(Order.STATUS_CHOICES):
+        orders = orders.filter(status=status_filter)
+    from django.core.paginator import Paginator
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'user/orders.html', {
+        'orders': page_obj,
+        'page_obj': page_obj,
+        'status_filter': status_filter,
+        'status_choices': Order.STATUS_CHOICES,
+    })
 
 
 # user_profile moved to frontend_views.py
@@ -432,6 +575,12 @@ def admin_dashboard(request):
     today = timezone.now().date()
     yesterday = today - timedelta(days=1)
     week_ago = today - timedelta(days=7)
+    two_weeks_ago = today - timedelta(days=14)
+
+    cache_key = f'admin_dashboard:{today.isoformat()}'
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
 
     today_orders = Order.objects.filter(created_at__date=today)
     yesterday_orders = Order.objects.filter(created_at__date=yesterday)
@@ -448,13 +597,17 @@ def admin_dashboard(request):
         orders__created_at__date=today
     ).distinct().count()
 
-    pages_today = today_orders.aggregate(
-        p=Sum('total_sheets')
-    )['p'] or 0
+    pages_today = today_orders.aggregate(p=Sum('total_sheets'))['p'] or 0
 
     avg_order_value = today_orders.aggregate(a=Sum('total_amount'))['a'] or 0
     count = today_orders.count()
     avg_order_value = round(avg_order_value / count, 0) if count else 0
+
+    orders_completed_today = today_orders.filter(status='delivered').count()
+    failed_emails_24h = EmailLog.objects.filter(
+        created_at__gte=timezone.now() - timedelta(hours=24),
+        status='failed'
+    ).count()
 
     chart_range = request.GET.get('range', '7')
     days_back = 29 if chart_range == '30' else 6
@@ -472,7 +625,6 @@ def admin_dashboard(request):
         if 0 <= h < 24:
             orders_per_hour[h] += 1
 
-    # Order distribution by status (group processing states for chart)
     status_counts = {
         s[0]: Order.objects.filter(status=s[0]).count()
         for s in Order.STATUS_CHOICES
@@ -485,11 +637,45 @@ def admin_dashboard(request):
         'Other': status_counts.get('cancelled', 0) + status_counts.get('on_hold', 0),
     }
 
-    # Low stock alerts
+    daily_volume = []
+    online_vs_walkin_labels = []
+    online_data = []
+    walkin_data = []
+    for i in range(13, -1, -1):
+        d = today - timedelta(days=i)
+        online_vs_walkin_labels.append(d.strftime('%b %d'))
+        online_data.append(Order.objects.filter(created_at__date=d, source='online').count())
+        walkin_data.append(Order.objects.filter(created_at__date=d, source='offline').count())
+
+    top_customers = User.objects.annotate(
+        order_count=Count('orders', filter=Q(orders__created_at__date__gte=week_ago))
+    ).filter(order_count__gt=0).order_by('-order_count')[:5]
+    top_customer_names = [c.get_full_name() or c.email for c in top_customers]
+    top_customer_counts = [c.order_count for c in top_customers]
+
+    print_type_data = {
+        'B&W': today_orders.filter(print_type='bw').count(),
+        'Color': today_orders.filter(print_type='color').count(),
+    }
+    print_type_labels = list(print_type_data.keys())
+    print_type_values = list(print_type_data.values())
+
     low_stock = InventoryItem.objects.all()
     low_stock_count = sum(1 for i in low_stock if i.status[0] in ('warning', 'danger'))
+    low_stock_items = [i for i in low_stock if i.status[0] in ('warning', 'danger')][:5]
 
     recent_orders = Order.objects.select_related('customer', 'walkin_customer').order_by('-created_at')[:8]
+
+    recent_activity = AuditLog.objects.select_related('user').order_by('-timestamp')[:15]
+
+    ready_not_picked = Order.objects.filter(status='ready', updated_at__lt=timezone.now() - timedelta(hours=24)).count()
+    pending_payment_reviews = Order.objects.filter(payment_status='pending_review').count()
+
+    db_healthy = True
+    storage_healthy = True
+    email_healthy = True
+    cache_healthy = True
+    supabase_auth_healthy = True
 
     ctx = {
         'today_orders_count': count,
@@ -501,6 +687,8 @@ def admin_dashboard(request):
         'active_customers': active_customers,
         'pages_today': pages_today,
         'avg_order_value': avg_order_value,
+        'orders_completed_today': orders_completed_today,
+        'failed_emails_24h': failed_emails_24h,
         'revenue_trend_json': json.dumps(revenue_trend),
         'revenue_labels_json': json.dumps(labels),
         'chart_range': chart_range,
@@ -510,13 +698,33 @@ def admin_dashboard(request):
         'chart_status_labels_json': json.dumps(list(chart_status.keys())),
         'status_counts_json': json.dumps(list(status_counts.values())),
         'low_stock_count': low_stock_count,
+        'low_stock_items': low_stock_items,
         'recent_orders': recent_orders[:10],
         'accepting_orders': SiteSettings.get().accepting_orders,
         'unread_count': Notification.objects.filter(
             recipient=request.user, is_read=False
         ).count() if hasattr(request.user, 'notifications') else 0,
+        'daily_volume_labels_json': json.dumps(online_vs_walkin_labels),
+        'daily_volume_online_json': json.dumps(online_data),
+        'daily_volume_walkin_json': json.dumps(walkin_data),
+        'top_customer_names_json': json.dumps(top_customer_names),
+        'top_customer_counts_json': json.dumps(top_customer_counts),
+        'print_type_labels_json': json.dumps(print_type_labels),
+        'print_type_values_json': json.dumps(print_type_values),
+        'recent_activity': recent_activity,
+        'ready_not_picked': ready_not_picked,
+        'pending_payment_reviews': pending_payment_reviews,
+        'db_healthy': db_healthy,
+        'storage_healthy': storage_healthy,
+        'email_healthy': email_healthy,
+        'cache_healthy': cache_healthy,
+        'supabase_auth_healthy': supabase_auth_healthy,
+        'site_settings': SiteSettings.get(),
     }
-    return render(request, 'admin/dashboard.html', ctx)
+
+    response = render(request, 'admin/dashboard.html', ctx)
+    cache.set(cache_key, response, 60)
+    return response
 
 
 @admin_required
@@ -591,6 +799,38 @@ def admin_order_detail(request, pk):
             elif order.amount_paid > 0:
                 order.payment_status = 'partial'
             order.save()
+        elif action == 'approve_payment':
+            if not order.customer:
+                messages.error(request, 'Walk-in orders use manual payment recording.')
+                return redirect('admin_order_detail', pk=pk)
+            order.payment_status = 'paid'
+            order.amount_paid = order.total_amount
+            order.payment_rejection_reason = ''
+            order.save(update_fields=[
+                'payment_status', 'amount_paid', 'payment_rejection_reason', 'updated_at',
+            ])
+            site = SiteSettings.get()
+            notify_payment_approved(
+                order, order.customer, request.user,
+                send_email=site.send_email_on_payment_approved,
+            )
+            messages.success(request, 'Payment approved.')
+            return redirect('admin_order_detail', pk=pk)
+        elif action == 'reject_payment':
+            if not order.customer:
+                messages.error(request, 'Walk-in orders use manual payment recording.')
+                return redirect('admin_order_detail', pk=pk)
+            reason = request.POST.get('payment_rejection_reason', '').strip()[:500]
+            order.payment_status = 'rejected'
+            order.payment_rejection_reason = reason or 'Please contact support.'
+            order.save(update_fields=['payment_status', 'payment_rejection_reason', 'updated_at'])
+            site = SiteSettings.get()
+            notify_payment_rejected(
+                order, order.customer, request.user, reason=order.payment_rejection_reason,
+                send_email=site.send_email_on_payment_rejected,
+            )
+            messages.warning(request, 'Payment rejected. Customer can resubmit.')
+            return redirect('admin_order_detail', pk=pk)
         elif action == 'notes':
             order.admin_notes = request.POST.get('admin_notes', '')
             order.save(update_fields=['admin_notes'])
@@ -697,15 +937,44 @@ def admin_walkin_order(request):
                     pages = int(cfg.get('pages_override') or cfg.get('pages_detected') or 1)
                     cfg['pages'] = pages
 
+            coupon_str = request.POST.get('promo_code', '').strip().upper()
+            promo_obj = None
+            if coupon_str:
+                try:
+                    promo_obj = Coupon.objects.get(code=coupon_str)
+                    if not promo_obj.is_valid:
+                        messages.error(request, 'Coupon is invalid or expired.')
+                        promo_obj = None
+                except Coupon.DoesNotExist:
+                    messages.error(request, 'Coupon not found.')
+
             try:
                 breakdown = calculate_order_from_files(
                     files_config if (is_physical and not uploads) else files_config[:len(uploads)],
                     addon_ids=addon_ids,
                     is_urgent=is_urgent,
                     manual_discount=manual_discount,
+                    coupon_obj=promo_obj,
                     tier_discount_pct=Decimal('0'),
                     urgent_percent=site.urgent_surcharge_percent,
                 )
+                
+                if promo_obj and breakdown.get('total') is not None:
+                    subtotal_before_discount = breakdown.get('base_price', Decimal('0')) + breakdown.get('addons_price', Decimal('0')) + breakdown.get('urgent_surcharge', Decimal('0'))
+                    if promo_obj.min_order_amount is not None and subtotal_before_discount < promo_obj.min_order_amount:
+                        min_amt = promo_obj.min_order_amount
+                        breakdown = calculate_order_from_files(
+                            files_config if (is_physical and not uploads) else files_config[:len(uploads)],
+                            addon_ids=addon_ids,
+                            is_urgent=is_urgent,
+                            manual_discount=manual_discount,
+                            coupon_obj=None,
+                            tier_discount_pct=Decimal('0'),
+                            urgent_percent=site.urgent_surcharge_percent,
+                        )
+                        promo_obj = None
+                        messages.warning(request, f'Minimum order amount of ৳{min_amt} required for this coupon.')
+                        
             except ValueError as exc:
                 messages.error(request, str(exc))
                 return render(request, 'admin/walkin_order.html', ctx)
@@ -728,6 +997,7 @@ def admin_walkin_order(request):
                 'is_physical_document': is_physical,
                 'special_instructions': physical_description if is_physical else '',
                 'discount_reason': request.POST.get('discount_reason', ''),
+                'coupon': promo_obj,
                 'payment_method': payment_method,
                 'amount_paid': amount_paid,
                 'payment_status': payment_status,
@@ -753,6 +1023,10 @@ def admin_walkin_order(request):
                 order.save()
                 if addon_ids:
                     order.addons.set(addon_ids)
+
+            if promo_obj:
+                promo_obj.used_count += 1
+                promo_obj.save(update_fields=['used_count'])
 
             OrderStatusLog.objects.create(
                 order=order, new_status='pending',
@@ -895,7 +1169,8 @@ def admin_offline_customers(request):
 
 @permission_required('manage_inventory')
 def admin_inventory(request):
-    items = InventoryItem.objects.all().order_by('category', 'name')
+    variants = ServiceVariant.objects.select_related('service').all().order_by('service__category', 'service__name', 'name')
+    items = InventoryItem.objects.select_related('variant__service').all().order_by('category', 'name')
     if request.method == 'POST':
         if request.user.is_readonly_staff:
             messages.error(request, 'Read-only access.')
@@ -924,17 +1199,68 @@ def admin_inventory(request):
             name = item.name
             item.delete()
             messages.success(request, f'Item {name} deleted.')
+        elif action == 'adjust_variant':
+            variant = get_object_or_404(ServiceVariant, pk=request.POST['variant_id'])
+            qty = int(request.POST['quantity'])
+            move = request.POST['movement']
+            note = request.POST.get('note', '')
+            if move == 'in':
+                variant.stock += qty
+            else:
+                variant.stock = max(0, variant.stock - qty)
+            variant.save(update_fields=['stock', 'updated_at'])
+            if note:
+                from .notifications import notify_stock_low
+                notify_stock_low(variant)
+            messages.success(request, f'{variant.name} stock updated to {variant.stock}.')
         return redirect('admin_inventory')
-    return render(request, 'admin/inventory.html', {'items': items})
+    return render(request, 'admin/inventory.html', {
+        'items': items,
+        'variants': variants,
+    })
 
 
 @permission_required('manage_pricing')
 def admin_services(request):
     from .pricing import reset_a4_pricing_defaults
-
+    from .models import PricingRule, AddonService, Service, ServiceVariant, InventoryItem
+    
+    SERVICE_ATTRIBUTE_SPECS = {
+        'printing': [
+            {'field': 'paper_size', 'label': 'Paper Size', 'type': 'select', 'options': ['A4', 'A3', 'Letter', 'Legal']},
+            {'field': 'gsm', 'label': 'GSM', 'type': 'number', 'min': 50, 'max': 400},
+            {'field': 'color', 'label': 'Color Type', 'type': 'select', 'options': ['bw', 'color']},
+            {'field': 'sides', 'label': 'Sides', 'type': 'select', 'options': ['single', 'double']},
+        ],
+        'photo': [
+            {'field': 'dimensions', 'label': 'Dimensions', 'type': 'text'},
+            {'field': 'material', 'label': 'Material', 'type': 'select', 'options': ['Matte', 'Glossy', 'Satin', 'Metallic']},
+            {'field': 'paper_type', 'label': 'Paper Type', 'type': 'select', 'options': ['Photo Paper', 'Canvas', 'Glossy Paper', 'Luster Paper']},
+        ],
+        'binding': [
+            {'field': 'binding_type', 'label': 'Binding Type', 'type': 'text'},
+            {'field': 'cover_type', 'label': 'Cover Type', 'type': 'select', 'options': ['Hard', 'Soft', 'Spiral']},
+            {'field': 'thickness', 'label': 'Thickness', 'type': 'number', 'min': 1, 'max': 100},
+        ],
+        'lamination': [
+            {'field': 'finish', 'label': 'Finish', 'type': 'select', 'options': ['Glossy', 'Matte', 'Satin']},
+            {'field': 'thickness', 'label': 'Micron', 'type': 'number', 'min': 50, 'max': 250},
+        ],
+        'stationery': [
+            {'field': 'color', 'label': 'Color', 'type': 'text'},
+            {'field': 'brand', 'label': 'Brand', 'type': 'text'},
+        ],
+        'custom': [],
+    }
+    
     pricing = PricingRule.objects.filter(paper_size='A4').order_by('print_type', 'sides')
     addons = AddonService.objects.all()
+    services = Service.objects.prefetch_related('variants').all().order_by('category', 'name')
     can_manage_addons = request.user.role in ('manager', 'admin', 'super_admin')
+    current_category = request.GET.get('category', 'all')
+    if current_category and current_category != 'all':
+        services = services.filter(category=current_category)
+    category_choices = Service.CATEGORY_CHOICES
     if request.method == 'POST':
         if request.user.is_readonly_staff:
             messages.error(request, 'Read-only access.')
@@ -989,12 +1315,139 @@ def admin_services(request):
             name = addon.name
             addon.delete()
             messages.success(request, f'Add-on {name} deleted.')
+        elif action == 'toggle_service' and can_manage_addons:
+            service = get_object_or_404(Service, pk=request.POST['service_id'])
+            service.is_active = not service.is_active
+            service.save()
+            messages.success(request, f'Service {"enabled" if service.is_active else "disabled"}.')
+        elif action == 'add_service' and can_manage_addons:
+            Service.objects.create(
+                name=request.POST['name'],
+                base_price=request.POST['base_price'],
+                category=request.POST.get('category', 'printing'),
+                description=request.POST.get('description', ''),
+                requires_file = request.POST.get('requires_file') == 'true'
+            )
+            messages.success(request, 'Service created.')
+        elif action == 'delete_service' and request.user.is_full_admin:
+            service = get_object_or_404(Service, pk=request.POST['service_id'])
+            name = service.name
+            service.delete()
+            messages.success(request, f'Service {name} deleted.')
+        elif action == 'add_variant' and can_manage_addons:
+            service = get_object_or_404(Service, pk=request.POST['service_id'])
+            specs = {}
+            for key, value in request.POST.items():
+                if key.startswith('specs_'):
+                    specs[key.replace('specs_', '')] = value
+            price_val = request.POST.get('price', '0') or '0'
+            variant = ServiceVariant.objects.create(
+                service=service,
+                name=request.POST['name'],
+                price=Decimal(price_val),
+                specs=specs,
+                stock=int(request.POST.get('stock', '0') or '0'),
+                low_stock_threshold=int(request.POST.get('low_stock_threshold', '5') or '5')
+            )
+            messages.success(request, 'Variant created.')
+        elif action == 'delete_variant' and request.user.is_full_admin:
+            variant = get_object_or_404(ServiceVariant, pk=request.POST['variant_id'])
+            variant.delete()
+            messages.success(request, 'Variant deleted.')
+        elif action == 'edit_service' and can_manage_addons:
+            service = get_object_or_404(Service, pk=request.POST['service_id'])
+            service.name = request.POST['name']
+            service.category = request.POST.get('category', 'printing')
+            service.base_price = Decimal(request.POST.get('base_price', '0') or '0')
+            service.requires_file = request.POST.get('requires_file') == 'true'
+            service.description = request.POST.get('description', '')
+            service.save(update_fields=['name', 'category', 'base_price', 'requires_file', 'description', 'updated_at'])
+            messages.success(request, 'Service updated.')
+        elif action == 'edit_variant' and can_manage_addons:
+            variant = get_object_or_404(ServiceVariant, pk=request.POST['variant_id'])
+            variant.name = request.POST['name']
+            variant.price = Decimal(request.POST.get('price', '0') or '0')
+            variant.stock = int(request.POST.get('stock', '0') or '0')
+            variant.low_stock_threshold = int(request.POST.get('low_stock_threshold', '5') or '5')
+            specs = {}
+            for key, value in request.POST.items():
+                if key.startswith('specs_'):
+                    specs[key.replace('specs_', '')] = value
+            variant.specs = specs
+            variant.save(update_fields=['name', 'price', 'stock', 'low_stock_threshold', 'specs', 'updated_at'])
+            messages.success(request, 'Variant updated.')
         return redirect('admin_services')
     return render(request, 'admin/services.html', {
         'pricing': pricing,
         'addons': addons,
+        'services': services,
         'can_manage_addons': can_manage_addons,
+        'service_attribute_specs': SERVICE_ATTRIBUTE_SPECS,
+        'category_choices': category_choices,
+        'current_category': current_category,
     })
+
+
+@permission_required('manage_pricing')
+def admin_coupons(request):
+    """Admin view to list and manage coupons."""
+    coupons = Coupon.objects.all().order_by('-id')
+    if request.method == 'POST':
+        if request.user.is_readonly_staff:
+            messages.error(request, 'Read-only access.')
+            return redirect('admin_coupons')
+        action = request.POST.get('action')
+        if action == 'create':
+            code = request.POST.get('code', '').strip().upper()
+            if Coupon.objects.filter(code=code).exists():
+                messages.error(request, 'Coupon code already exists.')
+            else:
+                min_amt = request.POST.get('min_order_amount')
+                max_us = request.POST.get('max_uses')
+                valid_from_val = request.POST.get('valid_from')
+                valid_to_val = request.POST.get('valid_to')
+                Coupon.objects.create(
+                    code=code,
+                    discount_type=request.POST.get('discount_type', 'percentage'),
+                    discount_value=Decimal(request.POST.get('discount_value', '0')),
+                    min_order_amount=Decimal(min_amt) if min_amt else None,
+                    max_uses=int(max_us) if max_us else None,
+                    valid_from=valid_from_val if valid_from_val else timezone.now(),
+                    valid_to=valid_to_val if valid_to_val else None,
+                    is_active=True
+                )
+                messages.success(request, f'Coupon {code} created.')
+        elif action == 'edit':
+            coupon = get_object_or_404(Coupon, pk=request.POST.get('coupon_id'))
+            code = request.POST.get('code', '').strip().upper()
+            if Coupon.objects.filter(code=code).exclude(pk=coupon.pk).exists():
+                messages.error(request, 'Coupon code already exists.')
+            else:
+                coupon.code = code
+                coupon.discount_type = request.POST.get('discount_type', 'percentage')
+                coupon.discount_value = Decimal(request.POST.get('discount_value', '0'))
+                min_amt = request.POST.get('min_order_amount')
+                coupon.min_order_amount = Decimal(min_amt) if min_amt else None
+                max_us = request.POST.get('max_uses')
+                coupon.max_uses = int(max_us) if max_us else None
+                valid_from = request.POST.get('valid_from')
+                coupon.valid_from = valid_from if valid_from else timezone.now()
+                valid_to = request.POST.get('valid_to')
+                coupon.valid_to = valid_to if valid_to else None
+                coupon.save()
+                messages.success(request, f'Coupon {code} updated.')
+        elif action == 'toggle':
+            coupon = get_object_or_404(Coupon, pk=request.POST.get('coupon_id'))
+            coupon.is_active = not coupon.is_active
+            coupon.save(update_fields=['is_active'])
+            messages.success(request, f'Coupon {coupon.code} updated.')
+        elif action == 'delete' and request.user.is_full_admin:
+            coupon = get_object_or_404(Coupon, pk=request.POST.get('coupon_id'))
+            code = coupon.code
+            coupon.delete()
+            messages.success(request, f'Coupon {code} deleted.')
+        return redirect('admin_coupons')
+    return render(request, 'admin/coupons.html', {'coupons': coupons})
 
 
 @permission_required('view_financial')
@@ -1055,6 +1508,11 @@ def admin_settings(request):
         site.auto_delete_files_days = safe_int(request.POST.get('auto_delete_files_days', 7), default=7, minimum=1)
         site.chat_provider = request.POST.get('chat_provider', '')[:20]
         site.chat_widget_id = request.POST.get('chat_widget_id', '')[:200]
+        site.bkash_number = request.POST.get('bkash_number', '').strip()
+        site.nagad_number = request.POST.get('nagad_number', '').strip()
+        site.rocket_number = request.POST.get('rocket_number', '').strip()
+        site.max_upload_mb = safe_int(request.POST.get('max_upload_mb', 50), default=50, minimum=1)
+        site.currency_symbol = request.POST.get('currency_symbol', '৳')[:5] or '৳'
         site.save()
         log_audit(request, 'UPDATE_SETTINGS', 'SiteSettings', 1)
         messages.success(request, 'Settings saved successfully.')
@@ -1077,8 +1535,16 @@ def api_price_calculate(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         files = data.get('files', [])
         addon_ids = data.get('addon_ids', [])
+        variant_ids = data.get('variant_ids', [])
         is_urgent = data.get('is_urgent', False)
         manual_discount = Decimal(str(data.get('manual_discount', 0) or 0))
+        promo_code = data.get('promo_code', '').strip().upper()
+        coupon_obj = None
+        if promo_code:
+            coupon_obj = Coupon.objects.filter(code=promo_code, is_active=True).first()
+            if not coupon_obj or not coupon_obj.is_valid:
+                coupon_obj = None
+
         tier_pct = Decimal('0')
         if request.user.is_authenticated:
             tier_pct = Decimal(request.user.tier_discount())
@@ -1088,9 +1554,29 @@ def api_price_calculate(request):
                 addon_ids=addon_ids,
                 is_urgent=is_urgent,
                 manual_discount=manual_discount,
+                coupon_obj=coupon_obj,
                 tier_discount_pct=tier_pct,
                 urgent_percent=site.urgent_surcharge_percent,
             )
+            
+            # Re-evaluate coupon min amount if any
+            if coupon_obj and breakdown.get('total') is not None:
+                subtotal_before_discount = breakdown.get('base_price', Decimal('0')) + breakdown.get('addons_price', Decimal('0')) + breakdown.get('urgent_surcharge', Decimal('0'))
+                if coupon_obj.min_order_amount is not None and subtotal_before_discount < coupon_obj.min_order_amount:
+                    # Coupon shouldn't apply
+                    breakdown = calculate_order_from_files(
+                        files,
+                        addon_ids=addon_ids,
+                        is_urgent=is_urgent,
+                        manual_discount=manual_discount,
+                        coupon_obj=None,
+                        tier_discount_pct=tier_pct,
+                        urgent_percent=site.urgent_surcharge_percent,
+                    )
+                    breakdown['coupon_error'] = f'Minimum order amount of ৳{coupon_obj.min_order_amount} required for this coupon.'
+                else:
+                    breakdown['coupon_applied'] = coupon_obj.code
+                    
         except ValueError as exc:
             return JsonResponse({'error': str(exc)}, status=400)
         result = {k: float(v) if hasattr(v, 'quantize') else v for k, v in breakdown.items()}
@@ -1168,6 +1654,10 @@ def api_order_status_update(request, pk):
         order.status = new_status
         if new_status == 'delivered':
             apply_order_delivered(order)
+        elif new_status == 'printing' and old_status != 'printing':
+            from .inventory_helpers import deduct_inventory_for_order
+            deduct_inventory_for_order(order, request.user)
+            
         order.save()
         OrderStatusLog.objects.create(
             order=order, old_status=old_status,
@@ -1178,6 +1668,50 @@ def api_order_status_update(request, pk):
     except (json.JSONDecodeError, KeyError, TypeError):
         return JsonResponse({'error': 'Invalid request data'}, status=400)
 
+
+@login_required_custom
+def api_validate_coupon(request):
+    from .ratelimit import is_rate_limited
+    if is_rate_limited(request, 'api_coupon', 10, 60):
+        return JsonResponse({'valid': False, 'message': 'Too many requests. Try again later.'}, status=429)
+    if request.method != 'POST':
+        return JsonResponse({'valid': False, 'message': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+        code = data.get('code', '').strip().upper()
+        order_total = Decimal(str(data.get('order_total', 0)))
+
+        if not code:
+            return JsonResponse({'valid': False, 'message': 'Coupon code required'}, status=400)
+            
+        coupon = Coupon.objects.filter(code=code, is_active=True).first()
+        if not coupon:
+            return JsonResponse({'valid': False, 'message': 'Invalid or inactive coupon'}, status=400)
+            
+        if not coupon.is_valid:
+            return JsonResponse({'valid': False, 'message': 'Coupon is expired or usage limit reached'}, status=400)
+            
+        if coupon.min_order_amount is not None and order_total < coupon.min_order_amount:
+            return JsonResponse({'valid': False, 'message': f'Minimum order amount of ৳{coupon.min_order_amount} required'}, status=400)
+            
+        discount_amount = Decimal('0')
+        if coupon.discount_type == 'percentage':
+            discount_amount = (order_total * coupon.discount_value / 100).quantize(Decimal('0.01'))
+            msg = f"Coupon applied: {coupon.discount_value}% off"
+        else:
+            discount_amount = coupon.discount_value
+            msg = f"Coupon applied: ৳{coupon.discount_value} off"
+            
+        if discount_amount > order_total:
+            discount_amount = order_total
+
+        return JsonResponse({
+            'valid': True,
+            'discount_amount': float(discount_amount),
+            'message': msg
+        })
+    except Exception as e:
+        return JsonResponse({'valid': False, 'message': str(e)}, status=400)
 
 @login_required_custom
 def api_detect_pages(request):
@@ -1325,6 +1859,14 @@ def api_notifications_read_all(request):
     return JsonResponse({'success': True})
 
 
+def api_notification_delete(request, pk):
+    if request.method != 'DELETE' or not request.user.is_authenticated:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+    n = get_object_or_404(Notification, pk=pk, recipient=request.user)
+    n.delete()
+    return JsonResponse({'success': True})
+
+
 # ─── PWA MANIFEST ──────────────────────────────────────────────────────────────
 
 def robots_txt(request):
@@ -1341,7 +1883,6 @@ def sitemap_xml(request):
         ('public_index', 'daily', '1.0'),
         ('public_services_page', 'weekly', '0.8'),
         ('public_pricing_page', 'weekly', '0.9'),
-        ('public_upload_page', 'weekly', '0.8'),
         ('public_contact_page', 'monthly', '0.7'),
     ]
     urls = []
@@ -1381,7 +1922,7 @@ def pwa_manifest(request):
 
 # ─── STAFF MANAGEMENT ──────────────────────────────────────────────────────────
 
-@admin_required
+@permission_required('manage_staff')
 def admin_staff(request):
     staff = User.objects.filter(role__in=['operator', 'manager', 'admin', 'super_admin']).order_by('role', 'first_name')
     staff_roles = [c for c in User.ROLE_CHOICES if c[0] != 'customer']
@@ -1446,6 +1987,13 @@ def admin_staff(request):
                 user.save(update_fields=['role', 'is_staff'])
                 log_audit(request, 'DEMOTE_STAFF', 'User', user.pk)
                 messages.success(request, f'{user.display_name} moved to customer role.')
+        elif action == 'update_custom_permissions' and request.user.role == 'super_admin':
+            user = get_object_or_404(User, pk=request.POST.get('user_id'))
+            perms = request.POST.getlist('permissions')
+            user.custom_permissions = perms if perms else None
+            user.save(update_fields=['custom_permissions'])
+            log_audit(request, 'UPDATE_PERMISSIONS', 'User', user.pk, new_value=str(perms))
+            messages.success(request, f'Custom permissions updated for {user.display_name}.')
         elif action == 'delete' and request.user.is_full_admin:
             uid = request.POST.get('user_id')
             if str(uid) == str(request.user.pk):
@@ -1473,11 +2021,14 @@ def admin_staff(request):
         ('View audit log',              [False, True,  True,  True]),
         ('System status & file purge',  [False, False, False, True]),
     ]
+    from .permissions import PERMISSIONS
+    permissions_list = list(PERMISSIONS.keys())
     return render(request, 'admin/staff.html', {
         'staff': staff,
         'staff_roles': staff_roles,
         'can_manage': request.user.is_full_admin,
         'permission_matrix': PERMISSION_MATRIX,
+        'permissions_list': permissions_list,
     })
 
 

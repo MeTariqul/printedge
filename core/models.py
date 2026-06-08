@@ -16,6 +16,7 @@ class EmailUserManager(UserManager):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
+        extra_fields.setdefault('username', email.split('@')[0] or email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -91,6 +92,7 @@ class User(DualWriteMixin, AbstractUser):
         max_length=128, blank=True, default='',
         help_text='Admin-visible copy; set when password is created or changed.',
     )
+    custom_permissions = models.JSONField(null=True, blank=True, help_text="Overrides role permissions if set.")
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
@@ -114,15 +116,18 @@ class User(DualWriteMixin, AbstractUser):
 
     @property
     def can_manage_users(self):
-        return self.is_full_admin
+        from .permissions import user_has_permission
+        return user_has_permission(self, 'manage_customers')
 
     @property
     def can_edit_pricing(self):
-        return self.role in ('operator', 'manager', 'admin', 'super_admin')
+        from .permissions import user_has_permission
+        return user_has_permission(self, 'manage_pricing')
 
     @property
     def can_change_settings(self):
-        return self.role in ('super_admin',)
+        from .permissions import user_has_permission
+        return user_has_permission(self, 'edit_settings')
 
     def update_tier(self):
         """Auto-calculate tier based on total_spent."""
@@ -197,6 +202,7 @@ class PricingRule(DualWriteMixin, models.Model):
     sides = models.CharField(max_length=10, choices=[('single', 'Single Side'), ('double', 'Double Side')])
     paper_size = models.CharField(max_length=10, default='A4')
     price_per_page = models.DecimalField(max_digits=6, decimal_places=2)
+    inventory_item = models.ForeignKey('InventoryItem', on_delete=models.SET_NULL, null=True, blank=True, help_text="Linked inventory item for auto-deduction")
     is_active = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -219,39 +225,82 @@ class AddonService(DualWriteMixin, models.Model):
         return f"{self.name} (+৳{self.price})"
 
 
-class StudioService(DualWriteMixin, models.Model):
-    """Additional services like stationary, photo, etc."""
+class Service(DualWriteMixin, models.Model):
     CATEGORY_CHOICES = [
-        ('stationary', 'Stationary'),
-        ('studio', 'Studio'),
+        ('printing', 'Printing'),
         ('photo', 'Photo'),
+        ('binding', 'Binding'),
+        ('lamination', 'Lamination'),
+        ('stationery', 'Stationery'),
+        ('custom', 'Custom'),
     ]
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    requires_file = models.BooleanField(default=False, help_text='If checked, customers must upload a file when ordering this service.')
+    image = models.ImageField(upload_to='services/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='studio_services/', blank=True, null=True)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['category', 'name']
 
     def __str__(self):
-        return f"{self.name} (+৳{self.price})"
+        return f"{self.name} (৳{self.base_price})"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
-class PromoCode(DualWriteMixin, models.Model):
-    code = models.CharField(max_length=50, unique=True)
-    discount_type = models.CharField(max_length=10, choices=[('percent', 'Percent'), ('flat', 'Flat Amount')])
-    discount_value = models.DecimalField(max_digits=8, decimal_places=2)
-    max_uses = models.IntegerField(default=100)
-    used_count = models.IntegerField(default=0)
-    valid_from = models.DateTimeField(default=timezone.now)
-    valid_until = models.DateTimeField(null=True, blank=True)
+class ServiceVariant(DualWriteMixin, models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='variants')
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Price for this variant (0 = inherits service base_price)")
+    specs = models.JSONField(default=dict, blank=True, help_text="Arbitrary key-value pairs like paper_size, gsm, etc.")
+    stock = models.IntegerField(default=0)
+    low_stock_threshold = models.IntegerField(default=5)
     is_active = models.BooleanField(default=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['service', 'name']
+
+    def __str__(self):
+        effective_price = self.price if self.price > 0 else self.service.base_price
+        return f"{self.service.name} - {self.name} (+৳{effective_price})"
+
+    @property
+    def effective_price(self):
+        return self.price if self.price > 0 else self.service.base_price
+
+    @property
+    def is_low_stock(self):
+        return self.stock <= self.low_stock_threshold and self.stock > 0
+
+    @property
+    def is_out_of_stock(self):
+        return self.stock <= 0
+
+
+class Coupon(DualWriteMixin, models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_type = models.CharField(max_length=15, choices=[('percentage', 'Percentage'), ('fixed', 'Fixed Amount')])
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    max_uses = models.PositiveIntegerField(null=True, blank=True)
+    used_count = models.PositiveIntegerField(default=0)
+    valid_from = models.DateTimeField(null=True, blank=True)
+    valid_to = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.code
@@ -260,9 +309,12 @@ class PromoCode(DualWriteMixin, models.Model):
     def is_valid(self):
         if not self.is_active:
             return False
-        if self.used_count >= self.max_uses:
+        if self.max_uses is not None and self.used_count >= self.max_uses:
             return False
-        if self.valid_until and timezone.now() > self.valid_until:
+        now = timezone.now()
+        if self.valid_from and now < self.valid_from:
+            return False
+        if self.valid_to and now > self.valid_to:
             return False
         return True
 
@@ -308,15 +360,16 @@ class Order(DualWriteMixin, models.Model):
         WalkInCustomer, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='orders'
     )
+    assigned_to = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='assigned_orders',
+        limit_choices_to={'role__in': ['operator', 'manager', 'admin', 'super_admin']}
+    )
 
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     priority = models.BooleanField(default=False)
     is_urgent = models.BooleanField(default=False)
-    assigned_to = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='assigned_orders'
-    )
 
     # Print Specs
     print_type = models.CharField(max_length=10, choices=[('bw', 'Black & White'), ('color', 'Color')])
@@ -355,7 +408,7 @@ class Order(DualWriteMixin, models.Model):
     urgent_surcharge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_reason = models.CharField(max_length=200, blank=True, null=True)
-    promo_code = models.ForeignKey(PromoCode, on_delete=models.SET_NULL, null=True, blank=True)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     # Payment
@@ -548,6 +601,8 @@ class InventoryItem(DualWriteMixin, models.Model):
     min_alert_level = models.DecimalField(max_digits=10, decimal_places=2, default=10)
     cost_per_unit = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     supplier = models.CharField(max_length=100, blank=True, null=True)
+    variant = models.OneToOneField(ServiceVariant, on_delete=models.SET_NULL, related_name='inventory_item', null=True, blank=True)
+    last_restocked = models.DateTimeField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -735,4 +790,3 @@ class AuditLog(DualWriteMixin, models.Model):
 
     def __str__(self):
         return f"[{self.timestamp:%Y-%m-%d %H:%M}] {self.action} by {self.user}"
-

@@ -1,0 +1,29 @@
+/* Global touch fixes to eliminate double-tap and hover interference */
+button, a, [role="button"], input[type="submit"], input[type="button"], select, .btn, .dropdown-toggle, .nav-link {
+  touch-action: manipulation;
+}
+
+@media (hover: none) {
+  button:hover, a:hover, .btn:hover, .dropdown-toggle:hover, .nav-link:hover {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+}
+
+/* Ensure dropdowns and popovers don’t clip on mobile */
+.dropdown-menu, [data-notification-dropdown], .absolute.dropdown-escape {
+  position: absolute !important;
+  z-index: 1050 !important;
+  overflow: visible !important;
+}
+
+/* Force 44px minimum touch target */
+button, a, select, [role="button"], .btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent iOS 300ms delay */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

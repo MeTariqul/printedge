@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}PrintEdge | Campus Printing{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Affordable campus printing — upload documents, get instant quotes, track orders.{% endblock %}">
     <meta name="theme-color" content="#0f172a">
@@ -13,6 +13,7 @@
     {% include "partials/head_assets.html" %}
     {% block structured_data %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/mobile.css' %}" media="screen and (max-width: 768px)">
+    <link rel="stylesheet" href="{% static 'css/touch-fixes.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="min-h-screen flex flex-col bg-canvas text-text" x-data="{ mobileMenu: false }" :class="mobileMenu ? 'overflow-hidden' : ''">

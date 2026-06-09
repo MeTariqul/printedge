@@ -15,7 +15,7 @@ from decimal import Decimal
 
 from .models import (
     User, WalkInCustomer, Order, OrderFile, InventoryItem,
-    PricingRule, AddonService, Expense, AuditLog,
+    AddonService, Expense, AuditLog,
     Notification, OrderStatusLog, SiteSettings, Coupon,
     Service, ServiceVariant, EmailLog,
 )
@@ -1370,9 +1370,8 @@ def admin_inventory(request):
 
 @permission_required('manage_pricing')
 def admin_services(request):
-    from .pricing import reset_a4_pricing_defaults
-    from .models import PricingRule, AddonService, Service, ServiceVariant, InventoryItem
-    
+    from .models import AddonService, Service, ServiceVariant, InventoryItem
+
     SERVICE_ATTRIBUTE_SPECS = {
         'printing': [
             {'field': 'paper_size', 'label': 'Paper Size', 'type': 'select', 'options': ['A4', 'A3', 'Letter', 'Legal']},
@@ -1400,8 +1399,7 @@ def admin_services(request):
         ],
         'custom': [],
     }
-    
-    pricing = PricingRule.objects.filter(paper_size='A4').order_by('print_type', 'sides')
+
     addons = AddonService.objects.all()
     services = Service.objects.prefetch_related('variants').all().order_by('category', 'name')
     can_manage_addons = request.user.role in ('manager', 'admin', 'super_admin')
@@ -1414,41 +1412,7 @@ def admin_services(request):
             messages.error(request, 'Read-only access.')
             return redirect('admin_services')
         action = request.POST.get('action')
-        if action == 'update_price':
-            rule = get_object_or_404(PricingRule, pk=request.POST['rule_id'])
-            rule.price_per_page = Decimal(request.POST['price'])
-            rule.save()
-            cache.clear()
-            messages.success(request, 'Price updated.')
-        elif action == 'toggle_pricing_rule':
-            rule = get_object_or_404(PricingRule, pk=request.POST['rule_id'])
-            rule.is_active = not rule.is_active
-            rule.save(update_fields=['is_active'])
-            cache.clear()
-            messages.success(request, f'Pricing rule {"enabled" if rule.is_active else "disabled"}.')
-        elif action == 'reset_pricing_defaults':
-            reset_a4_pricing_defaults()
-            cache.clear()
-            messages.success(request, 'A4 pricing reset to defaults (2/3/5/8).')
-        elif action == 'add_pricing_rule' and can_manage_addons:
-            PricingRule.objects.get_or_create(
-                print_type=request.POST.get('print_type', 'bw'),
-                sides=request.POST.get('sides', 'single'),
-                paper_size='A4',
-                defaults={
-                    'name': request.POST.get('name', 'Custom rule'),
-                    'price_per_page': Decimal(request.POST.get('price', '2')),
-                    'is_active': True,
-                },
-            )
-            cache.clear()
-            messages.success(request, 'Pricing rule added.')
-        elif action == 'delete_pricing_rule' and request.user.is_full_admin:
-            rule = get_object_or_404(PricingRule, pk=request.POST['rule_id'])
-            rule.delete()
-            cache.clear()
-            messages.success(request, 'Pricing rule deleted.')
-        elif action == 'toggle_addon' and can_manage_addons:
+        if action == 'toggle_addon' and can_manage_addons:
             addon = get_object_or_404(AddonService, pk=request.POST['addon_id'])
             addon.is_active = not addon.is_active
             addon.save()
@@ -1474,7 +1438,7 @@ def admin_services(request):
                 base_price=request.POST['base_price'],
                 category=request.POST.get('category', 'printing'),
                 description=request.POST.get('description', ''),
-                requires_file = request.POST.get('requires_file') == 'true'
+                requires_file = request.POST.get('requires_file') == 'on'
             )
             messages.success(request, 'Service created.')
         elif action == 'delete_service' and request.user.is_full_admin:
@@ -1507,7 +1471,7 @@ def admin_services(request):
             service.name = request.POST['name']
             service.category = request.POST.get('category', 'printing')
             service.base_price = Decimal(request.POST.get('base_price', '0') or '0')
-            service.requires_file = request.POST.get('requires_file') == 'true'
+            service.requires_file = request.POST.get('requires_file') == 'on'
             service.description = request.POST.get('description', '')
             service.save(update_fields=['name', 'category', 'base_price', 'requires_file', 'description', 'updated_at'])
             messages.success(request, 'Service updated.')
@@ -1526,7 +1490,6 @@ def admin_services(request):
             messages.success(request, 'Variant updated.')
         return redirect('admin_services')
     return render(request, 'admin/services.html', {
-        'pricing': pricing,
         'addons': addons,
         'services': services,
         'can_manage_addons': can_manage_addons,

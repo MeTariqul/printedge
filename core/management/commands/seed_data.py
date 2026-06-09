@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'Seed initial data: admin user, pricing rules, inventory, add-ons'
 
     def handle(self, *args, **options):
-        from core.models import PricingRule, AddonService, InventoryItem, SiteSettings, EmailTemplate
+        from core.models import AddonService, InventoryItem, SiteSettings, EmailTemplate
         from core.email_templates import seed_default_email_templates
 
         # 1. Super admin (primary)
@@ -35,10 +35,7 @@ class Command(BaseCommand):
             user.save()
             self.stdout.write(self.style.SUCCESS(f'Super admin password reset: {admin_email}'))
 
-        # 2. Pricing Rules (A4 only)
-        from core.pricing import reset_a4_pricing_defaults
-        reset_a4_pricing_defaults()
-        self.stdout.write(self.style.SUCCESS('A4 pricing rules seeded (2/3/5/8 BDT)'))
+        # 2. Pricing rules now live under Service/ServiceVariant.
 
         # 3. Add-ons
         addons = [

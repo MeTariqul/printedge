@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (User, WalkInCustomer, Order, InventoryItem,
-                     PricingRule, AddonService, Coupon, Expense,
+                     AddonService, Coupon, Expense,
                      Notification, AuditLog, SiteSettings, OrderStatusLog, EmailLog, EmailTemplate)
 
 @admin.register(User)
@@ -23,10 +23,6 @@ class OrderAdmin(admin.ModelAdmin):
 
     def customer_name(self, obj):
         return obj.customer_name
-
-@admin.register(PricingRule)
-class PricingRuleAdmin(admin.ModelAdmin):
-    list_display = ('name', 'print_type', 'sides', 'paper_size', 'price_per_page', 'is_active')
 
 @admin.register(AddonService)
 class AddonServiceAdmin(admin.ModelAdmin):

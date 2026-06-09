@@ -4,7 +4,7 @@ Print-Edge — Pricing Engine (per-file + custom page ranges)
 import math
 from decimal import Decimal
 
-from .models import PricingRule, AddonService
+from .models import AddonService, ServiceVariant
 
 DEFAULT_A4_PRICES = {
     ('bw', 'single'): Decimal('2.00'),
@@ -34,38 +34,52 @@ def calculate_billable_units(pages, sides):
 
 
 def get_base_price(print_type, sides, paper_size='A4'):
-    """Fetch price from DB; fallback only when no rules exist."""
+    """Fetch price from ServiceVariant; fallback to default A4 constants when no matching variant exists."""
     paper_size = paper_size or 'A4'
     try:
-        rule = PricingRule.objects.get(
-            print_type=print_type, sides=sides,
-            paper_size=paper_size, is_active=True,
+        variant = ServiceVariant.objects.select_related('service').get(
+            specs__print_type=print_type,
+            specs__sides=sides,
+            specs__paper_size=paper_size,
+            is_active=True,
         )
-        return rule.price_per_page
-    except PricingRule.DoesNotExist:
+        return variant.effective_price
+    except ServiceVariant.DoesNotExist:
         return BASE_PRICES.get((print_type, sides, paper_size), Decimal('2.00'))
 
 
 def reset_a4_pricing_defaults():
-    """Restore A4 pricing rules to business defaults (2, 3, 5, 8)."""
+    """Restore A4 pricing variants to business defaults (2, 3, 5, 8)."""
     names = {
         ('bw', 'single'): 'B&W Single Side A4',
         ('bw', 'double'): 'B&W Double Side A4',
         ('color', 'single'): 'Color Single Side A4',
         ('color', 'double'): 'Color Double Side A4',
     }
+    service, _ = Service.objects.get_or_create(
+        name='Default Printing',
+        defaults={
+            'category': 'printing',
+            'base_price': Decimal('0'),
+            'requires_file': True,
+        },
+    )
     for (print_type, sides), price in DEFAULT_A4_PRICES.items():
-        PricingRule.objects.update_or_create(
-            print_type=print_type,
-            sides=sides,
-            paper_size='A4',
+        ServiceVariant.objects.update_or_create(
+            service=service,
+            name=names[(print_type, sides)],
             defaults={
-                'name': names[(print_type, sides)],
-                'price_per_page': price,
+                'price': price,
+                'specs': {
+                    'print_type': print_type,
+                    'sides': sides,
+                    'paper_size': 'A4',
+                },
+                'stock': 9999,
+                'low_stock_threshold': 100,
                 'is_active': True,
             },
         )
-    PricingRule.objects.exclude(paper_size='A4').update(is_active=False)
 
 
 def calculate_bulk_discount_percent(total_pages):

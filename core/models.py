@@ -195,24 +195,6 @@ class WalkInCustomer(DualWriteMixin, models.Model):
         return super().save(*args, **kwargs)
 
 
-class PricingRule(DualWriteMixin, models.Model):
-    """Configurable pricing engine."""
-    name = models.CharField(max_length=100)
-    print_type = models.CharField(max_length=10, choices=[('bw', 'Black & White'), ('color', 'Color')])
-    sides = models.CharField(max_length=10, choices=[('single', 'Single Side'), ('double', 'Double Side')])
-    paper_size = models.CharField(max_length=10, default='A4')
-    price_per_page = models.DecimalField(max_digits=6, decimal_places=2)
-    inventory_item = models.ForeignKey('InventoryItem', on_delete=models.SET_NULL, null=True, blank=True, help_text="Linked inventory item for auto-deduction")
-    is_active = models.BooleanField(default=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ('print_type', 'sides', 'paper_size')
-
-    def __str__(self):
-        return f"{self.name} — ৳{self.price_per_page}/page"
-
-
 class AddonService(DualWriteMixin, models.Model):
     """Finishing services like binding, lamination."""
     name = models.CharField(max_length=100)
@@ -350,6 +332,18 @@ class Order(DualWriteMixin, models.Model):
     # Identification
     order_number = models.CharField(max_length=30, unique=True, editable=False)
     source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='online')
+
+    # Service / Pricing
+    service = models.ForeignKey(
+        'Service', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='orders',
+        help_text='Selected service for this order.',
+    )
+    variant = models.ForeignKey(
+        'ServiceVariant', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='orders',
+        help_text='Selected variant/service option for this order.',
+    )
 
     # Customer (online or walk-in)
     customer = models.ForeignKey(

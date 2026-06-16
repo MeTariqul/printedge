@@ -10,37 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="""
-            -- Add missing columns to core_service
-            ALTER TABLE core_service 
-            ADD COLUMN IF NOT EXISTS base_price decimal(10,2) NOT NULL DEFAULT 0,
-            ADD COLUMN IF NOT EXISTS specs jsonb;
-
-            -- Remove old price column if it exists (renamed to base_price)
-            ALTER TABLE core_service 
-            DROP COLUMN IF EXISTS price;
-
-            -- Ensure updated_at exists with default
-            ALTER TABLE core_service 
-            ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT NOW();
-
-            -- Add missing columns to core_servicevariant
-            ALTER TABLE core_servicevariant 
-            ADD COLUMN IF NOT EXISTS stock decimal(10,2) NOT NULL DEFAULT 0,
-            ADD COLUMN IF NOT EXISTS low_stock_threshold decimal(10,2) NOT NULL DEFAULT 10,
-            ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT NOW();
-            """,
-            reverse_sql="""
-            ALTER TABLE core_service 
-            DROP COLUMN IF EXISTS base_price,
-            DROP COLUMN IF EXISTS specs,
-            DROP COLUMN IF EXISTS updated_at;
-
-            ALTER TABLE core_servicevariant 
-            DROP COLUMN IF EXISTS stock,
-            DROP COLUMN IF EXISTS low_stock_threshold,
-            DROP COLUMN IF EXISTS created_at;
-            """,
-        ),
+        migrations.RunPython(migrations.RunPython.noop, migrations.RunPython.noop),
     ]

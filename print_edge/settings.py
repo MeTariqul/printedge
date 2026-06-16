@@ -117,7 +117,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get(
             'DATABASE_URL',
-            'postgresql://postgres.pyrngcpgqvoueyglhviv:RedDeth3645@aws-1-ap-south-1.pooler.supabase.com:6543/postgres',
+            'postgresql://postgres.grcgetateedtitnlpogb:PrintEaseDB2026@aws-1-ap-southeast-2.pooler.supabase.com:6543/postgres',
         ),
         conn_max_age=300,
     )

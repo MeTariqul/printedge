@@ -1,14 +1,14 @@
 from django.urls import path, include
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.storage import staticfiles_storage
-from . import views, admin_ops_views, frontend_views
+from . import views, admin_ops_views, frontend_views, views_public
 
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('icons/favicon.png'), permanent=True)),
     # Public
     path('', views.public_index, name='public_index'),
     path('services/', views.public_services, name='public_services_page'),
-    path('services/<slug:slug>/', views.public_service_detail, name='public_service_detail'),
+    path('services/<slug:slug>/', views_public.public_service_detail, name='public_service_detail'),
     path('contact/', views.public_contact, name='public_contact_page'),
     path('manifest.json', views.pwa_manifest, name='manifest'),
     path('robots.txt', views.robots_txt, name='robots_txt'),

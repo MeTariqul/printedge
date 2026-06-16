@@ -5,6 +5,9 @@ from django.db import migrations
 
 def add_created_at(apps, schema_editor):
     connection = schema_editor.connection
+    vendor = connection.vendor
+    if vendor == 'sqlite':
+        return
     with connection.cursor() as c:
         c.execute(
             """

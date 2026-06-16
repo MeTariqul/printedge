@@ -1993,7 +1993,6 @@ def sitemap_xml(request):
     public_paths = [
         ('public_index', 'daily', '1.0'),
         ('public_services_page', 'weekly', '0.8'),
-        ('public_pricing_page', 'weekly', '0.9'),
         ('public_contact_page', 'monthly', '0.7'),
     ]
     urls = []

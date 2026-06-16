@@ -2,52 +2,54 @@
 
 This document describes the Row Level Security (RLS) policies configured in Supabase for the PrintEdge application.
 
+## Quick Start
+
+1. Open **Supabase Dashboard** → **SQL Editor**
+2. Paste contents of `supabase_rls_setup.sql`
+3. Click **Run**
+4. Verify with: `python test_supabase_rls.py`
+
 ## Overview
 
-All tables in the `public` schema have RLS enabled. Policies are defined to allow authenticated admin users to perform CRUD operations based on their role.
+All tables in the `public` schema have RLS enabled. Policies are defined to allow:
+- **Admin/Staff roles** (`super_admin`, `admin`, `manager`, `operator`, `finance`, `viewer`) → full CRUD on most tables
+- **Customer role** → read-only access to public services/variants/settings; can read only own orders
+- **Anonymous** → no access (RLS blocks all)
 
-## Admin App Tables
+## Helper Functions
 
-The following tables are accessed by the Android admin app and have policies allowing `super_admin`, `admin`, `manager`, `operator`, `finance`, and `viewer` roles:
-
-### Tables with policies
-- `core_user`
-- `core_order`
-- `core_orderfile`
-- `core_coupon`
-- `core_service`
-- `core_servicevariant`
-- `core_sitesettings`
-- `core_notification`
-- `core_auditlog`
-- `core_emailtemplate`
-- `core_walkincustomer`
-- `core_inventoryitem`
-- `core_expense`
-- `core_emailtemplate`
-- `core_emaillog`
-- `core_orderstatuslog`
-
-### Policy pattern
+Two SQL functions are created by the setup script:
 
 ```sql
-CREATE POLICY "allow_admin_roles" ON core_user
-  FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM core_user cu
-      WHERE cu.id = auth.uid()
-      AND cu.role IN ('super_admin', 'admin', 'manager', 'operator', 'finance', 'viewer')
-    )
-  );
+is_admin_user()     -- Returns true if auth.uid() is a staff/admin role
+is_authenticated_user() -- Returns true if user is logged in
 ```
 
-Each table has a similar policy named `allow_admin_roles` that checks the requesting user's role.
+## Table Policies
 
-## Django Internal Tables
+### Core Tables
 
-The following Django internal tables have **NO RLS policies** - API access is blocked by default:
+| Table | Anonymous | Authenticated Customer | Admin/Staff |
+|-------|-----------|------------------------|-------------|
+| `core_user` | None | None | Read/Update |
+| `core_order` | None | Read own orders only | Read/Insert/Update |
+| `core_orderfile` | None | None | Read/Insert |
+| `core_coupon` | None | Read (public coupons) | Read/Insert/Update |
+| `core_service` | None | Read | Read/Insert/Update |
+| `core_servicevariant` | None | Read | Read/Insert/Update |
+| `core_sitesettings` | None | Read | Read/Update |
+| `core_notification` | None | None | Read/Update |
+| `core_auditlog` | None | None | Read/Insert |
+| `core_emailtemplate` | None | None | Read/Insert/Update |
+| `core_inventoryitem` | None | None | Read/Insert/Update |
+| `core_walkincustomer` | None | None | Read/Insert/Update |
+| `core_emaillog` | None | None | Read |
+| `core_orderstatuslog` | None | None | Read/Insert |
+| `core_expense` | None | None | Read/Insert/Update |
+
+### Django Internal Tables (No RLS Policies)
+
+The following Django internal tables have **NO RLS policies** — API access is blocked by default:
 
 - `django_migrations`
 - `auth_permission`
@@ -57,99 +59,32 @@ The following Django internal tables have **NO RLS policies** - API access is bl
 - `django_session`
 - `django_admin_log`
 
-These tables are not exposed via the Supabase API and should remain without policies.
+## Policy Pattern
+
+All admin policies follow this pattern:
+
+```sql
+CREATE POLICY "policy_name" ON table_name
+  FOR {SELECT|INSERT|UPDATE|ALL}
+  TO authenticated
+  USING (is_admin_user())
+  WITH CHECK (is_admin_user());  -- For INSERT/UPDATE
+```
 
 ## Service Role
 
 The `service_role` key in Supabase bypasses RLS entirely. This is used only for server-side operations performed by the Django backend (e.g., file uploads to Storage, server-side data sync).
 
-## Enabling RLS
-
-To enable RLS on all tables, run the following in the Supabase SQL Editor:
-
-```sql
--- Enable RLS on all tables
-ALTER TABLE core_user ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_order ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_orderfile ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_coupon ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_service ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_servicevariant ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_sitesettings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_notification ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_auditlog ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_emailtemplate ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_emaillog ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_orderstatuslog ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_walkincustomer ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_inventoryitem ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_expense ENABLE ROW LEVEL SECURITY;
-
--- Create admin role policies
-CREATE POLICY "allow_admin_roles" ON core_user FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_order FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_orderfile FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_service FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_servicevariant FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_coupon FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_sitesettings FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_notification FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_auditlog FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_emailtemplate FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_emaillog FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_orderstatuslog FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_walkincustomer FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_inventoryitem FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-
-CREATE POLICY "allow_admin_roles" ON core_expense FOR ALL TO authenticated USING (
-  EXISTS (SELECT 1 FROM core_user cu WHERE cu.id = auth.uid() AND cu.role IN ('super_admin','admin','manager','operator','finance','viewer'))
-);
-```
-
 ## Verification
 
 After applying RLS:
-1. Open Supabase Dashboard → Database → RLS Advisor
+1. Open **Supabase Dashboard** → **Database** → **RLS Advisor**
 2. All warnings should disappear for the tables listed above
 3. No policies should exist for Django internal tables (`django_*`, `auth_*`)
+4. Run `python test_supabase_rls.py` to verify from the application side
+
+## Maintenance
+
+- To add a new table: add it to `supabase_rls_setup.sql` and run the script again
+- To modify roles: update the `is_admin_user()` function
+- To audit: check Supabase Dashboard → Database → Policies

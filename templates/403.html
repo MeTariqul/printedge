@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Access Denied | PrintEdge{% endblock %}
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:var(--space-8)">
+    <div style="text-align:center;max-width:500px">
+        <h1 style="font-size:6rem;font-weight:800;color:var(--color-warning);line-height:1;margin-bottom:20px">403</h1>
+        <h2 style="font-size:1.75rem;font-weight:700;margin-bottom:12px">Access Denied</h2>
+        <p style="color:var(--text-secondary);font-size:1.125rem;margin-bottom:32px">
+            You don't have permission to access this page. If you believe this is an error, please contact support.
+        </p>
+        <a href="{% url 'public_index' %}" class="btn-primary" style="display:inline-flex;justify-content:center">
+            <i class="bi bi-house-door-fill" style="margin-right:8px"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

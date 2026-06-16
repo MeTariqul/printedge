@@ -1,0 +1,43 @@
+{% load humanize %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8" style="margin-bottom:var(--space-8)">
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--accent-blue)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-currency-dollar" style="color:var(--accent-blue)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">Today's Revenue</span>
+      </div>
+      <div class="counter" data-target="{{ today_revenue|floatformat:0 }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">Paid orders</div>
+    </div>
+  </div>
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--color-success)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-calendar-month" style="color:var(--color-success)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">This Month's Revenue</span>
+      </div>
+      <div class="counter" data-target="{{ month_revenue|floatformat:0 }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">Since {{ month_start|date:'M 1' }}</div>
+    </div>
+  </div>
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--accent-blue)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-receipt" style="color:var(--accent-blue)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">Total Orders</span>
+      </div>
+      <div class="counter" data-target="{{ total_orders }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">All time</div>
+    </div>
+  </div>
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--color-warning)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-clock-history" style="color:var(--color-warning)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">Pending Payments</span>
+      </div>
+      <div class="counter" data-target="{{ pending_payments }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">Unpaid / partial / review</div>
+    </div>
+  </div>
+</div>

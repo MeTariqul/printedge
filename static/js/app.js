@@ -346,6 +346,23 @@
   // Fallback for Alpine init
   setTimeout(waitForAlpine, 500);
 
+  const pdfUtils = {
+    async getPdfPageCount(file) {
+      if (typeof pdfjsLib === 'undefined') {
+        console.warn('pdfjsLib is not loaded');
+        return 1;
+      }
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        return pdf.numPages || 1;
+      } catch (e) {
+        console.error('Error reading PDF pages:', e);
+        return 1;
+      }
+    }
+  };
+
   global.PrintEdge = {
     Toast,
     confirmAction,
@@ -354,5 +371,6 @@
     animateCounters,
     showSkeletons,
     getCsrfToken,
+    pdfUtils,
   };
 })(window);

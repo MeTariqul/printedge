@@ -71,19 +71,40 @@
         {% if service_requires_file %}
         <div x-show="step === 1" class="card p-6">
           <h3 class="text-lg font-semibold mb-4">Upload your file</h3>
-          <div @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop($event)"
-               class="border-2 border-dashed border-surface-border rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors">
+          <div @click="handleFileClick" @dragover.prevent="dragActive = true" @dragleave="dragActive = false" @drop.prevent="handleDrop($event)" :class="['border-2', 'border-dashed', 'rounded-lg', 'p-8', 'text-center', 'cursor-pointer', 'transition-colors', dragActive ? 'border-primary bg-primary/5' : 'border-surface-border hover:border-primary']">
             <i class="bi bi-cloud-arrow-up text-4xl text-text-muted mb-3 block"></i>
-            <p class="font-semibold text-text-primary">Drop files or ZIP here</p>
-            <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files</p>
-            <input type="file" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)">
+            <p class="font-semibold text-text-primary">Drop files or click to browse</p>
+            <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files (Max 20MB)</p>
+            <input type="file" id="fileInput" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)" @click.stop>
           </div>
           <template x-if="files.length">
             <ul class="mt-4 space-y-2">
               <template x-for="(f, i) in files" :key="i">
                 <li class="flex items-center justify-between p-3 rounded-lg bg-surface border border-surface-border">
-                  <span class="font-medium text-sm truncate" x-text="f.name"></span>
-                  <span class="text-xs text-primary font-semibold" x-text="f.pages + ' pages'"></span>
+                  <div class="flex items-center gap-3 overflow-hidden flex-1 mr-4">
+                    <i class="bi text-xl flex-shrink-0" :class="getFileIcon(f.name)"></i>
+                    <div class="truncate">
+                      <span class="font-medium text-sm truncate block" x-text="f.name"></span>
+                      <span class="text-xs text-text-muted" x-text="formatBytes(f.file.size)"></span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <template x-if="isPdf(f.name)">
+                       <span class="text-xs text-primary font-semibold whitespace-nowrap" x-text="f.pages + ' pages'"></span>
+                    </template>
+                    <template x-if="!isPdf(f.name) && !isImage(f.name)">
+                       <div class="flex flex-col items-end">
+                         <input type="number" x-model.number="f.pages" min="1" class="form-input w-16 px-2 py-1 text-xs" title="Pages" @input="updatePrice()">
+                         <span class="text-[10px] text-amber-500 mt-1 max-w-[120px] text-right leading-tight">Page count estimated. Please verify.</span>
+                       </div>
+                    </template>
+                    <template x-if="isImage(f.name)">
+                       <span class="text-xs text-primary font-semibold whitespace-nowrap">1 page</span>
+                    </template>
+                    <button type="button" @click="removeFile(i)" class="text-danger-text hover:text-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
                 </li>
               </template>
             </ul>
@@ -273,11 +294,19 @@
             </div>
           </div>
 
-          <div class="flex gap-3">
-            {% if service_requires_file %}
-            <button type="button" @click="step=2" class="btn-secondary">Back</button>
-            {% endif %}
-            <button type="submit" class="btn-cta ml-auto min-h-[44px]" :disabled="submitting">Place Order</button>
+          <div class="flex flex-col gap-3">
+            <div x-show="uploading" class="w-full bg-surface-border rounded-full h-2 mb-2 overflow-hidden" x-cloak>
+              <div class="bg-primary h-2 rounded-full transition-all duration-300" :style="`width: ${uploadProgress}%`"></div>
+            </div>
+            <div class="flex gap-3 w-full">
+              {% if service_requires_file %}
+              <button type="button" @click="step=2" class="btn-secondary" :disabled="submitting">Back</button>
+              {% endif %}
+              <button type="submit" class="btn-cta ml-auto min-h-[44px]" :disabled="submitting">
+                <span x-show="!uploading">Place Order</span>
+                <span x-show="uploading" x-text="`Uploading... ${uploadProgress}%`" x-cloak></span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -314,6 +343,9 @@ function orderWizard() {
     files: [],
     quote: {},
     submitting: false,
+    uploading: false,
+    uploadProgress: 0,
+    dragActive: false,
     get filesConfigJson() {
       return JSON.stringify(this.files.map(f => ({
         file_name: f.name,
@@ -327,25 +359,32 @@ function orderWizard() {
         ranges: f.ranges,
       })));
     },
+    handleFileClick(e) {
+      if (this.uploading) return;
+      if (this.$refs && this.$refs.fileInput) {
+        this.$refs.fileInput.click();
+      }
+    },
     async handleFiles(e) {
       const list = e.target.files;
       await this.processFileList(list);
     },
     async handleDrop(e) {
+      this.dragActive = false;
       await this.processFileList(e.dataTransfer.files);
     },
     async processFileList(list) {
-      const csrf = (window.PrintEdge && PrintEdge.getCsrfToken()) || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+      const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
       for (const file of list) {
+        if (file.size > MAX_FILE_SIZE) {
+          if (window.PrintEdge) PrintEdge.Toast.show(`File ${file.name} is larger than 20MB`, 'error');
+          continue;
+        }
         let pages = 1;
-        if (!file.name.toLowerCase().endsWith('.zip')) {
-          const fd = new FormData();
-          fd.append('file', file);
-          try {
-            const r = await fetch('/api/detect-pages/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': csrf } });
-            const d = await r.json();
-            if (d.pages) pages = d.pages;
-          } catch (err) {}
+        if (this.isPdf(file.name)) {
+          if (window.PrintEdge && window.PrintEdge.pdfUtils) {
+            pages = await window.PrintEdge.pdfUtils.getPdfPageCount(file);
+          }
         }
         this.files.push({
           name: file.name, file, pages, pages_detected: pages,
@@ -356,10 +395,38 @@ function orderWizard() {
       this.syncFileInput();
       this.updatePrice();
     },
+    removeFile(index) {
+      this.files.splice(index, 1);
+      this.syncFileInput();
+      this.updatePrice();
+    },
     syncFileInput() {
       const dt = new DataTransfer();
       this.files.forEach(f => { if (f.file) dt.items.add(f.file); });
       if (this.$refs.fileInput) this.$refs.fileInput.files = dt.files;
+    },
+    isPdf(filename) {
+      return filename.toLowerCase().endsWith('.pdf');
+    },
+    isImage(filename) {
+      const ext = filename.toLowerCase().split('.').pop();
+      return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+    },
+    getFileIcon(filename) {
+      if (this.isPdf(filename)) return 'bi-file-earmark-pdf text-red-500';
+      if (this.isImage(filename)) return 'bi-file-earmark-image text-emerald-500';
+      const ext = filename.toLowerCase().split('.').pop();
+      if (['doc', 'docx'].includes(ext)) return 'bi-file-earmark-word text-blue-500';
+      if (['ppt', 'pptx'].includes(ext)) return 'bi-file-earmark-ppt text-orange-500';
+      if (ext === 'zip') return 'bi-file-earmark-zip text-gray-500';
+      return 'bi-file-earmark text-gray-500';
+    },
+    formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     },
     addRange(fi) {
       this.files[fi].ranges.push({ start_page: 1, end_page: 1, print_type: 'color', sides: 'single' });
@@ -377,7 +444,51 @@ function orderWizard() {
         return;
       }
       {% endif %}
+      e.preventDefault(); // Prevent standard submission to show progress
+      if (this.submitting) return;
       this.submitting = true;
+      this.uploading = true;
+      this.uploadProgress = 0;
+
+      const form = document.getElementById('orderForm');
+      const formData = new FormData(form);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', form.action || window.location.href, true);
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          this.uploadProgress = Math.round((event.loaded / event.total) * 100);
+        }
+      };
+
+      xhr.onload = () => {
+        this.submitting = false;
+        this.uploading = false;
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const res = JSON.parse(xhr.responseText);
+            if (res.redirect_url) {
+              window.location.href = res.redirect_url;
+              return;
+            }
+          } catch(err) {
+             document.open();
+             document.write(xhr.responseText);
+             document.close();
+             window.history.pushState({}, "", xhr.responseURL);
+          }
+        } else {
+          if (window.PrintEdge) PrintEdge.Toast.show('Error submitting order', 'error');
+        }
+      };
+      xhr.onerror = () => {
+        this.submitting = false;
+        this.uploading = false;
+        if (window.PrintEdge) PrintEdge.Toast.show('Network error', 'error');
+      };
+      xhr.send(formData);
     },
     async applyCoupon() {
       if (!this.promoCode.trim()) return;
@@ -404,8 +515,8 @@ function orderWizard() {
       this.updatePrice();
     },
     async updatePrice() {
-      const addonIds = [...document.querySelectorAll('input[name="addons"]:checked')].map(c => c.value);
-      const isUrgent = document.querySelector('input[name="is_urgent"]')?.checked || false;
+      const addonIds = [...document.querySelectorAll('input[name=\"addons\"]:checked')].map(c => c.value);
+      const isUrgent = document.querySelector('input[name=\"is_urgent\"]')?.checked || false;
       const filesPayload = this.files.length ? this.files.map(f => ({
         file_name: f.name,
         pages: f.pages,
@@ -415,7 +526,7 @@ function orderWizard() {
         copies: f.copies,
         ranges: f.ranges,
       })) : [{
-        file_name: '{{ preselected_service.name|default:"Service"|escapejs }}',
+        file_name: '{{ preselected_service.name|default:\"Service\"|escapejs }}',
         pages: this.quantity || 1,
         print_type: 'bw',
         sides: 'single',

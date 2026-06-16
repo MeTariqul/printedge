@@ -1,0 +1,19 @@
+{% comment %}
+── components/empty_state.html ── No-data placeholder ──
+Usage: {% include "components/empty_state.html" with icon="bi-inbox" title="No orders" desc="..." action_url=url action_text="New Order" %}
+{% endcomment %}
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <i class="bi {{ icon|default:'bi-inbox' }}"></i>
+    </div>
+    <p class="empty-state-title">{{ title|default:"Nothing here yet" }}</p>
+    {% if desc %}
+    <p class="empty-state-desc">{{ desc }}</p>
+    {% endif %}
+    {% if action_url and action_text %}
+    <a href="{{ action_url }}" class="btn-primary">
+        {% if action_icon %}<i class="bi {{ action_icon }}"></i>{% endif %}
+        {{ action_text }}
+    </a>
+    {% endif %}
+</div>

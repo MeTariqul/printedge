@@ -1,0 +1,33 @@
+{% load humanize %}
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-8" style="margin-bottom:var(--space-8)">
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--accent-blue)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-receipt" style="color:var(--accent-blue)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">Orders in Queue</span>
+      </div>
+      <div class="counter" data-target="{{ pending_orders_count }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">Pending + confirmed</div>
+    </div>
+  </div>
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--color-success)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-check2-circle" style="color:var(--color-success)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">Completed Today</span>
+      </div>
+      <div class="counter" data-target="{{ orders_completed_today_count }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">Delivered</div>
+    </div>
+  </div>
+  <div class="card" style="padding:var(--space-5);position:relative;overflow:hidden;min-height:120px;border-left:4px solid var(--color-warning)">
+    <div style="position:relative;z-index:10">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <i class="bi bi-clock-history" style="color:var(--color-warning)"></i>
+        <span style="font-size:0.625rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em">Pending Orders</span>
+      </div>
+      <div class="counter" data-target="{{ pending_orders_count }}" style="font-size:1.875rem;font-weight:800;color:var(--text-primary)">0</div>
+      <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);margin-top:4px">Awaiting action</div>
+    </div>
+  </div>
+</div>

@@ -263,3 +263,16 @@ def admin_walkin_merge(request, pk):
         'orders': orders,
         'online_users': online_users,
     })
+
+
+def api_health(request):
+    from django.http import JsonResponse
+    from .system_utils import get_database_status
+    db_status = get_database_status()
+    db_ok = db_status.get('default', {}).get('connected', False)
+    status_code = 200 if db_ok else 503
+    return JsonResponse({
+        'status': 'healthy' if db_ok else 'degraded',
+        'database': db_status
+    }, status=status_code)
+

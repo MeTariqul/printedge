@@ -13,6 +13,7 @@ urlpatterns = [
     path('manifest.json', views.pwa_manifest, name='manifest'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
     path('sitemap.xml', views.sitemap_xml, name='sitemap_xml'),
+    path('api/health/', frontend_views.api_health, name='api_health'),
 
     # Auth
     path('auth/login/', views.auth_login, name='auth_login_page'),

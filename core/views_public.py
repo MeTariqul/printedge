@@ -47,18 +47,27 @@ def public_index(request):
 
 
 @cache_page(60 * 15)
-def public_pricing(request):
-    addons = AddonService.objects.filter(is_active=True)
-    services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
-    return render(request, 'pricing.html', {'addons': addons, 'services': services})
-
-
-@cache_page(60 * 15)
 def public_services(request):
-    # Legacy – renders same template as public_services
-    services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
+    services = Service.objects.filter(is_active=True).prefetch_related('variants').annotate(variant_count=Count('variants')).order_by('category', 'name')
     addons = AddonService.objects.filter(is_active=True)
-    return render(request, 'services.html', {'services': services, 'addons': addons})
+    selected_category = request.GET.get('category', 'all')
+    categories = [
+        ('all', 'All'),
+        ('printing', 'Printing'),
+        ('binding', 'Binding'),
+        ('lamination', 'Lamination'),
+        ('photo', 'Photo'),
+        ('stationery', 'Stationery'),
+    ]
+    if selected_category and selected_category != 'all':
+        services = services.filter(category=selected_category)
+    return render(request, 'services.html', {'services': services, 'addons': addons, 'selected_category': selected_category, 'categories': categories})
+
+
+def public_service_detail(request, slug):
+    service = get_object_or_404(Service, slug=slug, is_active=True)
+    variants = service.variants.filter(is_active=True)
+    return render(request, 'services/detail.html', {'service': service, 'variants': variants})
 
 
 
@@ -84,8 +93,7 @@ def sitemap_xml(request):
     base = request.build_absolute_uri('/').rstrip('/')
     public_paths = [
         ('public_index', 'daily', '1.0'),
-        ('public_services_page', 'weekly', '0.8'),
-        ('public_pricing_page', 'weekly', '0.9'),
+        ('public_services_page', 'weekly', '0.9'),
         ('public_contact_page', 'monthly', '0.7'),
     ]
     urls = []

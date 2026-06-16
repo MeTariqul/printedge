@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ service.name }} | Print-Edge{% endblock %}
+
+{% block content %}
+<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+
+<div class="max-w-5xl mx-auto px-6 lg:px-8 py-20 relative z-10">
+    <div class="mb-12">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                {% if service.category == 'printing' %}
+                    <i class="bi bi-printer-fill text-4xl text-purple-400"></i>
+                {% elif service.category == 'binding' %}
+                    <i class="bi bi-journal-text text-4xl text-purple-400"></i>
+                {% elif service.category == 'photo' %}
+                    <i class="bi bi-camera-fill text-4xl text-purple-400"></i>
+                {% elif service.category == 'lamination' %}
+                    <i class="bi bi-layers-fill text-4xl text-purple-400"></i>
+                {% elif service.category == 'stationery' %}
+                    <i class="bi bi-pencil-square text-4xl text-purple-400"></i>
+                {% else %}
+                    <i class="bi bi-briefcase-fill text-4xl text-purple-400"></i>
+                {% endif %}
+            </div>
+            <div>
+                <h1 class="text-4xl md:text-5xl font-display font-bold text-text-primary">{{ service.name }}</h1>
+                <span class="inline-block px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20 mt-2">{{ service.get_category_display }}</span>
+            </div>
+        </div>
+        {% if service.description %}
+        <p class="text-lg text-text-muted leading-relaxed">{{ service.description }}</p>
+        {% endif %}
+    </div>
+
+    <div class="card p-8 rounded-2xl mb-12">
+        <h2 class="text-2xl font-bold text-text-primary mb-6 border-l-4 border-primary pl-4">Service Variants</h2>
+        {% if variants %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-surface/30">
+                        <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider">Variant</th>
+                        <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider">Print Type</th>
+                        <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider">Sides</th>
+                        <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider">Paper Size</th>
+                        <th class="px-6 py-4 text-sm font-bold text-text-muted uppercase tracking-wider text-right">Price</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-border">
+                    {% for variant in variants %}
+                    <tr class="hover:bg-surface/20 transition-colors">
+                        <td class="px-6 py-4 font-semibold text-text-primary">{{ variant.name }}</td>
+                        <td class="px-6 py-4 text-text-muted">{{ variant.specs.print_type|default:'-' }}</td>
+                        <td class="px-6 py-4 text-text-muted">{{ variant.specs.sides|default:'-' }}</td>
+                        <td class="px-6 py-4 text-text-muted">{{ variant.specs.paper_size|default:'-' }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-xl font-bold text-primary">৳{{ variant.effective_price|floatformat:2 }}</span>
+                            <span class="text-text-muted text-xs">/page</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-text-muted text-center py-8">No variants available for this service.</p>
+        {% endif %}
+    </div>
+
+    <div class="flex items-center justify-between">
+        <a href="{% url 'public_services_page' %}" class="px-6 py-3 rounded-xl font-bold text-text-primary bg-surface hover:bg-surface/50 transition-colors">
+            <i class="bi bi-arrow-left mr-2"></i>Back to Services
+        </a>
+        <a href="{% url 'user_new_order' %}?service={{ service.pk }}" class="px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-purple-600 hover:from-primary-dark hover:to-purple-500 shadow-xl shadow-primary/25 transition-all hover:scale-105">
+            <i class="bi bi-cart-fill mr-2"></i>Order Now
+        </a>
+    </div>
+</div>
+{% endblock %}

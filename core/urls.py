@@ -8,7 +8,7 @@ urlpatterns = [
     # Public
     path('', views.public_index, name='public_index'),
     path('services/', views.public_services, name='public_services_page'),
-    path('pricing/', views.public_pricing, name='public_pricing_page'),
+    path('services/<slug:slug>/', views.public_service_detail, name='public_service_detail'),
     path('contact/', views.public_contact, name='public_contact_page'),
     path('manifest.json', views.pwa_manifest, name='manifest'),
     path('robots.txt', views.robots_txt, name='robots_txt'),

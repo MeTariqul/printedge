@@ -9,6 +9,7 @@ FULL_ADMIN = ('admin', 'super_admin')
 PERMISSIONS = {
     'view_orders': STAFF_ROLES,
     'update_order_status': WRITE_STAFF_ROLES,
+    'manage_orders': WRITE_STAFF_ROLES,
     'walkin_order': WRITE_STAFF_ROLES,
     'operator_dashboard': WRITE_STAFF_ROLES,
     'manage_pricing': WRITE_STAFF_ROLES,

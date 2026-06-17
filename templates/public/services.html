@@ -1,70 +1,223 @@
 {% extends "base.html" %}
 {% block title %}Our Services | Print-Edge{% endblock %}
+{% block meta_description %}Explore Print-Edge's full range of printing, binding, lamination, and custom services. Affordable prices, fast turnaround.{% endblock %}
+
 {% block content %}
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="text-center mb-16">
-        <h1 class="text-4xl font-extrabold text-text-primary sm:text-5xl tracking-tight mb-4">Our Services</h1>
-        <p class="text-xl text-text-muted max-w-2xl mx-auto">High-quality printing, binding, and finishing services tailored to your needs.</p>
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-primary via-primary-dark to-canvas-alt py-20 sm:py-28">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white/20 blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-danger/20 blur-3xl"></div>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span class="inline-block px-4 py-1.5 rounded-full bg-white/15 text-white/90 text-xs font-bold uppercase tracking-widest mb-6 backdrop-blur-sm border border-white/10">Professional Print Services</span>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-tight">
+            Our <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-sky-200 to-white">Services</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+            High-quality printing, binding, and finishing services tailored to your needs. Upload, order, and collect — it's that simple.
+        </p>
+    </div>
+</section>
+
+<!-- Category Filter & Services Grid -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16" x-data="serviceFilter()">
+
+    <!-- Category Filter Pills -->
+    <div class="flex flex-wrap gap-2 sm:gap-3 mb-10 justify-center">
+        <button @click="filterCategory('all')"
+                :class="activeCategory === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-grid-fill mr-1.5"></i> All Services
+        </button>
+        <button @click="filterCategory('printing')"
+                :class="activeCategory === 'printing' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-printer-fill mr-1.5"></i> Printing
+        </button>
+        <button @click="filterCategory('photo')"
+                :class="activeCategory === 'photo' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-camera-fill mr-1.5"></i> Photo
+        </button>
+        <button @click="filterCategory('binding')"
+                :class="activeCategory === 'binding' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-journal-text mr-1.5"></i> Binding
+        </button>
+        <button @click="filterCategory('lamination')"
+                :class="activeCategory === 'lamination' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-bounding-box mr-1.5"></i> Lamination
+        </button>
+        <button @click="filterCategory('stationery')"
+                :class="activeCategory === 'stationery' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-pen-fill mr-1.5"></i> Stationery
+        </button>
+        <button @click="filterCategory('custom')"
+                :class="activeCategory === 'custom' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-surface text-text-secondary border border-surface-border hover:border-primary/40 hover:text-primary'"
+                class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 min-h-[44px]">
+            <i class="bi bi-gear-fill mr-1.5"></i> Custom
+        </button>
     </div>
 
-    {% regroup services by get_category_display as categorized_services %}
+    <!-- Services Count -->
+    <p class="text-center text-text-muted text-sm mb-8">
+        Showing <span class="font-bold text-text-primary" x-text="visibleCount"></span> service<span x-show="visibleCount !== 1">s</span>
+    </p>
 
-    {% for category in categorized_services %}
-    <div class="mb-16">
-        <h2 class="text-3xl font-bold text-text-primary mb-8 border-b border-surface-border pb-3 flex items-center gap-3">
-            <span class="bg-primary/10 text-primary p-2 rounded-lg">
-                {% if category.grouper == 'Printing' %}<i class="bi bi-printer-fill"></i>
-                {% elif category.grouper == 'Binding' %}<i class="bi bi-journal-text"></i>
-                {% elif category.grouper == 'Photo' %}<i class="bi bi-camera-fill"></i>
-                {% else %}<i class="bi bi-briefcase-fill"></i>{% endif %}
-            </span>
-            {{ category.grouper }}
-        </h2>
+    <!-- Services Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        {% for service in services %}
+        <div class="service-card group card rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 border border-surface-border"
+             data-category="{{ service.category }}">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for service in category.list %}
-            <div class="card p-6 flex flex-col">
-                <h3 class="text-xl font-bold text-text-primary mb-2">{{ service.name }}</h3>
+            <!-- Card Header with Category Badge -->
+            <div class="p-5 pb-0">
+                <div class="flex items-start justify-between mb-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider
+                        {% if service.category == 'printing' %}bg-blue-500/10 text-blue-600
+                        {% elif service.category == 'photo' %}bg-purple-500/10 text-purple-600
+                        {% elif service.category == 'binding' %}bg-amber-500/10 text-amber-700
+                        {% elif service.category == 'lamination' %}bg-emerald-500/10 text-emerald-700
+                        {% elif service.category == 'stationery' %}bg-indigo-500/10 text-indigo-600
+                        {% else %}bg-gray-500/10 text-gray-600{% endif %}">
+                        {% if service.category == 'printing' %}<i class="bi bi-printer-fill"></i>
+                        {% elif service.category == 'photo' %}<i class="bi bi-camera-fill"></i>
+                        {% elif service.category == 'binding' %}<i class="bi bi-journal-text"></i>
+                        {% elif service.category == 'lamination' %}<i class="bi bi-bounding-box"></i>
+                        {% elif service.category == 'stationery' %}<i class="bi bi-pen-fill"></i>
+                        {% else %}<i class="bi bi-gear-fill"></i>{% endif %}
+                        {{ service.get_category_display }}
+                    </span>
+                    {% if service.requires_file %}
+                    <span class="px-2 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold" title="File upload required">
+                        <i class="bi bi-cloud-arrow-up-fill"></i> Upload
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Service Name & Description -->
+                <h3 class="text-xl font-bold text-text-primary mb-2 group-hover:text-primary transition-colors">{{ service.name }}</h3>
                 {% if service.description %}
-                <p class="text-sm text-text-muted mb-4 line-clamp-3">{{ service.description }}</p>
-                {% endif %}
-
-                <div class="mt-auto pt-4 border-t border-surface-border">
-                    <div class="flex items-end justify-between mb-4">
-                        <div>
-                            <span class="text-xs text-text-muted uppercase font-semibold tracking-wider">Starting at</span>
-                            <div class="text-2xl font-bold text-primary">৳{{ service.base_price|floatformat:0 }}</div>
-                        </div>
-                    </div>
-
-                    <a href="{% url 'user_new_order' %}?service={{ service.pk }}"
-                       class="block w-full py-3 px-4 bg-primary hover:bg-primary-dark text-canvas font-bold rounded-xl shadow-lg shadow-primary-glow transition-colors min-h-[44px]">
-                        Order Now <i class="bi bi-arrow-right ml-1"></i>
-                    </a>
-                </div>
-
-                {% if service.variants.exists %}
-                <div class="mt-3 text-xs text-text-muted">
-                    <span>Variants:</span>
-                    {% for variant in service.variants.all|slice:":2" %}
-                    <span class="ml-1 px-1.5 py-0.5 rounded bg-surface text-xs">{{ variant.name }}: ৳{{ variant.effective_price|floatformat:0 }}</span>
-                    {% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                    {% if service.variants.count > 2 %}<span class="ml-1">…</span>{% endif %}
-                </div>
+                <p class="text-sm text-text-secondary leading-relaxed line-clamp-3 mb-4">{{ service.description }}</p>
+                {% else %}
+                <p class="text-sm text-text-muted italic mb-4">Professional {{ service.get_category_display|lower }} service</p>
                 {% endif %}
             </div>
-            {% endfor %}
+
+            <!-- Variants (if any) -->
+            {% if service.variants.exists %}
+            <div class="px-5 mb-3">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-text-muted mb-2">Available Options</p>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for variant in service.variants.all|slice:":4" %}
+                    <span class="px-2.5 py-1 rounded-lg bg-surface border border-surface-border text-xs font-semibold text-text-secondary">
+                        {{ variant.name }}
+                        <span class="text-primary font-bold ml-0.5">৳{{ variant.effective_price|floatformat:0 }}</span>
+                    </span>
+                    {% endfor %}
+                    {% if service.variants.count > 4 %}
+                    <span class="px-2.5 py-1 rounded-lg bg-surface border border-surface-border text-xs text-text-muted">
+                        +{{ service.variants.count|add:"-4" }} more
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Footer: Price + CTA -->
+            <div class="mt-auto p-5 pt-4 border-t border-surface-border bg-canvas-alt/30">
+                <div class="flex items-end justify-between mb-4">
+                    <div>
+                        <span class="text-[10px] text-text-muted uppercase font-bold tracking-wider block">Starting at</span>
+                        <span class="text-3xl font-extrabold text-text-primary">
+                            <span class="text-lg text-primary">৳</span>{{ service.base_price|floatformat:0 }}
+                        </span>
+                    </div>
+                    {% if service.variants.count > 0 %}
+                    <span class="text-xs text-text-muted">
+                        {{ service.variants.count }} option{{ service.variants.count|pluralize }}
+                    </span>
+                    {% endif %}
+                </div>
+                <a href="{% url 'user_new_order' %}?service={{ service.pk }}"
+                   class="block w-full py-3.5 px-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-200 text-center min-h-[44px] text-sm">
+                    Order Now <i class="bi bi-arrow-right ml-1.5"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-20 bg-surface rounded-3xl border border-surface-border">
+            <div class="w-20 h-20 rounded-full bg-canvas border-2 border-surface-border flex items-center justify-center mx-auto mb-6">
+                <i class="bi bi-box-seam text-4xl text-text-muted"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-text-primary mb-3">No Services Available</h3>
+            <p class="text-text-muted max-w-md mx-auto">We're currently updating our catalog. Please check back later or contact us for custom requests.</p>
+            <a href="{% url 'public_contact_page' %}" class="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors min-h-[44px]">
+                <i class="bi bi-envelope"></i> Contact Us
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- No results for filter -->
+    <div x-show="visibleCount === 0 && activeCategory !== 'all'" x-cloak
+         class="text-center py-16 bg-surface rounded-2xl border border-surface-border mt-8">
+        <i class="bi bi-funnel text-4xl text-text-muted mb-4 block"></i>
+        <h3 class="text-xl font-bold text-text-primary mb-2">No services in this category</h3>
+        <p class="text-text-muted mb-4">Try selecting a different category above.</p>
+        <button @click="filterCategory('all')" class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors min-h-[44px]">
+            Show All Services
+        </button>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<section class="bg-gradient-to-r from-canvas-alt to-surface py-16 border-t border-surface-border">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold text-text-primary mb-4">Need Something Custom?</h2>
+        <p class="text-text-secondary text-lg mb-8">Can't find what you're looking for? We offer custom printing solutions for any project.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'public_contact_page' %}" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 min-h-[44px]">
+                <i class="bi bi-chat-dots"></i> Get in Touch
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'user_dashboard' %}" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-surface text-text-primary font-bold border border-surface-border hover:border-primary/40 hover:text-primary transition-colors min-h-[44px]">
+                <i class="bi bi-speedometer2"></i> My Dashboard
+            </a>
+            {% else %}
+            <a href="{% url 'auth_register_page' %}" class="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-surface text-text-primary font-bold border border-surface-border hover:border-primary/40 hover:text-primary transition-colors min-h-[44px]">
+                <i class="bi bi-person-plus"></i> Create Account
+            </a>
+            {% endif %}
         </div>
     </div>
-    {% empty %}
-    <div class="text-center py-20 bg-surface rounded-3xl border border-surface-border">
-        <i class="bi bi-box-seam text-6xl text-text-muted mb-4 inline-block"></i>
-        <h3 class="text-2xl font-bold text-text-primary mb-2">No Services Configured</h3>
-        <p class="text-text-muted">Please check back later as we are currently updating our catalog.</p>
-    </div>
-    {% endfor %}
-</div>
+</section>
+
+<script>
+function serviceFilter() {
+    return {
+        activeCategory: 'all',
+        visibleCount: document.querySelectorAll('.service-card').length,
+        filterCategory(cat) {
+            this.activeCategory = cat;
+            const cards = document.querySelectorAll('.service-card');
+            let count = 0;
+            cards.forEach(card => {
+                if (cat === 'all' || card.dataset.category === cat) {
+                    card.style.display = '';
+                    count++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            this.visibleCount = count;
+        }
+    };
+}
+</script>
 
 {% endblock %}

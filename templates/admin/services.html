@@ -122,7 +122,7 @@
                     </td>
                     <td class="py-1.5 text-right">
                         <div class="flex items-center justify-end gap-1">
-                            <button type="button" onclick="openEditVariantModal({{ variant.pk }}, {{ service.pk }})" class="text-brand-400 hover:text-brand-300 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-pencil"></i></button>
+                            <button type="button" onclick="openEditVariantModal('{{ variant.pk }}', '{{ service.pk }}')" class="text-brand-400 hover:text-brand-300 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-pencil"></i></button>
                             <form method="post" onsubmit="return confirm('Delete variant?')" class="inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete_variant">
@@ -140,9 +140,9 @@
 
     <!-- Quick Actions -->
     <div class="flex gap-2 pt-2 border-t border-surface-border">
-        <button type="button" onclick="openEditServiceModal({{ service.pk }})"
+        <button type="button" onclick="openEditServiceModal('{{ service.pk }}')"
                 class="flex-1 btn-secondary text-xs py-2 min-h-[44px]">Edit</button>
-        <button type="button" onclick="openAddVariantModal({{ service.pk }})"
+        <button type="button" onclick="openAddVariantModal('{{ service.pk }}')"
                 class="flex-1 btn-primary text-xs py-2 min-h-[44px]">Add Variant</button>
         {% if request.user.is_full_admin %}
         <form method="post" onsubmit="return confirm('Delete this service? All variants will be deleted.')" class="flex-shrink-0">
@@ -293,7 +293,7 @@
 </div>
 
 <script>
-const SERVICE_ATTRIBUTE_SPECS = {{ service_attribute_specs|safe }};
+const SERVICE_ATTRIBUTE_SPECS = JSON.parse('{{ service_attribute_specs|escapejs }}');
 
 function openAddServiceModal() {
     const modal = document.getElementById('addServiceModal');

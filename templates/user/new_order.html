@@ -526,7 +526,7 @@ function orderWizard() {
         copies: f.copies,
         ranges: f.ranges,
       })) : [{
-        file_name: '{{ preselected_service.name|default:\"Service\"|escapejs }}',
+        file_name: '{{ preselected_service.name|default:"Service"|escapejs }}',
         pages: this.quantity || 1,
         print_type: 'bw',
         sides: 'single',

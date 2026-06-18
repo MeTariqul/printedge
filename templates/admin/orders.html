@@ -15,6 +15,28 @@
     </div>
 </div>
 
+<!-- Bulk Actions Bar -->
+<form method="post" id="bulkForm">
+{% csrf_token %}
+<input type="hidden" name="bulk_action" id="bulkActionInput" value="">
+<input type="hidden" name="bulk_status_value" id="bulkStatusValue" value="">
+<div class="premium-card p-3 rounded-2xl mb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3" id="bulkBar" style="display:none;">
+    <span class="text-sm text-text-muted whitespace-nowrap"><span id="selectedCount">0</span> selected</span>
+    <div class="flex flex-wrap gap-2 flex-1">
+        <select id="bulkStatusSelect" class="px-3 py-2 rounded-lg bg-surface-input border border-surface-border text-text-primary text-xs focus:border-primary focus:outline-none">
+            {% for key, label in status_choices %}
+            <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="button" onclick="submitBulkAction('bulk_status')" class="px-4 py-2 min-h-[44px] rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/80 transition-colors">
+            <i class="bi bi-pencil-square"></i> Update Status
+        </button>
+        <button type="button" onclick="confirmBulkDelete()" class="px-4 py-2 min-h-[44px] rounded-lg bg-danger text-white text-xs font-bold hover:bg-danger/80 transition-colors">
+            <i class="bi bi-trash3"></i> Delete
+        </button>
+    </div>
+</div>
+
 <!-- Filters -->
 <div class="premium-card p-4 rounded-2xl mb-6">
     <form method="get" class="flex flex-col sm:flex-row gap-3">
@@ -48,7 +70,8 @@
         <table class="w-full text-left border-collapse responsive-table">
             <thead>
                 <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-wider font-semibold border-b border-surface-border">
-                    <th class="p-3 pl-5">Order</th>
+                    <th class="p-3 pl-5"><input type="checkbox" id="selectAll" class="w-4 h-4 rounded" title="Select all"></th>
+                    <th class="p-3">Order</th>
                     <th class="p-3">Source</th>
                     <th class="p-3">Customer</th>
                     <th class="p-3">Specs</th>
@@ -61,7 +84,8 @@
             <tbody class="divide-y divide-surface-border">
                 {% for o in orders %}
                 <tr class="hover:bg-surface transition-colors">
-                    <td class="p-3 pl-5" data-label="Order">
+                    <td class="p-3 pl-5"><input type="checkbox" name="selected_orders" value="{{ o.pk }}" class="row-check w-4 h-4 rounded" data-order="{{ o.pk }}"></td>
+                    <td class="p-3" data-label="Order">
                         <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
                         <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
                     </td>
@@ -107,7 +131,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="p-12 text-center">
+                    <td colspan="9" class="p-12 text-center">
                         <div class="w-16 h-16 rounded-full bg-surface border border-surface-border flex items-center justify-center mx-auto mb-4">
                             <i class="bi bi-inbox text-2xl text-text-muted"></i>
                         </div>
@@ -182,4 +206,46 @@
     </div>
     {% endfor %}
 </div>
+</form>
+
+<script>
+(function() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.row-check');
+    const bulkBar = document.getElementById('bulkBar');
+    const countEl = document.getElementById('selectedCount');
+
+    function updateBar() {
+        const checked = document.querySelectorAll('.row-check:checked');
+        countEl.textContent = checked.length;
+        bulkBar.style.display = checked.length > 0 ? '' : 'none';
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => { cb.checked = this.checked; });
+            updateBar();
+        });
+    }
+    checkboxes.forEach(cb => { cb.addEventListener('change', updateBar); });
+})();
+
+function submitBulkAction(action) {
+    const checked = document.querySelectorAll('.row-check:checked');
+    if (!checked.length) return;
+    document.getElementById('bulkActionInput').value = action;
+    if (action === 'bulk_status') {
+        document.getElementById('bulkStatusValue').value = document.getElementById('bulkStatusSelect').value;
+    }
+    document.getElementById('bulkForm').submit();
+}
+
+function confirmBulkDelete() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    if (!checked.length) return;
+    if (!confirm('Are you sure you want to delete ' + checked.length + ' order(s)? This cannot be undone.')) return;
+    document.getElementById('bulkActionInput').value = 'bulk_delete';
+    document.getElementById('bulkForm').submit();
+}
+</script>
 {% endblock %}

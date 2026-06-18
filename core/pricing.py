@@ -4,7 +4,7 @@ Print-Edge — Pricing Engine (per-file + custom page ranges)
 import math
 from decimal import Decimal
 
-from .models import AddonService, ServiceVariant
+from .models import AddonService, Service, ServiceVariant
 
 DEFAULT_A4_PRICES = {
     ('bw', 'single'): Decimal('2.00'),

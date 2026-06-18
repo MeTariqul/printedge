@@ -897,6 +897,52 @@ def admin_orders(request):
             Q(walkin_customer__name__icontains=search) |
             Q(walkin_customer__phone__icontains=search)
         )
+
+    # ── Bulk actions (POST) ──
+    if request.method == 'POST':
+        if request.user.is_readonly_staff:
+            messages.error(request, 'Read-only access.')
+            return redirect('admin_orders')
+        bulk_action = request.POST.get('bulk_action')
+        selected_ids = request.POST.getlist('selected_orders')
+        if not selected_ids:
+            messages.warning(request, 'No orders selected.')
+            return redirect('admin_orders')
+        orders = Order.objects.filter(pk__in=selected_ids)
+
+        if bulk_action == 'bulk_status':
+            new_status = request.POST.get('bulk_status_value', '')
+            valid = [s[0] for s in Order.STATUS_CHOICES]
+            if new_status not in valid:
+                messages.error(request, 'Invalid status.')
+            else:
+                updated = 0
+                for order in orders:
+                    old_status = order.status
+                    order.status = new_status
+                    if new_status == 'delivered':
+                        apply_order_delivered(order)
+                    order.save()
+                    OrderStatusLog.objects.create(
+                        order=order, old_status=old_status,
+                        new_status=new_status, changed_by=request.user,
+                        note='Bulk status update.',
+                    )
+                    notify_order_status_change(order, old_status, changed_by=request.user)
+                    updated += 1
+                messages.success(request, f'{updated} order(s) updated to {new_status}.')
+
+        elif bulk_action == 'bulk_delete':
+            if not request.user.is_full_admin:
+                messages.error(request, 'Only admins can delete orders.')
+            else:
+                count, _ = orders.delete()
+                for oid in selected_ids:
+                    log_audit(request, 'DELETE_ORDER', 'Order', '', old_value=f'bulk-delete-{oid}')
+                messages.success(request, f'{count} order(s) deleted.')
+
+        return redirect(f'{reverse("admin_orders")}?{request.META.get("QUERY_STRING", "")}')
+
     ctx = {
         'orders': qs[:100],
         'status_choices': Order.STATUS_CHOICES,
@@ -1566,24 +1612,63 @@ def admin_financial(request):
     today = timezone.now().date()
     expenses = Expense.objects.order_by('-date')[:50]
     if request.method == 'POST':
-        Expense.objects.create(
-            category=request.POST['category'], description=request.POST['description'],
-            amount=request.POST['amount'], payment_method=request.POST.get('payment_method', 'Cash'),
-            date=request.POST.get('date', today), logged_by=request.user,
-        )
-        messages.success(request, 'Expense logged.')
+        if request.user.is_readonly_staff:
+            messages.error(request, 'Read-only access.')
+            return redirect('admin_financial')
+        action = request.POST.get('action')
+        if action == 'log_expense':
+            Expense.objects.create(
+                category=request.POST['category'], description=request.POST['description'],
+                amount=request.POST['amount'], payment_method=request.POST.get('payment_method', 'Cash'),
+                date=request.POST.get('date', today), logged_by=request.user,
+            )
+            messages.success(request, 'Expense logged.')
+        elif action == 'mark_paid':
+            order = get_object_or_404(Order, pk=request.POST.get('order_id'))
+            order.payment_status = 'paid'
+            order.amount_paid = order.total_amount
+            order.save(update_fields=['payment_status', 'amount_paid', 'updated_at'])
+            messages.success(request, f'Order {order.order_number} marked as paid.')
+        elif action == 'send_reminder':
+            from .notifications import send_notification
+            order = get_object_or_404(Order, pk=request.POST.get('order_id'))
+            if order.customer:
+                send_notification(
+                    recipient=order.customer,
+                    verb=f'payment reminder for order #{order.order_number}',
+                    target_type='payment',
+                    target_id=order.id,
+                    target_url=reverse('user_order_payment', args=[order.id]),
+                    actor=request.user,
+                    description=f'Please complete the payment of ৳{order.amount_due} for order #{order.order_number}.',
+                )
+                messages.success(request, f'Reminder sent to {order.customer_name}.')
+            else:
+                messages.warning(request, 'Walk-in orders cannot receive in-app reminders.')
         return redirect('admin_financial')
+
     week_revenue = Order.objects.filter(
         created_at__date__gte=today - timedelta(days=7)
     ).aggregate(s=Sum('total_amount'))['s'] or 0
     week_expenses = Expense.objects.filter(
         date__gte=today - timedelta(days=7)
     ).aggregate(s=Sum('amount'))['s'] or 0
+
+    # Due / outstanding payments
+    due_orders = list(Order.objects.filter(
+        payment_status__in=['unpaid', 'partial', 'pending_review', 'rejected'],
+        status__in=['pending', 'confirmed', 'printing', 'quality_check', 'ready', 'on_hold'],
+    ).exclude(total_amount=0).select_related('customer', 'walkin_customer').order_by('-created_at')[:100])
+    total_outstanding = sum((o.amount_due for o in due_orders), Decimal('0'))
+
     return render(request, 'admin/financial.html', {
         'expenses': expenses,
         'week_revenue': week_revenue,
         'week_expenses': week_expenses,
         'week_profit': week_revenue - week_expenses,
+        'due_orders': due_orders,
+        'total_outstanding': total_outstanding,
+        'due_count': len(due_orders),
     })
 
 

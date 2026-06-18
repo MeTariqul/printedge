@@ -1,7 +1,11 @@
 """Generate order confirmation invoice PDFs using ReportLab (pure Python, no system dependencies)."""
 
+import os
 import io
+
 import requests
+from django.contrib.staticfiles import finders
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -10,6 +14,22 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 
 from .models import SiteSettings, OrderFile
+
+
+def _get_logo_image(max_width=25, max_height=25):
+    """Return a ReportLab Image for the PrintEdge logo, or None if not found."""
+    try:
+        if staticfiles_storage.exists('icons/logo.png'):
+            logo_path = staticfiles_storage.path('icons/logo.png')
+            if os.path.isfile(logo_path):
+                return Image(logo_path, width=max_width, height=max_height)
+    except Exception:
+        pass
+    # Fallback: find via finders (works with DEBUG=True or collectstatic)
+    found = finders.find('icons/logo.png')
+    if found and os.path.isfile(found):
+        return Image(found, width=max_width, height=max_height)
+    return None
 
 
 def _fetch_qr_image(url):
@@ -72,6 +92,20 @@ def generate_order_invoice_pdf(order):
                 'line_price': float(of.line_base_price),
             })
 
+    # Fallback for orders with no file metadata (e.g. physical walk-in orders)
+    if not file_lines:
+        file_lines.append({
+            'file_name': order.special_instructions[:40] or 'Physical document',
+            'pages': order.pages,
+            'print_type': order.get_print_type_display(),
+            'sides': order.get_sides_display(),
+            'paper_size': order.paper_size,
+            'ranges': "—",
+            'copies': order.copies,
+            'unit_price': float(order.base_price / order.copies) if order.copies else 0,
+            'line_price': float(order.base_price),
+        })
+
     invoice_number = f"INV-{order.created_at.strftime('%Y%m%d')}-{order.id:04d}"
     invoice_date = order.created_at.strftime('%d %b %Y')
     addons_lines = ", ".join(a.name for a in order.addons.all())
@@ -92,18 +126,19 @@ def generate_order_invoice_pdf(order):
 
     styles = getSampleStyleSheet()
 
-    # Dark header strip
+    # Dark header strip with logo
+    logo_img = _get_logo_image(max_width=25, max_height=25)
+    header_left = logo_img if logo_img else Paragraph('PrintEdge', ParagraphStyle('LogoText', parent=styles['Normal'], textColor=colors.white, fontSize=12, fontName='Helvetica-Bold'))
     header_data = [
-        ['PrintEdge', f'INVOICE #{invoice_number}', invoice_date],
+        [header_left, Paragraph(f'INVOICE #{invoice_number}', ParagraphStyle('InvNum', parent=styles['Normal'], textColor=colors.white, fontSize=10, fontName='Helvetica-Bold', alignment=1)), Paragraph(invoice_date, ParagraphStyle('InvDate', parent=styles['Normal'], textColor=colors.white, fontSize=10, alignment=2))],
     ]
     header_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E3A5F')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
         ('LEFTPADDING', (0, 0), (-1, 0), 8),
         ('RIGHTPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
     ])
     header_table = Table(header_data, colWidths=[60*mm, 80*mm, 40*mm])
     header_table.setStyle(header_style)

@@ -74,7 +74,7 @@
           <div @click="handleFileClick" @dragover.prevent="dragActive = true" @dragleave="dragActive = false" @drop.prevent="handleDrop($event)" :class="['border-2', 'border-dashed', 'rounded-lg', 'p-8', 'text-center', 'cursor-pointer', 'transition-colors', dragActive ? 'border-primary bg-primary/5' : 'border-surface-border hover:border-primary']">
             <i class="bi bi-cloud-arrow-up text-4xl text-text-muted mb-3 block"></i>
             <p class="font-semibold text-text-primary">Drop files or click to browse</p>
-            <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files (Max 20MB)</p>
+                <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files (Max 50MB)</p>
             <input type="file" id="fileInput" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)" @click.stop>
           </div>
           <template x-if="files.length">

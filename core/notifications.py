@@ -110,6 +110,11 @@ def notify_new_online_order(order: Order) -> None:
 
     # Notify staff
     staff = User.objects.filter(is_staff=True)
+    customer_label = ''
+    if order.customer:
+        customer_label = order.customer.get_full_name() or order.customer.email
+    elif order.walkin_customer:
+        customer_label = order.walkin_customer.name
     for admin in staff:
         send_notification(
             recipient=admin,
@@ -118,7 +123,7 @@ def notify_new_online_order(order: Order) -> None:
             target_id=order.id,
             target_url=reverse('admin_order_detail', args=[order.id]),
             actor=order.customer,
-            description=f'{order.customer.get_full_name() or order.customer.email}',
+            description=customer_label,
             send_email=send_email_staff,
             toggle_name='send_email_on_order_placed',
         )

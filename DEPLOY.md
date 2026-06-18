@@ -79,11 +79,13 @@ python manage.py migrate
 Vercel runs `build_files.sh` automatically on every deploy, which includes
 `python manage.py collectstatic --noinput`.
 
-If you need to run a one-off migration on Vercel, use **Vercel's shell** (free tier
-supports one-off executions) or the **Vercel CLI**:
+If you need to run a one-off migration, pull the production env locally and run
+migrate against the Supabase Postgres pooler URL, or use the Vercel dashboard
+shell (Pro plan):
 
 ```bash
-vercel run -- e2e python manage.py migrate
+vercel env pull .env.production.local
+python manage.py migrate
 ```
 
 ---

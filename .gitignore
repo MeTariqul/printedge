@@ -75,3 +75,14 @@ staticfiles/
 # Local database and uploads
 db.sqlite3
 media/
+
+# Local scratch / debug / QA scripts and backups (never commit)
+backup.json
+printedge_backup.json
+model_dump.txt
+model_order.txt
+check_*.py
+fix_*.py
+verify_*.py
+test_api.py
+test_detail.py

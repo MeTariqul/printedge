@@ -32,7 +32,9 @@ A comprehensive, production-ready Django web application for a campus print shop
 *   **Backend Framework**: Django 5.x
 *   **Database**: Supabase (PostgreSQL)
 *   **Frontend**: Custom HTML/CSS with Glassmorphism, Bootstrap 5, Chart.js
-*   **Storage**: Supabase Storage
+*   **Storage**: Supabase Storage (S3-compatible)
+*   **PDF Generation**: ReportLab (invoices and receipts)
+*   **Scheduled Jobs**: Vercel Cron for expired-file purges
 
 ## Installation
 
@@ -84,5 +86,12 @@ python manage.py runserver
 *   `print_edge/`: Django project settings and root routing.
 *   `templates/`: Master layout files containing the UI system.
 *   `static/css/`: Advanced CSS variables and dynamic dark-mode configuration.
+*   `docs/`: Service management spec and Supabase RLS policy docs.
+*   `qa_reports/`: Accessibility, security, performance, SEO, and audit reports.
+
+## Contributing
+*   Keep scratch / debug / QA scripts (`check_*.py`, `fix_*.py`, `verify_*.py`, `test_api.py`, `test_detail.py`) and local backups (`backup.json`, `printedge_backup.json`, `model_*.txt`) out of version control — they are gitignored.
+*   Run the quality checks listed in `AGENTS.md` before pushing.
+*   See `DEPLOY.md` for production deployment and `DEPLOYMENT_SUMMARY.md` for the implementation overview.
 
 *Delivery convenience point: Gono Bishwabidyalay (not affiliated).*

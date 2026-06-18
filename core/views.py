@@ -275,7 +275,7 @@ def _order_form_context():
 
 def public_services(request):
     services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
-    return render(request, 'public/services.html', {'services': services})
+    return render(request, 'services.html', {'services': services})
 
 
 @login_required_custom

@@ -1,0 +1,5 @@
+recursive-include templates *
+recursive-include static *
+recursive-include core *
+include requirements.txt
+include vercel.json

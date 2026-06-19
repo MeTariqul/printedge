@@ -10,22 +10,22 @@
         <div class="flex items-center gap-4 mb-6">
             <div class="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
                 {% if service.category == 'printing' %}
-                    <i class="bi bi-printer-fill text-4xl text-purple-400"></i>
+                    <i class="bi bi-printer-fill text-4xl text-purple-600"></i>
                 {% elif service.category == 'binding' %}
-                    <i class="bi bi-journal-text text-4xl text-purple-400"></i>
+                    <i class="bi bi-journal-text text-4xl text-purple-600"></i>
                 {% elif service.category == 'photo' %}
-                    <i class="bi bi-camera-fill text-4xl text-purple-400"></i>
+                    <i class="bi bi-camera-fill text-4xl text-purple-600"></i>
                 {% elif service.category == 'lamination' %}
-                    <i class="bi bi-layers-fill text-4xl text-purple-400"></i>
+                    <i class="bi bi-layers-fill text-4xl text-purple-600"></i>
                 {% elif service.category == 'stationery' %}
-                    <i class="bi bi-pencil-square text-4xl text-purple-400"></i>
+                    <i class="bi bi-pencil-square text-4xl text-purple-600"></i>
                 {% else %}
-                    <i class="bi bi-briefcase-fill text-4xl text-purple-400"></i>
+                    <i class="bi bi-briefcase-fill text-4xl text-purple-600"></i>
                 {% endif %}
             </div>
             <div>
                 <h1 class="text-4xl md:text-5xl font-display font-bold text-text-primary">{{ service.name }}</h1>
-                <span class="inline-block px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-sm font-bold border border-purple-500/20 mt-2">{{ service.get_category_display }}</span>
+                <span class="inline-block px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 text-sm font-bold border border-purple-500/20 mt-2">{{ service.get_category_display }}</span>
             </div>
         </div>
         {% if service.description %}

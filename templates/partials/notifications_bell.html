@@ -2,29 +2,29 @@
 {% with uid=bell_uid|default:"main" %}
 <div class="relative notification-root pointer-events-auto" data-notification-root="{{ uid }}" style="position: relative !important;">
     <button type="button" data-notification-bell="{{ uid }}"
-        class="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+        class="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-text-muted hover:text-primary hover:bg-surface transition-colors"
         aria-label="Notifications" aria-expanded="false" aria-haspopup="true">
         <i class="bi bi-bell text-xl"></i>
         <span data-notification-badge="{{ uid }}" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center hidden">0</span>
     </button>
     <div data-notification-dropdown="{{ uid }}"
         id="notification-dropdown"
-        class="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] premium-card rounded-2xl border border-slate-700/50 shadow-2xl z-[100] hidden"
+        class="absolute right-0 mt-2 w-[min(100vw-2rem,22rem)] premium-card rounded-2xl border border-surface-border bg-white shadow-2xl z-[100] hidden"
         style="position: absolute !important; z-index: 1050 !important; max-height: 288px !important; overflow-y: auto !important; width: min(100vw-2rem, 22rem) !important;">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700/50">
-            <span class="text-sm font-bold text-white">Notifications</span>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
+            <span class="text-sm font-bold text-text-primary">Notifications</span>
             <div class="flex items-center gap-2">
-                <button type="button" data-notification-sound="{{ uid }}" class="text-slate-400 hover:text-white transition-colors" title="Toggle Sound">
+                <button type="button" data-notification-sound="{{ uid }}" class="text-text-muted hover:text-primary transition-colors" title="Toggle Sound">
                     <i class="bi bi-volume-up-fill" data-sound-icon="{{ uid }}"></i>
                 </button>
-                <button type="button" data-mark-all-read="{{ uid }}" class="text-xs text-brand-400 hover:underline min-h-[44px] px-2">Mark all read</button>
+                <button type="button" data-mark-all-read="{{ uid }}" class="text-xs text-primary hover:underline min-h-[44px] px-2">Mark all read</button>
             </div>
         </div>
-        <ul data-notification-list="{{ uid }}" class="max-h-72 overflow-y-auto divide-y divide-slate-800/80 text-sm" style="max-height: 18rem !important; overflow-y: auto !important;">
-            <li class="px-4 py-6 text-slate-500 text-center">Loading…</li>
+        <ul data-notification-list="{{ uid }}" class="max-h-72 overflow-y-auto divide-y divide-surface-border text-sm" style="max-height: 18rem !important; overflow-y: auto !important;">
+            <li class="px-4 py-6 text-text-muted text-center">Loading…</li>
         </ul>
-        <div class="border-t border-slate-700/50 px-4 py-2">
-            <a href="{% url 'user_notifications' %}" class="text-xs text-brand-400 hover:underline min-h-[44px] px-2 block text-center">View all</a>
+        <div class="border-t border-surface-border px-4 py-2">
+            <a href="{% url 'user_notifications' %}" class="text-xs text-primary hover:underline min-h-[44px] px-2 block text-center">View all</a>
         </div>
     </div>
 </div>

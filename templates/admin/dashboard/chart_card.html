@@ -8,7 +8,7 @@
     <div class="flex gap-2 flex-wrap">
       {% for b in backtests %}
       <a href="?range={{ b.value }}" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors min-h-[36px]
-         {% if active == b.value %}bg-cyan-500 text-slate-900{% else %}bg-surface text-text-muted hover:bg-slate-700{% endif %}">
+         {% if active == b.value %}bg-primary text-white{% else %}bg-surface text-text-muted hover:bg-surface-alt border border-surface-border{% endif %}">
         {{ b.label }}
       </a>
       {% endfor %}

@@ -16,9 +16,9 @@
                 <div class="flex items-center gap-2 mb-1">
                     <h3 class="font-bold text-lg text-primary">{{ coupon.code }}</h3>
                     {% if coupon.is_active and coupon.is_valid %}
-                        <span class="badge bg-emerald-500/10 text-emerald-400">Active</span>
+                        <span class="badge bg-success/10 text-success-text">Active</span>
                     {% else %}
-                        <span class="badge bg-red-500/10 text-red-400">Inactive</span>
+                        <span class="badge bg-danger/10 text-danger-text">Inactive</span>
                     {% endif %}
                 </div>
                 <p class="text-sm text-text-muted">
@@ -53,7 +53,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="coupon_id" value="{{ coupon.pk }}">
-                    <button class="text-red-400 hover:text-red-300 p-2"><i class="bi bi-trash"></i></button>
+                    <button class="text-danger-text hover:text-red-700 p-2"><i class="bi bi-trash"></i></button>
                 </form>
                 {% endif %}
             </div>

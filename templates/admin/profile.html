@@ -2,11 +2,11 @@
 {% block title %}Staff Profile | Print-Edge{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto">
-  <h1 class="text-2xl font-bold text-white mb-6">Staff Profile</h1>
+  <h1 class="text-2xl font-bold text-text-primary mb-6">Staff Profile</h1>
   <form method="post" enctype="multipart/form-data" class="premium-card p-6 rounded-lg space-y-4 mb-6">
     {% csrf_token %}
     <input type="hidden" name="action" value="profile">
-    <p class="text-sm text-neutral-400">Role: <strong class="text-accent">{{ request.user.get_role_display }}</strong> (read-only)</p>
+    <p class="text-sm text-text-muted">Role: <strong class="text-primary">{{ request.user.get_role_display }}</strong> (read-only)</p>
     <div class="grid sm:grid-cols-2 gap-4">
       <input name="first_name" value="{{ request.user.first_name }}" class="form-input" placeholder="First name">
       <input name="last_name" value="{{ request.user.last_name }}" class="form-input" placeholder="Last name">
@@ -21,20 +21,20 @@
   <form method="post" class="premium-card p-6 rounded-lg space-y-4 mb-6">
     {% csrf_token %}
     <input type="hidden" name="action" value="password">
-    <h3 class="font-bold text-white">Change password</h3>
+    <h3 class="font-bold text-text-primary">Change password</h3>
     {{ password_form.as_p }}
     <button type="submit" class="btn-secondary">Update password</button>
   </form>
   <div class="premium-card p-6 rounded-lg">
-    <h3 class="font-bold text-white mb-4">Recent activity</h3>
+    <h3 class="font-bold text-text-primary mb-4">Recent activity</h3>
     <div class="table-scroll">
       <table class="w-full text-sm min-w-[480px]">
-        <thead><tr class="text-neutral-500 text-left"><th class="p-2">Time</th><th class="p-2">Action</th></tr></thead>
+        <thead><tr class="text-text-muted text-left"><th class="p-2">Time</th><th class="p-2">Action</th></tr></thead>
         <tbody>
           {% for log in activity_logs %}
-          <tr class="border-t border-white/5"><td class="p-2 text-neutral-400">{{ log.timestamp|date:"M j, H:i" }}</td><td class="p-2 text-white">{{ log.action }}</td></tr>
+          <tr class="border-t border-surface-border"><td class="p-2 text-text-muted">{{ log.timestamp|date:"M j, H:i" }}</td><td class="p-2 text-text-primary">{{ log.action }}</td></tr>
           {% empty %}
-          <tr><td colspan="2" class="p-4 text-neutral-500">No activity logged yet.</td></tr>
+          <tr><td colspan="2" class="p-4 text-text-muted">No activity logged yet.</td></tr>
           {% endfor %}
         </tbody>
       </table>

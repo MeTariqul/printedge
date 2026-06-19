@@ -7,31 +7,31 @@
 <div class="max-w-7xl mx-auto space-y-8">
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-      <h1 class="text-2xl lg:text-3xl font-bold text-white mb-1">Dashboard</h1>
-      <p class="text-slate-400 text-sm">Welcome back, {{ request.user.first_name|default:request.user.email }}</p>
+      <h1 class="text-2xl lg:text-3xl font-bold text-text-primary mb-1">Dashboard</h1>
+      <p class="text-text-muted text-sm">Welcome back, {{ request.user.first_name|default:request.user.email }}</p>
     </div>
-    <div class="flex items-center gap-3 text-xs text-slate-500">
+    <div class="flex items-center gap-3 text-xs text-text-muted">
       <span>Cached for 60s</span>
-      <a href="?range={{ chart_range }}" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 min-h-[36px]">Refresh</a>
+      <a href="?range={{ chart_range }}" class="px-3 py-1.5 rounded-lg bg-surface text-text-secondary hover:bg-slate-50 border border-surface-border min-h-[36px]">Refresh</a>
     </div>
   </div>
 
   {% include "admin/dashboard/kpi_row.html" %}
 
   {% if db_latency %}
-  <div class="text-xs text-slate-500">DB latency: {{ db_latency }} ms</div>
+  <div class="text-xs text-text-muted">DB latency: {{ db_latency }} ms</div>
   {% endif %}
 
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-slate-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="p-5 md:p-6 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 class="text-lg font-bold text-white">Revenue Trend</h3>
-          <p class="text-xs text-slate-400 mt-1">Last {{ chart_range }} days</p>
+          <h3 class="text-lg font-bold text-text-primary">Revenue Trend</h3>
+          <p class="text-xs text-text-muted mt-1">Last {{ chart_range }} days</p>
         </div>
         <div class="flex gap-2 flex-wrap">
           {% for b in chart_backtests %}
-          <a href="?range={{ b.value }}" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors min-h-[36px] {% if chart_range == b.value %}bg-cyan-500 text-slate-900{% else %}bg-slate-800 text-slate-400 hover:bg-slate-700{% endif %}">
+          <a href="?range={{ b.value }}" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors min-h-[36px] {% if chart_range == b.value %}bg-primary text-white{% else %}bg-surface text-text-muted hover:bg-slate-50 border border-surface-border{% endif %}">
             {{ b.label }}
           </a>
           {% endfor %}
@@ -42,9 +42,9 @@
       </div>
     </div>
     <div class="premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-slate-700/50">
-        <h3 class="text-lg font-bold text-white">Order Status</h3>
-        <p class="text-xs text-slate-400 mt-1">Current distribution</p>
+      <div class="p-5 md:p-6 border-b border-surface-border">
+        <h3 class="text-lg font-bold text-text-primary">Order Status</h3>
+        <p class="text-xs text-text-muted mt-1">Current distribution</p>
       </div>
       <div class="p-4 md:p-6">
         <canvas id="statusChart" height="220"></canvas>
@@ -54,18 +54,18 @@
 
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-slate-700/50">
-        <h3 class="text-lg font-bold text-white">Daily Order Volume</h3>
-        <p class="text-xs text-slate-400 mt-1">Last 14 days — online vs walk-in</p>
+      <div class="p-5 md:p-6 border-b border-surface-border">
+        <h3 class="text-lg font-bold text-text-primary">Daily Order Volume</h3>
+        <p class="text-xs text-text-muted mt-1">Last 14 days — online vs walk-in</p>
       </div>
       <div class="p-4 md:p-6">
         <canvas id="volumeChart" height="220"></canvas>
       </div>
     </div>
     <div class="premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-slate-700/50">
-        <h3 class="text-lg font-bold text-white">Print Types</h3>
-        <p class="text-xs text-slate-400 mt-1">Today's mix</p>
+      <div class="p-5 md:p-6 border-b border-surface-border">
+        <h3 class="text-lg font-bold text-text-primary">Print Types</h3>
+        <p class="text-xs text-text-muted mt-1">Today's mix</p>
       </div>
       <div class="p-4 md:p-6">
         <canvas id="printTypeChart" height="220"></canvas>
@@ -75,18 +75,18 @@
 
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-slate-700/50">
-        <h3 class="text-lg font-bold text-white">Top Customers</h3>
-        <p class="text-xs text-slate-400 mt-1">This month by revenue</p>
+      <div class="p-5 md:p-6 border-b border-surface-border">
+        <h3 class="text-lg font-bold text-text-primary">Top Customers</h3>
+        <p class="text-xs text-text-muted mt-1">This month by revenue</p>
       </div>
       <div class="p-4 md:p-6">
         <canvas id="topCustomersChart" height="220"></canvas>
       </div>
     </div>
     <div class="premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-slate-700/50">
-        <h3 class="text-lg font-bold text-white">Revenue by Category</h3>
-        <p class="text-xs text-slate-400 mt-1">This month</p>
+      <div class="p-5 md:p-6 border-b border-surface-border">
+        <h3 class="text-lg font-bold text-text-primary">Revenue by Category</h3>
+        <p class="text-xs text-text-muted mt-1">This month</p>
       </div>
       <div class="p-4 md:p-6">
         <canvas id="categoryRevenueChart" height="220"></canvas>
@@ -102,24 +102,24 @@
     </div>
     <div class="space-y-6">
       <div class="premium-card rounded-2xl p-5">
-        <h3 class="text-lg font-bold text-white mb-4">Quick Actions</h3>
+        <h3 class="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
         <div class="grid grid-cols-2 gap-3">
-          <a href="{% url 'admin_walkin_order' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+          <a href="{% url 'admin_walkin_order' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
             <i class="bi bi-plus-circle"></i> New Order
           </a>
-           <a href="{% url 'admin_mail_compose' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+           <a href="{% url 'admin_mail_compose' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
              <i class="bi bi-envelope-plus"></i> Compose Email
            </a>
-           <a href="{% url 'admin_coupons' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+           <a href="{% url 'admin_coupons' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
              <i class="bi bi-tags"></i> Coupons
            </a>
-           <a href="{% url 'admin_services' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+           <a href="{% url 'admin_services' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
              <i class="bi bi-grid"></i> Services
            </a>
-          <a href="{% url 'admin_system_status' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+          <a href="{% url 'admin_system_status' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
             <i class="bi bi-hdd-network"></i> System Status
           </a>
-          <a href="{% url 'admin_inventory' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-800 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700 text-sm font-bold text-slate-200 transition-colors min-h-[48px]">
+          <a href="{% url 'admin_inventory' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
             <i class="bi bi-box-seam"></i> Inventory
           </a>
         </div>
@@ -134,15 +134,17 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  const gridColor = 'rgba(148,163,184,0.12)';
-  const textColor = '#94a3b8';
+  const gridColor = 'rgba(226,232,240,0.8)';
+  const textColor = '#64748b';
   Chart.defaults.color = textColor;
   Chart.defaults.font = { family: 'Inter, ui-sans-serif, system-ui, sans-serif', size: 12 };
-  Chart.defaults.plugins.tooltip.backgroundColor = '#0f172a';
-  Chart.defaults.plugins.tooltip.borderColor = '#334155';
+  Chart.defaults.plugins.tooltip.backgroundColor = '#ffffff';
+  Chart.defaults.plugins.tooltip.borderColor = '#e2e8f0';
   Chart.defaults.plugins.tooltip.borderWidth = 1;
   Chart.defaults.plugins.tooltip.padding = 10;
   Chart.defaults.plugins.tooltip.cornerRadius = 8;
+  Chart.defaults.plugins.tooltip.titleColor = '#0f172a';
+  Chart.defaults.plugins.tooltip.bodyColor = '#475569';
   Chart.defaults.plugins.tooltip.titleFont = { weight: 'bold' };
 
   function makeGrid() {
@@ -156,8 +158,8 @@
       datasets: [{
         label: 'Revenue (৳)',
         data: {{ revenue_trend_json|safe }},
-        borderColor: '#06b6d4',
-        backgroundColor: 'rgba(6,182,212,0.15)',
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.1)',
         fill: true,
         tension: 0.35,
         pointRadius: 3,
@@ -201,7 +203,7 @@
     data: {
       labels: {{ daily_volume_labels_json|safe }},
       datasets: [
-        { label: 'Online', data: {{ daily_volume_online_json|safe }}, backgroundColor: '#06b6d4', borderRadius: 4 },
+        { label: 'Online', data: {{ daily_volume_online_json|safe }}, backgroundColor: '#2563eb', borderRadius: 4 },
         { label: 'Walk-in', data: {{ daily_volume_walkin_json|safe }}, backgroundColor: '#f97316', borderRadius: 4 }
       ]
     },
@@ -220,7 +222,7 @@
     type: 'pie',
     data: {
       labels: {{ print_type_labels_json|safe }},
-      datasets: [{ data: {{ print_type_values_json|safe }}, backgroundColor: ['#1E3A5F','#06b6d4','#f97316','#8b5cf6'], borderWidth: 0, hoverOffset: 8 }]
+      datasets: [{ data: {{ print_type_values_json|safe }}, backgroundColor: ['#1e40af','#2563eb','#f97316','#8b5cf6'], borderWidth: 0, hoverOffset: 8 }]
     },
     options: {
       responsive: true,

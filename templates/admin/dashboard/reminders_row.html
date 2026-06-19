@@ -1,6 +1,6 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
   {% for item in items %}
-  <a href="{{ item.href|default:'#' }}" class="premium-card rounded-2xl p-4 flex items-center gap-4 hover:border-slate-600 transition-colors group">
+  <a href="{{ item.href|default:'#' }}" class="premium-card rounded-2xl p-4 flex items-center gap-4 hover:border-primary/40 transition-colors group">
     <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 {{ item.badge_class }}">
       <i class="{{ item.icon }}"></i>
     </div>

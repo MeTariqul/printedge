@@ -5,22 +5,22 @@
 <section class="flex items-center justify-center px-4 py-12 min-h-[80vh]">
     <div class="w-full max-w-md premium-card rounded-2xl p-6 md:p-8 text-center animate-fade-in">
         <img src="{% static 'icons/logo.png' %}" alt="PrintEdge" class="h-10 w-auto mx-auto mb-6 object-contain">
-        <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+        <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl">
             <i class="bi bi-envelope-check"></i>
         </div>
-        <h1 class="text-xl md:text-2xl font-bold text-white mb-2">Verify Your Email</h1>
-        <p class="text-neutral-400 text-sm mb-6">
+        <h1 class="text-xl md:text-2xl font-bold text-text-primary mb-2">Verify Your Email</h1>
+        <p class="text-text-muted text-sm mb-6">
             We sent a verification link to<br>
-            <strong class="text-white block mt-1">{{ request.user.email }}</strong>
-            <span class="text-xs text-neutral-500 mt-2 block">You must verify before placing print orders.</span>
+            <strong class="text-text-primary block mt-1">{{ request.user.email }}</strong>
+            <span class="text-xs text-text-muted mt-2 block">You must verify before placing print orders.</span>
         </p>
         <form method="post" class="mb-4">
             {% csrf_token %}
-            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/25 transition-all min-h-[44px]">
+            <button type="submit" class="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/25 transition-all min-h-[44px]">
                 <i class="bi bi-arrow-repeat"></i> Resend verification email
             </button>
         </form>
-        <a href="{% url 'auth_login_page' %}" class="text-sm text-neutral-400 hover:text-white transition-colors min-h-[44px] inline-block px-4 py-2">Already verified? Sign in</a>
+        <a href="{% url 'auth_login_page' %}" class="text-sm text-text-muted hover:text-primary transition-colors min-h-[44px] inline-block px-4 py-2">Already verified? Sign in</a>
     </div>
 </section>
 {% endblock %}

@@ -40,15 +40,15 @@
                             <div class="text-[10px] text-text-muted">৳{{ v.effective_price|floatformat:0 }}</div>
                         </td>
                         <td class="p-3 text-sm text-text-secondary">{{ v.service.name }}</td>
-                        <td class="p-3 font-bold text-sm {% if v.is_out_of_stock %}text-red-400{% elif v.is_low_stock %}text-amber-400{% else %}text-text-primary{% endif %}">{{ v.stock }}</td>
+                        <td class="p-3 font-bold text-sm {% if v.is_out_of_stock %}text-danger-text{% elif v.is_low_stock %}text-warning-text{% else %}text-text-primary{% endif %}">{{ v.stock }}</td>
                         <td class="p-3 text-sm text-text-muted">{{ v.low_stock_threshold }}</td>
                         <td class="p-3">
                             {% if v.is_out_of_stock %}
-                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">Out of Stock</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-danger/10 text-danger-text border border-danger/20">Out of Stock</span>
                             {% elif v.is_low_stock %}
-                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">Low Stock</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-warning/10 text-warning-text border border-warning/20">Low Stock</span>
                             {% else %}
-                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">In Stock</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success-text border border-success/20">In Stock</span>
                             {% endif %}
                         </td>
                         <td class="p-3 pr-5">
@@ -56,12 +56,12 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="adjust_variant">
                                 <input type="hidden" name="variant_id" value="{{ v.pk }}">
-                                <input type="number" name="quantity" placeholder="Qty" min="1" class="w-16 px-2 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white text-xs focus:border-brand-500 focus:outline-none">
-                                <select name="movement" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white text-xs focus:border-brand-500 focus:outline-none">
+                                <input type="number" name="quantity" placeholder="Qty" min="1" class="w-16 px-2 py-1.5 rounded-lg bg-white border border-surface-border text-text-primary text-xs focus:border-primary focus:outline-none">
+                                <select name="movement" class="px-2 py-1.5 rounded-lg bg-white border border-surface-border text-text-primary text-xs focus:border-primary focus:outline-none">
                                     <option value="in">Add</option>
                                     <option value="out">Remove</option>
                                 </select>
-                                <button type="submit" class="px-2 py-1.5 rounded-lg bg-brand-500/20 text-brand-400 text-xs font-bold border border-brand-500/30 hover:bg-brand-500/30 transition-colors" title="Adjust Stock">
+                                <button type="submit" class="px-2 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold border border-primary/20 hover:bg-primary/20 transition-colors" title="Adjust Stock">
                                     <i class="bi bi-arrow-repeat"></i>
                                 </button>
                             </form>
@@ -101,22 +101,22 @@
                         <td class="p-3 pl-5">
                             <div class="font-semibold text-sm text-text-primary">{{ i.name }}</div>
                             {% if i.variant %}
-                            <div class="text-[10px] text-brand-400 mt-0.5"><i class="bi bi-link"></i> Linked: {{ i.variant.service.name }} — {{ i.variant.name }}</div>
+                            <div class="text-[10px] text-primary mt-0.5"><i class="bi bi-link"></i> Linked: {{ i.variant.service.name }} — {{ i.variant.name }}</div>
                             {% endif %}
                         </td>
                         <td class="p-3">
                             <span class="px-2 py-0.5 rounded-md bg-surface text-text-secondary text-[10px] font-bold border border-surface-border">{{ i.get_category_display }}</span>
                         </td>
-                        <td class="p-3 font-bold text-sm {% if i.status.0 == 'danger' %}text-red-400{% elif i.status.0 == 'warning' %}text-amber-400{% else %}text-text-primary{% endif %}">{{ i.current_stock }} {{ i.unit }}</td>
+                        <td class="p-3 font-bold text-sm {% if i.status.0 == 'danger' %}text-danger-text{% elif i.status.0 == 'warning' %}text-warning-text{% else %}text-text-primary{% endif %}">{{ i.current_stock }} {{ i.unit }}</td>
                         <td class="p-3 text-sm text-text-muted">{{ i.min_alert_level }} {{ i.unit }}</td>
                         <td class="p-3 text-sm text-text-muted">৳{{ i.cost_per_unit|floatformat:0 }}</td>
                         <td class="p-3">
                             {% with status=i.status %}
                             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold
-                                {% if status.0 == 'danger' %}bg-red-500/10 text-red-400
-                                {% elif status.0 == 'warning' %}bg-amber-500/10 text-amber-400
-                                {% else %}bg-emerald-500/10 text-emerald-400{% endif %}">
-                                <span class="w-1.5 h-1.5 rounded-full {% if status.0 == 'danger' %}bg-red-400{% elif status.0 == 'warning' %}bg-amber-400{% else %}bg-emerald-400{% endif %}"></span>
+                                {% if status.0 == 'danger' %}bg-danger/10 text-danger-text
+                                {% elif status.0 == 'warning' %}bg-warning/10 text-warning-text
+                                {% else %}bg-success/10 text-success-text{% endif %}">
+                                <span class="w-1.5 h-1.5 rounded-full {% if status.0 == 'danger' %}bg-danger-text{% elif status.0 == 'warning' %}bg-warning-text{% else %}bg-success-text{% endif %}"></span>
                                 {{ status.1 }}
                             </span>
                             {% endwith %}
@@ -127,12 +127,12 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="adjust">
                                     <input type="hidden" name="item_id" value="{{ i.pk }}">
-                                    <input type="number" name="quantity" placeholder="Qty" min="1" class="w-16 px-2 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white text-xs focus:border-brand-500 focus:outline-none">
-                                    <select name="movement" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/20 text-white text-xs focus:border-brand-500 focus:outline-none">
+                                    <input type="number" name="quantity" placeholder="Qty" min="1" class="w-16 px-2 py-1.5 rounded-lg bg-white border border-surface-border text-text-primary text-xs focus:border-primary focus:outline-none">
+                                    <select name="movement" class="px-2 py-1.5 rounded-lg bg-white border border-surface-border text-text-primary text-xs focus:border-primary focus:outline-none">
                                         <option value="in">Add</option>
                                         <option value="out">Remove</option>
                                     </select>
-                                    <button type="submit" class="px-2 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors" title="Stock In">
+                                    <button type="submit" class="px-2 py-1.5 rounded-lg bg-success/10 text-success-text text-xs font-bold border border-success/20 hover:bg-success/20 transition-colors" title="Stock In">
                                         <i class="bi bi-plus-lg"></i>
                                     </button>
                                 </form>
@@ -140,7 +140,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="item_id" value="{{ i.pk }}">
-                                    <button type="submit" onclick="return confirm('PERMANENT DELETE: Are you sure you want to remove this item from inventory?')" class="px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs border border-red-500/20 hover:bg-red-500/30 transition-all" title="Delete Item">
+                                    <button type="submit" onclick="return confirm('PERMANENT DELETE: Are you sure you want to remove this item from inventory?')" class="px-2.5 py-1.5 rounded-lg bg-danger/10 text-danger-text text-xs border border-danger/20 hover:bg-danger/20 transition-all" title="Delete Item">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
@@ -159,18 +159,18 @@
 <!-- Add New Item Form -->
 <div class="premium-card p-6 rounded-2xl border border-surface-border max-w-3xl">
     <h3 class="text-base font-bold text-text-primary mb-5 flex items-center gap-2">
-        <i class="bi bi-plus-circle text-brand-400"></i> Add Inventory Item
+        <i class="bi bi-plus-circle text-primary"></i> Add Inventory Item
     </h3>
     <form method="post" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% csrf_token %}
         <input type="hidden" name="action" value="add_item">
         <div>
             <label class="block text-xs font-semibold text-text-muted mb-1.5">Item Name</label>
-            <input type="text" name="name" required placeholder="e.g. A4 Paper 80gsm" class="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/20 text-white text-sm placeholder-text-muted focus:border-brand-500 focus:outline-none">
+            <input type="text" name="name" required placeholder="e.g. A4 Paper 80gsm" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
         <div>
             <label class="block text-xs font-semibold text-text-muted mb-1.5">Category</label>
-            <select name="category" class="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/20 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <select name="category" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
                 <option value="paper">Paper</option>
                 <option value="toner">Toner/Ink</option>
                 <option value="binding">Binding</option>
@@ -180,22 +180,22 @@
         </div>
         <div>
             <label class="block text-xs font-semibold text-text-muted mb-1.5">Unit</label>
-            <input type="text" name="unit" value="pcs" class="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/20 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <input type="text" name="unit" value="pcs" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
         <div>
             <label class="block text-xs font-semibold text-text-muted mb-1.5">Initial Stock</label>
-            <input type="number" name="current_stock" value="0" min="0" class="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/20 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <input type="number" name="current_stock" value="0" min="0" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
         <div>
             <label class="block text-xs font-semibold text-text-muted mb-1.5">Min Alert Level</label>
-            <input type="number" name="min_alert_level" value="10" min="0" class="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/20 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <input type="number" name="min_alert_level" value="10" min="0" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
         <div>
             <label class="block text-xs font-semibold text-text-muted mb-1.5">Cost/Unit (৳)</label>
-            <input type="number" name="cost_per_unit" value="0" step="0.01" class="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/20 text-white text-sm focus:border-brand-500 focus:outline-none">
+            <input type="number" name="cost_per_unit" value="0" step="0.01" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
         <div class="sm:col-span-2 lg:col-span-3">
-            <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-400 shadow-lg shadow-brand-500/25 transition-colors">
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-lg shadow-primary/25 transition-colors">
                 <i class="bi bi-plus-lg"></i> Add Item
             </button>
         </div>

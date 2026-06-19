@@ -5,47 +5,47 @@
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-white mb-1">Online Customers</h1>
-        <p class="text-slate-400 text-sm">Registered users and their order history</p>
+        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Online Customers</h1>
+        <p class="text-text-muted text-sm">Registered users and their order history</p>
     </div>
-    <a href="{% url 'admin_reports_export' %}?type=customers" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 border border-slate-700 hover:bg-slate-800 transition-colors">
+    <a href="{% url 'admin_reports_export' %}?type=customers" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary border border-surface-border hover:bg-slate-50 transition-colors">
         <i class="bi bi-download"></i> Export CSV
     </a>
 </div>
 
 {% if can_manage %}
-<div class="premium-card p-6 rounded-2xl mb-6 border border-brand-500/20">
-    <h2 class="text-sm font-bold text-white mb-4">Create customer</h2>
+<div class="premium-card p-6 rounded-2xl mb-6 border border-primary/20">
+    <h2 class="text-sm font-bold text-text-primary mb-4">Create customer</h2>
     <form method="post" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% csrf_token %}
         <input type="hidden" name="action" value="create">
-        <input type="text" name="first_name" placeholder="First name" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
-        <input type="text" name="last_name" placeholder="Last name" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
-        <input type="email" name="email" placeholder="Email" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
-        <input type="text" name="phone" placeholder="Phone" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
-        <input type="password" name="password" placeholder="Password (min 8)" required class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm">
-        <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold">Create account</button>
+        <input type="text" name="first_name" placeholder="First name" required class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
+        <input type="text" name="last_name" placeholder="Last name" class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
+        <input type="email" name="email" placeholder="Email" required class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
+        <input type="text" name="phone" placeholder="Phone" class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
+        <input type="password" name="password" placeholder="Password (min 8)" required class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold">Create account</button>
     </form>
-    <p class="text-[10px] text-slate-500 mt-3">Passwords are hashed and cannot be viewed after creation.</p>
+    <p class="text-[10px] text-text-muted mt-3">Passwords are hashed and cannot be viewed after creation.</p>
 </div>
 {% endif %}
 
-<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+<div class="premium-card p-4 rounded-2xl mb-6 border border-surface-border">
     <form method="get" class="flex gap-3">
         <div class="relative flex-1">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="bi bi-search text-slate-500 text-sm"></i></div>
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="bi bi-search text-text-muted text-sm"></i></div>
             <input type="text" name="q" value="{{ search }}" placeholder="Search by name, email, phone…"
-                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700">Search</button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-primary text-sm font-semibold border border-surface-border hover:bg-slate-50">Search</button>
     </form>
 </div>
 
-<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+<div class="premium-card rounded-2xl overflow-hidden border border-surface-border">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
-                 <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                 <tr class="bg-surface text-text-muted text-[10px] uppercase tracking-wider font-semibold border-b border-surface-border">
                      <th class="p-3 pl-5">Customer</th>
                      <th class="p-3">Avatar</th>
                      <th class="p-3">Contact</th>
@@ -55,37 +55,37 @@
                      {% if can_manage %}<th class="p-3 pr-5">Actions</th>{% endif %}
                  </tr>
             </thead>
-            <tbody class="divide-y divide-slate-700/50">
+            <tbody class="divide-y divide-surface-border">
                 {% for u in users %}
-                 <tr class="hover:bg-slate-800/30 transition-colors align-top">
+                 <tr class="hover:bg-surface/50 transition-colors align-top">
                      <td class="p-3 pl-5">
-                         <a href="{% url 'admin_user_detail' u.pk %}" class="text-sm font-semibold text-white hover:text-primary">{{ u.display_name }}</a>
-                         <div class="text-[10px] text-slate-500">{{ u.email }}</div>
+                         <a href="{% url 'admin_user_detail' u.pk %}" class="text-sm font-semibold text-text-primary hover:text-primary">{{ u.display_name }}</a>
+                         <div class="text-[10px] text-text-muted">{{ u.email }}</div>
                      </td>
                      <td class="p-3">
                          <img src="{{ u.avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">
                      </td>
-                    <td class="p-3 text-sm text-slate-400">{{ u.phone|default:"—" }}</td>
-                    <td class="p-3 text-xs font-bold text-brand-400 uppercase">{{ u.tier }}</td>
-                    <td class="p-3 text-sm text-white">{{ u.total_orders }}</td>
+                    <td class="p-3 text-sm text-text-muted">{{ u.phone|default:"—" }}</td>
+                    <td class="p-3 text-xs font-bold text-primary uppercase">{{ u.tier }}</td>
+                    <td class="p-3 text-sm text-text-primary">{{ u.total_orders }}</td>
                     <td class="p-3">
-                        {% if u.is_banned %}<span class="text-red-400 text-[10px] font-bold">Banned</span>
-                        {% elif not u.is_active %}<span class="text-slate-500 text-[10px] font-bold">Inactive</span>
-                        {% else %}<span class="text-emerald-400 text-[10px] font-bold">Active</span>{% endif %}
+                        {% if u.is_banned %}<span class="text-danger-text text-[10px] font-bold">Banned</span>
+                        {% elif not u.is_active %}<span class="text-text-muted text-[10px] font-bold">Inactive</span>
+                        {% else %}<span class="text-success-text text-[10px] font-bold">Active</span>{% endif %}
                     </td>
                     {% if can_manage %}
 <td class="p-3 pr-5 space-y-1 min-w-[220px]">
                          {% if not u.is_active and not u.is_email_verified %}
-                         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="approve"><input type="hidden" name="user_id" value="{{ u.pk }}"><button type="submit" class="text-[10px] text-emerald-400 hover:text-white underline font-bold">Approve</button></form>
+                         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="approve"><input type="hidden" name="user_id" value="{{ u.pk }}"><button type="submit" class="text-[10px] text-success-text hover:text-success-text/80 underline font-bold">Approve</button></form>
                          {% endif %}
-                         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="toggle_active"><input type="hidden" name="user_id" value="{{ u.pk }}"><button type="submit" class="text-[10px] text-slate-400 hover:text-white underline">{% if u.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>
-                        {% if not u.is_banned %}<form method="post" class="mt-1 flex gap-1">{% csrf_token %}<input type="hidden" name="action" value="ban"><input type="hidden" name="user_id" value="{{ u.pk }}"><label class="sr-only" for="ban-reason-{{ u.pk }}">Ban reason for {{ u.email }}</label><input id="ban-reason-{{ u.pk }}" type="text" name="ban_reason" placeholder="Ban reason" class="flex-1 px-2 py-1 rounded bg-slate-900 border border-slate-700 text-[10px] text-white"><button type="submit" class="text-[10px] text-red-400">Ban</button></form>{% else %}<form method="post" class="inline ml-2">{% csrf_token %}<input type="hidden" name="action" value="unban"><input type="hidden" name="user_id" value="{{ u.pk }}"><button type="submit" class="text-[10px] text-emerald-400">Unban</button></form>{% endif %}
-                        <form method="post" class="mt-1 flex gap-1">{% csrf_token %}<input type="hidden" name="action" value="set_password"><input type="hidden" name="user_id" value="{{ u.pk }}"><label class="sr-only" for="pwd-{{ u.pk }}">New password for {{ u.email }}</label><input id="pwd-{{ u.pk }}" type="password" name="password" placeholder="New password" autocomplete="new-password" class="flex-1 px-2 py-1 rounded bg-slate-900 border border-slate-700 text-[10px] text-white"><button type="submit" class="text-[10px] text-brand-400">Set</button></form>
+                         <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="toggle_active"><input type="hidden" name="user_id" value="{{ u.pk }}"><button type="submit" class="text-[10px] text-text-muted hover:text-text-primary underline">{% if u.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>
+                        {% if not u.is_banned %}<form method="post" class="mt-1 flex gap-1">{% csrf_token %}<input type="hidden" name="action" value="ban"><input type="hidden" name="user_id" value="{{ u.pk }}"><label class="sr-only" for="ban-reason-{{ u.pk }}">Ban reason for {{ u.email }}</label><input id="ban-reason-{{ u.pk }}" type="text" name="ban_reason" placeholder="Ban reason" class="flex-1 px-2 py-1 rounded bg-white border border-surface-border text-[10px] text-text-primary focus:border-primary focus:outline-none"><button type="submit" class="text-[10px] text-danger-text">Ban</button></form>{% else %}<form method="post" class="inline ml-2">{% csrf_token %}<input type="hidden" name="action" value="unban"><input type="hidden" name="user_id" value="{{ u.pk }}"><button type="submit" class="text-[10px] text-success-text">Unban</button></form>{% endif %}
+                        <form method="post" class="mt-1 flex gap-1">{% csrf_token %}<input type="hidden" name="action" value="set_password"><input type="hidden" name="user_id" value="{{ u.pk }}"><label class="sr-only" for="pwd-{{ u.pk }}">New password for {{ u.email }}</label><input id="pwd-{{ u.pk }}" type="password" name="password" placeholder="New password" autocomplete="new-password" class="flex-1 px-2 py-1 rounded bg-white border border-surface-border text-[10px] text-text-primary focus:border-primary focus:outline-none"><button type="submit" class="text-[10px] text-primary">Set</button></form>
                         <form method="post" class="mt-2">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="user_id" value="{{ u.pk }}">
-                            <button type="submit" onclick="return confirm('EXTREME CAUTION: Permanently delete this customer? This cannot be undone.')" class="w-full py-1.5 rounded-lg text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all flex items-center justify-center gap-1.5">
+                            <button type="submit" onclick="return confirm('EXTREME CAUTION: Permanently delete this customer? This cannot be undone.')" class="w-full py-1.5 rounded-lg text-[10px] font-bold text-danger-text bg-danger/10 border border-danger/20 hover:bg-danger/20 transition-all flex items-center justify-center gap-1.5">
                                 <i class="bi bi-trash3"></i> Delete Record
                             </button>
                         </form>
@@ -93,7 +93,7 @@
                     {% endif %}
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="p-12 text-center text-slate-500">No customers found.</td></tr>
+                <tr><td colspan="7" class="p-12 text-center text-text-muted">No customers found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

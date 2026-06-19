@@ -5,29 +5,29 @@
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-white mb-1">Walk-in Customers</h1>
-        <p class="text-slate-400 text-sm">Offline customer records and visit history</p>
+        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Walk-in Customers</h1>
+        <p class="text-text-muted text-sm">Offline customer records and visit history</p>
     </div>
 </div>
 
 <!-- Search -->
-<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+<div class="premium-card p-4 rounded-2xl mb-6 border border-surface-border">
     <form method="get" class="flex gap-3">
         <div class="relative flex-1">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="bi bi-search text-slate-500 text-sm"></i></div>
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="bi bi-search text-text-muted text-sm"></i></div>
             <input type="text" name="q" value="{{ search }}" placeholder="Search by name or phone…"
-                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">Search</button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-primary text-sm font-semibold border border-surface-border hover:bg-slate-50 transition-colors">Search</button>
     </form>
 </div>
 
 <!-- Table -->
-<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+<div class="premium-card rounded-2xl overflow-hidden border border-surface-border">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                <tr class="bg-surface text-text-muted text-[10px] uppercase tracking-wider font-semibold border-b border-surface-border">
                     <th class="p-3 pl-5">Customer</th>
                     <th class="p-3">Phone</th>
                     <th class="p-3">Tier</th>
@@ -36,38 +36,38 @@
                     <th class="p-3 pr-5">Last Visit</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-700/50">
+            <tbody class="divide-y divide-surface-border">
                 {% for c in customers %}
-                <tr class="hover:bg-slate-800/30 transition-colors">
+                <tr class="hover:bg-surface/50 transition-colors">
                     <td class="p-3 pl-5">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-sm border border-amber-500/30">
+                            <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold text-sm border border-amber-500/20">
                                 {{ c.name|first|upper }}
                             </div>
-                            <a href="{% url 'admin_walkin_detail' c.pk %}" class="text-sm font-semibold text-white hover:text-accent">{{ c.name }}</a>
+                            <a href="{% url 'admin_walkin_detail' c.pk %}" class="text-sm font-semibold text-text-primary hover:text-primary">{{ c.name }}</a>
                         </div>
                     </td>
-                    <td class="p-3 text-sm text-slate-300 font-mono">{{ c.phone }}</td>
+                    <td class="p-3 text-sm text-text-secondary font-mono">{{ c.phone }}</td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase
-                            {% if c.tier == 'platinum' %}bg-purple-500/10 text-purple-400
-                            {% elif c.tier == 'gold' %}bg-amber-500/10 text-amber-400
-                            {% elif c.tier == 'silver' %}bg-slate-500/10 text-slate-300
-                            {% else %}bg-brand-500/10 text-brand-400{% endif %}">
+                            {% if c.tier == 'platinum' %}bg-purple-500/10 text-purple-600
+                            {% elif c.tier == 'gold' %}bg-amber-500/10 text-amber-700
+                            {% elif c.tier == 'silver' %}bg-slate-500/10 text-slate-600
+                            {% else %}bg-primary/10 text-primary{% endif %}">
                             {{ c.tier|title }}
                         </span>
                     </td>
-                    <td class="p-3 text-sm font-semibold text-white">{{ c.total_orders }}</td>
-                    <td class="p-3 text-sm font-bold text-white">৳{{ c.total_spent|floatformat:0 }}</td>
+                    <td class="p-3 text-sm font-semibold text-text-primary">{{ c.total_orders }}</td>
+                    <td class="p-3 text-sm font-bold text-text-primary">৳{{ c.total_spent|floatformat:0 }}</td>
                     <td class="p-3 pr-5">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-slate-500">{{ c.last_visit|date:"M d, g:i A"|default:"Never" }}</span>
+                            <span class="text-xs text-text-muted">{{ c.last_visit|date:"M d, g:i A"|default:"Never" }}</span>
                             {% if request.user.is_full_admin %}
                             <form method="post" onsubmit="return confirm('Delete walk-in record?');">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="customer_id" value="{{ c.pk }}">
-                                <button type="submit" class="text-red-500 hover:text-red-400 transition-colors p-1">
+                                <button type="submit" class="text-red-600 hover:text-red-700 transition-colors p-1">
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </form>
@@ -76,7 +76,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" class="p-12 text-center text-slate-500">No walk-in customers yet. They'll appear here after a walk-in order.</td></tr>
+                <tr><td colspan="6" class="p-12 text-center text-text-muted">No walk-in customers yet. They'll appear here after a walk-in order.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

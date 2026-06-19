@@ -51,11 +51,11 @@
                         <i class="bi bi-briefcase-fill text-xl"></i>
                         Our Services
                     </a>
-                    <a href="{% url 'public_services_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-canvas bg-white hover:bg-neutral-200 transition-all hover:scale-105 active:scale-98">
+                    <a href="{% url 'public_services_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-primary bg-white border border-surface-border hover:border-primary/40 transition-all hover:scale-105 active:scale-98">
                         <i class="bi bi-cart-fill"></i>
                         Order Now
                     </a>
-                    <a href="{% url 'public_contact_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md transition-all hover:scale-105 active:scale-98">
+                    <a href="{% url 'public_contact_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-primary bg-white border border-primary/30 hover:bg-primary/5 transition-all hover:scale-105 active:scale-98">
                         <i class="bi bi-telephone-fill"></i>
                         Contact Us
                     </a>
@@ -135,31 +135,31 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="premium-card rounded-2xl p-6 text-center group hover:scale-[1.02] transition-transform">
-                <div class="w-16 h-16 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <i class="bi bi-lightning-charge-fill text-3xl text-brand-400"></i>
+                <div class="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-lightning-charge-fill text-3xl text-primary"></i>
                 </div>
-                <h4 class="text-xl font-bold text-white mb-2">Fast Delivery</h4>
+                <h4 class="text-xl font-bold text-text-primary mb-2">Fast Delivery</h4>
                 <p class="text-text-muted text-sm font-medium">Standard orders ready in 1–2 hours during business hours.</p>
             </div>
             <div class="premium-card rounded-2xl p-6 text-center group hover:scale-[1.02] transition-transform">
                 <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <i class="bi bi-stars text-3xl text-emerald-400"></i>
+                    <i class="bi bi-stars text-3xl text-emerald-600"></i>
                 </div>
-                <h4 class="text-xl font-bold text-white mb-2">Quality Print</h4>
+                <h4 class="text-xl font-bold text-text-primary mb-2">Quality Print</h4>
                 <p class="text-text-muted text-sm font-medium">Premium paper, vibrant colors, and crisp B&W output every time.</p>
             </div>
             <div class="premium-card rounded-2xl p-6 text-center group hover:scale-[1.02] transition-transform">
                 <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <i class="bi bi-tag-fill text-3xl text-amber-400"></i>
+                    <i class="bi bi-tag-fill text-3xl text-amber-600"></i>
                 </div>
-                <h4 class="text-xl font-bold text-white mb-2">Affordable</h4>
+                <h4 class="text-xl font-bold text-text-primary mb-2">Affordable</h4>
                 <p class="text-text-muted text-sm font-medium">Transparent pricing starting at just ৳2 per page with no hidden fees.</p>
             </div>
             <div class="premium-card rounded-2xl p-6 text-center group hover:scale-[1.02] transition-transform">
                 <div class="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <i class="bi bi-mortarboard-fill text-3xl text-purple-400"></i>
+                    <i class="bi bi-mortarboard-fill text-3xl text-purple-600"></i>
                 </div>
-                <h4 class="text-xl font-bold text-white mb-2">Student Discount</h4>
+                <h4 class="text-xl font-bold text-text-primary mb-2">Student Discount</h4>
                 <p class="text-text-muted text-sm font-medium">Special bulk pricing and student-friendly packages available.</p>
             </div>
         </div>
@@ -176,28 +176,28 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {% for service in featured_services %}
             <div class="premium-card rounded-2xl p-6 flex flex-col group hover:scale-[1.02] transition-transform">
-                <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4">
+                <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                     {% if service.category == 'printing' %}
-                        <i class="bi bi-printer-fill text-2xl text-brand-400"></i>
+                        <i class="bi bi-printer-fill text-2xl text-primary"></i>
                     {% elif service.category == 'binding' %}
-                        <i class="bi bi-journal-text text-2xl text-brand-400"></i>
+                        <i class="bi bi-journal-text text-2xl text-primary"></i>
                     {% elif service.category == 'photo' %}
-                        <i class="bi bi-camera-fill text-2xl text-brand-400"></i>
+                        <i class="bi bi-camera-fill text-2xl text-primary"></i>
                     {% elif service.category == 'lamination' %}
-                        <i class="bi bi-layers-fill text-2xl text-brand-400"></i>
+                        <i class="bi bi-layers-fill text-2xl text-primary"></i>
                     {% elif service.category == 'stationery' %}
-                        <i class="bi bi-pencil-square text-2xl text-brand-400"></i>
+                        <i class="bi bi-pencil-square text-2xl text-primary"></i>
                     {% else %}
-                        <i class="bi bi-briefcase-fill text-2xl text-brand-400"></i>
+                        <i class="bi bi-briefcase-fill text-2xl text-primary"></i>
                     {% endif %}
                 </div>
-                <h4 class="text-lg font-bold text-white mb-2">{{ service.name }}</h4>
+                <h4 class="text-lg font-bold text-text-primary mb-2">{{ service.name }}</h4>
                 <p class="text-text-muted text-sm font-medium mb-4 flex-1">{{ service.description|truncatewords:15 }}</p>
                 <div class="flex items-end justify-between mt-auto pt-4 border-t border-surface-border">
                     <div>
                         <span class="text-2xl font-bold text-primary">৳{{ service.base_price|floatformat:0 }}</span>
                     </div>
-                    <a href="{% url 'user_new_order' %}?service={{ service.pk }}" class="text-sm font-bold text-brand-400 hover:text-brand-300">Order Now <i class="bi bi-arrow-right ml-1"></i></a>
+                    <a href="{% url 'user_new_order' %}?service={{ service.pk }}" class="text-sm font-bold text-primary hover:text-primary-dark">Order Now <i class="bi bi-arrow-right ml-1"></i></a>
                 </div>
             </div>
             {% empty %}
@@ -207,7 +207,7 @@
             {% endfor %}
         </div>
         <div class="text-center mt-12">
-            <a href="{% url 'public_services_page' %}" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 shadow-xl shadow-brand-500/25 transition-all hover:scale-105">
+            <a href="{% url 'public_services_page' %}" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-purple-600 hover:from-primary-dark hover:to-purple-500 shadow-xl shadow-primary/25 transition-all hover:scale-105">
                 View All Services <i class="bi bi-arrow-right"></i>
             </a>
         </div>
@@ -221,7 +221,7 @@
         <p class="text-text-muted text-lg max-w-2xl mx-auto mb-20 font-medium">Four simple steps to get your assignments and documents printed easily.</p>
         
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-            <div class="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"></div>
+            <div class="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-surface-border to-transparent z-0"></div>
             
             <div class="relative z-10 flex flex-col items-center group">
                 <div class="w-20 h-20 rounded-2xl card flex items-center justify-center text-2xl font-bold text-primary mb-6 group-hover:scale-110 transition-transform">1</div>

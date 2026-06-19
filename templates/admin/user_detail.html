@@ -8,7 +8,7 @@
         <a href="{% url 'admin_users' %}" class="text-sm text-text-muted hover:text-primary mb-2 inline-flex items-center gap-1"><i class="bi bi-arrow-left"></i> All customers</a>
         <h1 class="text-2xl font-semibold">{{ customer.display_name }}</h1>
         <p class="text-text-muted text-sm">{{ customer.email }}{% if customer.phone %} · {{ customer.phone }}{% endif %}</p>
-        <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent">{{ customer.tier|title }}</span>
+        <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">{{ customer.tier|title }}</span>
     </div>
     <a href="{% url 'admin_orders' %}?q={{ customer.email|urlencode }}" class="btn-secondary text-sm min-h-[44px]">
         <i class="bi bi-list-check"></i> View in orders list
@@ -56,7 +56,7 @@
                     </td>
                     <td class="p-3" data-label="Source">
                         {% if o.source == 'offline' %}
-                        <span class="text-xs font-bold text-amber-400">Walk-in</span>
+                        <span class="text-xs font-bold text-warning-text">Walk-in</span>
                         {% else %}
                         <span class="text-xs font-bold text-primary">Online</span>
                         {% endif %}

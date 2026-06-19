@@ -35,12 +35,12 @@
 <div class="card p-4 flex flex-col gap-3" x-data="{ expanded: false }">
     <div class="flex items-start gap-3">
         <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
-            {% if service.category == 'printing' %}bg-blue-500/20 text-blue-400
-            {% elif service.category == 'photo' %}bg-purple-500/20 text-purple-400
-            {% elif service.category == 'binding' %}bg-amber-500/20 text-amber-400
-            {% elif service.category == 'lamination' %}bg-emerald-500/20 text-emerald-400
-            {% elif service.category == 'stationery' %}bg-indigo-500/20 text-indigo-400
-            {% else %}bg-gray-500/20 text-gray-400{% endif %}">
+            {% if service.category == 'printing' %}bg-blue-500/10 text-blue-600
+            {% elif service.category == 'photo' %}bg-purple-500/10 text-purple-600
+            {% elif service.category == 'binding' %}bg-amber-500/10 text-amber-700
+            {% elif service.category == 'lamination' %}bg-emerald-500/10 text-emerald-600
+            {% elif service.category == 'stationery' %}bg-indigo-500/10 text-indigo-600
+            {% else %}bg-gray-500/10 text-gray-600{% endif %}">
             <i class="bi bi-{% if service.category == 'printing' %}printer-fill{% elif service.category == 'photo' %}camera-fill{% elif service.category == 'binding' %}journal-text{% elif service.category == 'lamination' %}bounding-box{% elif service.category == 'stationery' %}pen-fill{% else %}gear-fill{% endif %} text-xl"></i>
         </div>
         <div class="flex-1 min-w-0">
@@ -50,7 +50,7 @@
         <div class="flex flex-col gap-1 items-end">
             {% if service.requires_file %}<i class="bi bi-paperclip text-primary" title="File upload required"></i>{% endif %}
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
-                {% if service.is_active %}bg-emerald-500/10 text-emerald-400{% else %}bg-red-500/10 text-red-400{% endif %}">
+                {% if service.is_active %}bg-success/10 text-success-text{% else %}bg-danger/10 text-danger-text{% endif %}">
                 {% if service.is_active %}Active{% else %}Disabled{% endif %}
             </span>
         </div>
@@ -76,9 +76,9 @@
         Stock levels:
         {% for variant in service.variants.all|slice:":3" %}
         <span class="inline-block ml-1 px-1.5 py-0.5 rounded
-            {% if variant.is_out_of_stock %}bg-red-500/20 text-red-400
-            {% elif variant.is_low_stock %}bg-amber-500/20 text-amber-400
-            {% else %}bg-emerald-500/20 text-emerald-400{% endif %}">
+            {% if variant.is_out_of_stock %}bg-danger/10 text-danger-text
+            {% elif variant.is_low_stock %}bg-warning/10 text-warning-text
+            {% else %}bg-success/10 text-success-text{% endif %}">
             {{ variant.name }}: {{ variant.stock }}
         </span>
         {% endfor %}
@@ -108,26 +108,26 @@
                     <td class="py-1.5 text-right font-bold text-primary">৳{{ variant.effective_price|floatformat:0 }}</td>
                     <td class="py-1.5 text-center">
                         <span class="inline-block px-2 py-0.5 rounded font-bold
-                            {% if variant.is_out_of_stock %}bg-red-500/20 text-red-400
-                            {% elif variant.is_low_stock %}bg-amber-500/20 text-amber-400
-                            {% else %}bg-emerald-500/20 text-emerald-400{% endif %}">
+                            {% if variant.is_out_of_stock %}bg-danger/10 text-danger-text
+                            {% elif variant.is_low_stock %}bg-warning/10 text-warning-text
+                            {% else %}bg-success/10 text-success-text{% endif %}">
                             {{ variant.stock }}
                         </span>
                     </td>
                     <td class="py-1.5 text-center">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
-                            {% if variant.is_active %}bg-emerald-500/10 text-emerald-400{% else %}bg-red-500/10 text-red-400{% endif %}">
+                            {% if variant.is_active %}bg-success/10 text-success-text{% else %}bg-danger/10 text-danger-text{% endif %}">
                             {% if variant.is_active %}Yes{% else %}No{% endif %}
                         </span>
                     </td>
                     <td class="py-1.5 text-right">
                         <div class="flex items-center justify-end gap-1">
-                            <button type="button" onclick="openEditVariantModal('{{ variant.pk }}', '{{ service.pk }}')" class="text-brand-400 hover:text-brand-300 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-pencil"></i></button>
+                            <button type="button" onclick="openEditVariantModal('{{ variant.pk }}', '{{ service.pk }}')" class="text-primary hover:text-primary-dark px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-pencil"></i></button>
                             <form method="post" onsubmit="return confirm('Delete variant?')" class="inline">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete_variant">
                                 <input type="hidden" name="variant_id" value="{{ variant.pk }}">
-                                <button type="submit" class="text-red-400 hover:text-red-300 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="text-danger-text hover:text-red-700 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>
                     </td>
@@ -149,7 +149,7 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="delete_service">
             <input type="hidden" name="service_id" value="{{ service.pk }}">
-            <button type="submit" class="text-red-400 hover:text-red-300 p-2 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
+            <button type="submit" class="text-danger-text hover:text-red-700 p-2 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
         </form>
         {% endif %}
     </div>
@@ -164,7 +164,7 @@
 
 <!-- Add Service Modal -->
 <div id="addServiceModal" x-data="{ open: false }" x-show="open" x-cloak
-     class="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"
+     class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
     <div class="card w-full max-w-lg rounded-2xl p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Add New Service</h3>
@@ -209,7 +209,7 @@
 
 <!-- Edit Service Modal -->
 <div id="editServiceModal" x-data="{ open: false }" x-show="open" x-cloak
-     class="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"
+     class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
     <div class="card w-full max-w-lg rounded-2xl p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Edit Service</h3>
@@ -255,7 +255,7 @@
 
 <!-- Add Variant Modal -->
 <div id="addVariantModal" x-data="{ open: false }" x-show="open" x-cloak
-     class="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"
+     class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
     <div class="card w-full max-w-lg rounded-2xl p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Add Variant</h3>

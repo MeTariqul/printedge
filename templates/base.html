@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}PrintEdge | Campus Printing{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Affordable campus printing — upload documents, get instant quotes, track orders.{% endblock %}">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#f8fafc">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/png">
     <link rel="manifest" href="{% url 'manifest' %}">
@@ -19,7 +19,7 @@
 <body class="min-h-screen flex flex-col bg-canvas text-text" x-data="{ mobileMenu: false }" :class="mobileMenu ? 'overflow-hidden' : ''">
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <div x-show="mobileMenu" @click="mobileMenu = false" class="fixed inset-0 z-[60] bg-black/60 md:hidden" x-cloak x-transition></div>
+    <div x-show="mobileMenu" @click="mobileMenu = false" class="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm md:hidden" x-cloak x-transition></div>
     <aside x-cloak :class="mobileMenu ? 'translate-x-0' : '-translate-x-full'"
            class="fixed inset-y-0 left-0 z-[70] w-80 max-w-[88vw] transform transition-transform duration-300 md:hidden flex flex-col border-r border-surface-border bg-canvas-alt shadow-xl">
         <div class="flex items-center justify-between px-5 h-16 border-b border-surface-border pt-safe">
@@ -48,7 +48,7 @@
     <div id="django-messages" class="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4 md:px-0">
         {% for msg in messages %}
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="pointer-events-auto card p-4 flex items-center gap-3 animate-fade-in">
-            <i class="bi {% if msg.tags == 'error' %}bi-x-circle text-red-400{% elif msg.tags == 'success' %}bi-check-circle text-emerald-400{% else %}bi-info-circle text-primary{% endif %} text-xl"></i>
+            <i class="bi {% if msg.tags == 'error' %}bi-x-circle text-red-600{% elif msg.tags == 'success' %}bi-check-circle text-emerald-600{% else %}bi-info-circle text-primary{% endif %} text-xl"></i>
             <p class="text-sm font-semibold flex-1">{{ msg }}</p>
             <button type="button" @click="show = false" class="text-text-muted w-11 h-11 flex items-center justify-center" aria-label="Dismiss"><i class="bi bi-x"></i></button>
         </div>
@@ -82,9 +82,9 @@
             type = type || 'info';
             var el = document.createElement('div');
             el.className = 'fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-bold min-h-[44px] flex items-center';
-            if (type === 'success') el.className += ' bg-emerald-500 text-white';
-            else if (type === 'error') el.className += ' bg-red-500 text-white';
-            else el.className += ' bg-brand-500 text-white';
+            if (type === 'success') el.className += ' bg-emerald-600 text-white';
+            else if (type === 'error') el.className += ' bg-red-600 text-white';
+            else el.className += ' bg-primary text-white';
             el.textContent = message;
             document.body.appendChild(el);
             setTimeout(function() { el.remove(); }, 3000);

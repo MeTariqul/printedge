@@ -8,7 +8,7 @@
        <img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-20 h-20 sm:w-24 sm:h-24 rounded-lg mx-auto object-cover mb-4" onerror="this.src='/static/icons/user-placeholder.png'">
        <p class="font-bold text-lg break-words">{{ request.user.display_name }}</p>
        <p class="text-sm text-text-muted break-all">{{ request.user.email }}</p>
-       <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent">{{ request.user.tier|title }}</span>
+       <span class="inline-block mt-3 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">{{ request.user.tier|title }}</span>
        <dl class="mt-6 text-sm space-y-2 text-left">
          <div class="flex justify-between gap-2"><dt>Orders</dt><dd class="font-bold">{{ request.user.total_orders }}</dd></div>
          <div class="flex justify-between gap-2"><dt>Spent</dt><dd class="font-bold">৳{{ request.user.total_spent|floatformat:0 }}</dd></div>
@@ -29,7 +29,7 @@
           <div class="sm:col-span-2"><label class="form-label">Email (read-only)</label><input value="{{ request.user.email }}" class="form-input opacity-70" disabled readonly></div>
 <div class="sm:col-span-2"><label class="form-label">Profile photo</label><input type="url" name="avatar_url" value="{{ request.user.avatar_url|default:'' }}" class="form-input" placeholder="Paste a direct link to your photo (e.g., from Imgur, Facebook, or any public image URL). Leave blank for default avatar."></div>
         </div>
-        <div class="border-t border-slate-700 pt-4 mt-4">
+        <div class="border-t border-surface-border pt-4 mt-4">
           <h4 class="font-bold mb-3">Notification Preferences</h4>
           <label class="flex items-center gap-2 mb-2 cursor-pointer">
             <input type="checkbox" name="notification_email" {% if request.user.notification_email %}checked{% endif %} class="w-4 h-4 rounded">
@@ -41,7 +41,7 @@
         </label>
         <label class="flex items-center gap-2 cursor-pointer opacity-70">
             <input type="checkbox" name="notification_push" {% if request.user.notification_push %}checked{% endif %} class="w-4 h-4 rounded" disabled>
-            <span class="text-sm text-slate-400">Push notifications (coming soon)</span>
+            <span class="text-sm text-text-muted">Push notifications (coming soon)</span>
         </label>
         </div>
         <button type="submit" class="btn-primary w-full sm:w-auto min-h-[44px]">Save profile</button>
@@ -59,7 +59,7 @@
         <h3 class="font-bold mb-4">Saved addresses</h3>
         {% for addr in addresses %}
         <div class="p-3 mb-2 rounded-lg border border-surface-border text-sm">
-          <strong>{{ addr.label }}</strong> {% if addr.is_default %}<span class="text-accent text-xs">Default</span>{% endif %}
+          <strong>{{ addr.label }}</strong> {% if addr.is_default %}<span class="text-primary text-xs">Default</span>{% endif %}
           <p class="break-words">{{ addr.address }}</p>
         </div>
         {% empty %}

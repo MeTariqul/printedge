@@ -5,13 +5,13 @@
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div class="flex items-center gap-4">
-        <a href="{% url 'admin_orders' %}" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+        <a href="{% url 'admin_orders' %}" class="w-10 h-10 rounded-xl bg-surface border border-surface-border flex items-center justify-center text-text-muted hover:text-primary hover:bg-slate-50 transition-colors">
             <i class="bi bi-arrow-left"></i>
         </a>
         <div>
-            <h1 class="text-2xl font-display font-bold text-white">{{ order.order_number }}</h1>
-            <p class="text-slate-400 text-sm">
-                {% if order.source == 'offline' %}<span class="text-amber-400">🏪 Walk-in</span>{% else %}<span class="text-blue-400">🌐 Online</span>{% endif %}
+            <h1 class="text-2xl font-display font-bold text-text-primary">{{ order.order_number }}</h1>
+            <p class="text-text-muted text-sm">
+                {% if order.source == 'offline' %}<span class="text-warning-text">🏪 Walk-in</span>{% else %}<span class="text-primary">🌐 Online</span>{% endif %}
                 · {{ order.created_at|date:"M d, Y g:i A" }}
             </p>
         </div>
@@ -20,7 +20,7 @@
     <form method="post">
         {% csrf_token %}
         <input type="hidden" name="action" value="delete_order">
-        <button type="submit" onclick="return confirm('EXTREME CAUTION: This will permanently delete this order and all its records. This cannot be undone. Continue?')" class="px-5 py-2.5 rounded-xl text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all flex items-center gap-2">
+        <button type="submit" onclick="return confirm('EXTREME CAUTION: This will permanently delete this order and all its records. This cannot be undone. Continue?')" class="px-5 py-2.5 rounded-xl text-xs font-bold text-danger-text bg-danger/10 border border-danger/20 hover:bg-danger/20 transition-all flex items-center gap-2">
             <i class="bi bi-trash3-fill"></i> Delete Order Permanently
         </button>
     </form>
@@ -32,111 +32,111 @@
     <div class="xl:col-span-2 space-y-6">
 
         <!-- Status Update -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-arrow-repeat text-brand-400"></i> Update Status
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-arrow-repeat text-primary"></i> Update Status
             </h3>
             <form method="post" class="flex flex-col sm:flex-row gap-3">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="status">
-                <select name="status" onchange="this.form.dispatchEvent(new Event('submit'))" class="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                <select name="status" onchange="this.form.dispatchEvent(new Event('submit'))" class="flex-1 px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
                     {% for key, label in order.STATUS_CHOICES %}
                     <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <input type="text" name="note" placeholder="Add a note (optional)" class="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
-                <button type="submit" class="px-6 py-3 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-400 shadow-lg shadow-brand-500/25 transition-colors">
+                <input type="text" name="note" placeholder="Add a note (optional)" class="flex-1 px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                <button type="submit" class="px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-dark shadow-lg shadow-primary/25 transition-colors">
                     Update
                 </button>
             </form>
         </div>
 
         <!-- Order Details -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-file-earmark-text text-blue-400"></i> Print Specifications
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-file-earmark-text text-primary"></i> Print Specifications
             </h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Type</p>
-                    <p class="text-sm font-semibold text-white">{{ order.get_print_type_display }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Type</p>
+                    <p class="text-sm font-semibold text-text-primary">{{ order.get_print_type_display }}</p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Sides</p>
-                    <p class="text-sm font-semibold text-white">{{ order.get_sides_display }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Sides</p>
+                    <p class="text-sm font-semibold text-text-primary">{{ order.get_sides_display }}</p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Pages</p>
-                    <p class="text-sm font-semibold text-white">{{ order.pages }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Pages</p>
+                    <p class="text-sm font-semibold text-text-primary">{{ order.pages }}</p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Copies</p>
-                    <p class="text-sm font-semibold text-white">{{ order.copies }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Copies</p>
+                    <p class="text-sm font-semibold text-text-primary">{{ order.copies }}</p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Paper</p>
-                    <p class="text-sm font-semibold text-white">{{ order.paper_size }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Paper</p>
+                    <p class="text-sm font-semibold text-text-primary">{{ order.paper_size }}</p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Total Sheets</p>
-                    <p class="text-sm font-semibold text-white">{{ order.total_sheets }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Total Sheets</p>
+                    <p class="text-sm font-semibold text-text-primary">{{ order.total_sheets }}</p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Urgent</p>
-                    <p class="text-sm font-semibold {% if order.is_urgent %}text-red-400{% else %}text-slate-400{% endif %}">
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">Urgent</p>
+                    <p class="text-sm font-semibold {% if order.is_urgent %}text-danger-text{% else %}text-text-muted{% endif %}">
                         {% if order.is_urgent %}⚡ Yes{% else %}No{% endif %}
                     </p>
                 </div>
-                <div class="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">File</p>
-                    <p class="text-sm font-semibold text-white truncate">{{ order.file_name|default:"Physical Doc" }}</p>
+                <div class="p-3 rounded-xl bg-surface border border-surface-border">
+                    <p class="text-[10px] text-text-muted uppercase tracking-wider font-bold mb-1">File</p>
+                    <p class="text-sm font-semibold text-text-primary truncate">{{ order.file_name|default:"Physical Doc" }}</p>
                 </div>
             </div>
-            <div class="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                <p class="text-xs font-bold text-slate-400 mb-1">Fulfillment</p>
-                <p class="text-sm text-white">{{ order.get_fulfillment_type_display }}</p>
+            <div class="mt-4 p-3 rounded-xl bg-surface border border-surface-border">
+                <p class="text-xs font-bold text-text-muted mb-1">Fulfillment</p>
+                <p class="text-sm text-text-primary">{{ order.get_fulfillment_type_display }}</p>
                 {% if order.fulfillment_type == 'delivery' and order.delivery_address %}
-                <p class="text-xs text-slate-400 mt-2">{{ order.delivery_address }}</p>
+                <p class="text-xs text-text-muted mt-2">{{ order.delivery_address }}</p>
                 {% endif %}
             </div>
-            <div class="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 flex flex-wrap justify-between items-center gap-3">
-                <a href="{% url 'admin_order_invoice' order.pk %}" class="text-sm text-emerald-400 font-semibold min-h-[44px] inline-flex items-center gap-1"><i class="bi bi-receipt"></i> Invoice PDF</a>
-                <a href="{% url 'admin_thermal_receipt' order.pk %}" target="_blank" class="text-sm text-amber-400 font-semibold min-h-[44px] inline-flex items-center gap-1"><i class="bi bi-printer"></i> Print Receipt</a>
+            <div class="mt-4 p-3 rounded-xl bg-surface border border-surface-border flex flex-wrap justify-between items-center gap-3">
+                <a href="{% url 'admin_order_invoice' order.pk %}" class="text-sm text-success-text font-semibold min-h-[44px] inline-flex items-center gap-1"><i class="bi bi-receipt"></i> Invoice PDF</a>
+                <a href="{% url 'admin_thermal_receipt' order.pk %}" target="_blank" class="text-sm text-warning-text font-semibold min-h-[44px] inline-flex items-center gap-1"><i class="bi bi-printer"></i> Print Receipt</a>
                 {% if order.has_stored_file %}
-                <a href="{% url 'admin_order_download_file' order.pk %}" class="text-sm text-brand-400 font-semibold min-h-[44px] inline-flex items-center">{{ order.file_name|default:"Download file" }}</a>
+                <a href="{% url 'admin_order_download_file' order.pk %}" class="text-sm text-primary font-semibold min-h-[44px] inline-flex items-center">{{ order.file_name|default:"Download file" }}</a>
                 {% if can_delete_file %}
-                <form method="post" onsubmit="return confirm('Delete file?');">{% csrf_token %}<input type="hidden" name="action" value="delete_file"><button type="submit" class="text-xs text-red-400 font-bold min-h-[44px]">Delete file</button></form>
+                <form method="post" onsubmit="return confirm('Delete file?');">{% csrf_token %}<input type="hidden" name="action" value="delete_file"><button type="submit" class="text-xs text-danger-text font-bold min-h-[44px]">Delete file</button></form>
                 {% endif %}
                 {% endif %}
             </div>
             {% if order.special_instructions %}
-            <div class="mt-4 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                <p class="text-xs font-bold text-amber-400 mb-1">Special Instructions</p>
-                <p class="text-sm text-slate-300">{{ order.special_instructions }}</p>
+            <div class="mt-4 p-3 rounded-xl bg-warning/5 border border-warning/20">
+                <p class="text-xs font-bold text-warning-text mb-1">Special Instructions</p>
+                <p class="text-sm text-text-secondary">{{ order.special_instructions }}</p>
             </div>
             {% endif %}
         </div>
 
         <!-- Payment Update -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-wallet2 text-emerald-400"></i> Payment
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-wallet2 text-success-text"></i> Payment
             </h3>
             {% if order.payment_status == 'pending_review' and order.payment_screenshot %}
-            <div class="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                <p class="text-sm font-bold text-amber-400 mb-3">Screenshot pending review</p>
-                <img src="{{ order.payment_screenshot.url }}" alt="Payment screenshot" class="max-w-full max-h-64 rounded-lg border border-slate-700 mb-4">
+            <div class="mb-6 p-4 rounded-xl bg-warning/10 border border-warning/20">
+                <p class="text-sm font-bold text-warning-text mb-3">Screenshot pending review</p>
+                <img src="{{ order.payment_screenshot.url }}" alt="Payment screenshot" class="max-w-full max-h-64 rounded-lg border border-surface-border mb-4">
                 <div class="flex flex-wrap gap-3">
                     <form method="post" class="inline">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="approve_payment">
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-bold border border-emerald-500/30 min-h-[44px]">Approve Payment</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-success/10 text-success-text text-sm font-bold border border-success/20 min-h-[44px]">Approve Payment</button>
                     </form>
                     <form method="post" class="inline flex flex-wrap items-end gap-2">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="reject_payment">
-                        <input type="text" name="payment_rejection_reason" placeholder="Rejection reason" class="px-3 py-2 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm min-h-[44px]">
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 text-sm font-bold border border-red-500/30 min-h-[44px]">Reject</button>
+                        <input type="text" name="payment_rejection_reason" placeholder="Rejection reason" class="px-3 py-2 rounded-xl bg-white border border-surface-border text-text-primary text-sm min-h-[44px]">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-danger/10 text-danger-text text-sm font-bold border border-danger/20 min-h-[44px]">Reject</button>
                     </form>
                 </div>
             </div>
@@ -145,12 +145,12 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="payment">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Amount Paid (৳)</label>
-                    <input type="number" name="amount_paid" value="{{ order.amount_paid }}" step="0.01" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-text-muted mb-1.5">Amount Paid (৳)</label>
+                    <input type="number" name="amount_paid" value="{{ order.amount_paid }}" step="0.01" class="w-full px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Payment Method</label>
-                    <select name="payment_method" onchange="this.blur()" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-text-muted mb-1.5">Payment Method</label>
+                    <select name="payment_method" onchange="this.blur()" class="w-full px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
                         <option value="Cash" {% if order.payment_method == 'Cash' %}selected{% endif %}>Cash</option>
                         <option value="bKash" {% if order.payment_method == 'bKash' %}selected{% endif %}>bKash</option>
                         <option value="Nagad" {% if order.payment_method == 'Nagad' %}selected{% endif %}>Nagad</option>
@@ -158,11 +158,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Transaction ID</label>
-                    <input type="text" name="transaction_id" value="{{ order.transaction_id|default:'' }}" placeholder="Optional" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-text-muted mb-1.5">Transaction ID</label>
+                    <input type="text" name="transaction_id" value="{{ order.transaction_id|default:'' }}" placeholder="Optional" class="w-full px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
                 </div>
                 <div class="sm:col-span-3">
-                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-sm font-bold border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-success/10 text-success-text text-sm font-bold border border-success/20 hover:bg-success/20 transition-colors">
                         <i class="bi bi-check-lg"></i> Update Payment
                     </button>
                 </div>
@@ -170,40 +170,40 @@
         </div>
 
         <!-- Admin Notes -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-sticky text-amber-400"></i> Admin Notes
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-sticky text-warning-text"></i> Admin Notes
             </h3>
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="notes">
-                <textarea name="admin_notes" rows="3" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm placeholder-slate-500 focus:border-brand-500 focus:outline-none mb-3" placeholder="Internal notes…">{{ order.admin_notes|default:'' }}</textarea>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700 transition-colors">
+                <textarea name="admin_notes" rows="3" class="w-full px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none mb-3" placeholder="Internal notes…">{{ order.admin_notes|default:'' }}</textarea>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-surface text-text-primary text-sm font-semibold border border-surface-border hover:bg-slate-50 transition-colors">
                     Save Notes
                 </button>
             </form>
         </div>
 
         <!-- Status History -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-clock-history text-purple-400"></i> Status History
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-clock-history text-purple-600"></i> Status History
             </h3>
             <div class="space-y-3">
                 {% for log in order.status_logs.all %}
-                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-800/30">
-                    <div class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></div>
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-surface">
+                    <div class="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>
                     <div class="flex-1">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-semibold text-white capitalize">{{ log.new_status }}</span>
-                            <span class="text-[10px] text-slate-500">{{ log.timestamp|date:"M d, g:i A" }}</span>
+                            <span class="text-sm font-semibold text-text-primary capitalize">{{ log.new_status }}</span>
+                            <span class="text-[10px] text-text-muted">{{ log.timestamp|date:"M d, g:i A" }}</span>
                         </div>
-                        {% if log.note %}<p class="text-xs text-slate-400 mt-0.5">{{ log.note }}</p>{% endif %}
-                        <p class="text-[10px] text-slate-500 mt-0.5">by {{ log.changed_by.display_name|default:"System" }}</p>
+                        {% if log.note %}<p class="text-xs text-text-muted mt-0.5">{{ log.note }}</p>{% endif %}
+                        <p class="text-[10px] text-text-muted mt-0.5">by {{ log.changed_by.display_name|default:"System" }}</p>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-sm text-slate-500 text-center py-4">No status history yet.</p>
+                <p class="text-sm text-text-muted text-center py-4">No status history yet.</p>
                 {% endfor %}
             </div>
         </div>
@@ -212,90 +212,90 @@
     <!-- Sidebar -->
     <div class="space-y-6">
         <!-- Summary Card -->
-        <div class="premium-card p-6 rounded-2xl border border-brand-500/20 shadow-xl shadow-brand-500/5">
+        <div class="premium-card p-6 rounded-2xl border border-primary/20 shadow-xl shadow-primary/5">
             <div class="text-center mb-6">
                 <span class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider
-                    {% if order.status == 'delivered' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
-                    {% elif order.status == 'cancelled' %}bg-red-500/20 text-red-400 border border-red-500/30
-                    {% elif order.status == 'printing' %}bg-blue-500/20 text-blue-400 border border-blue-500/30
-                    {% elif order.status == 'ready' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
-                    {% else %}bg-amber-500/20 text-amber-400 border border-amber-500/30{% endif %}">
+                    {% if order.status == 'delivered' %}bg-success/10 text-success-text border border-success/20
+                    {% elif order.status == 'cancelled' %}bg-danger/10 text-danger-text border border-danger/20
+                    {% elif order.status == 'printing' %}bg-primary/10 text-primary border border-primary/20
+                    {% elif order.status == 'ready' %}bg-success/10 text-success-text border border-success/20
+                    {% else %}bg-warning/10 text-warning-text border border-warning/20{% endif %}">
                     {{ order.get_status_display }}
                 </span>
             </div>
 
             <div class="space-y-3 text-sm">
-                <div class="flex justify-between border-b border-slate-700/50 pb-3">
-                    <span class="text-slate-500">Base Price</span>
-                    <span class="text-white font-semibold">৳{{ order.base_price|floatformat:0 }}</span>
+                <div class="flex justify-between border-b border-surface-border pb-3">
+                    <span class="text-text-muted">Base Price</span>
+                    <span class="text-text-primary font-semibold">৳{{ order.base_price|floatformat:0 }}</span>
                 </div>
                 {% if order.addons_price %}
-                <div class="flex justify-between border-b border-slate-700/50 pb-3">
-                    <span class="text-slate-500">Add-ons</span>
-                    <span class="text-white font-semibold">+৳{{ order.addons_price|floatformat:0 }}</span>
+                <div class="flex justify-between border-b border-surface-border pb-3">
+                    <span class="text-text-muted">Add-ons</span>
+                    <span class="text-text-primary font-semibold">+৳{{ order.addons_price|floatformat:0 }}</span>
                 </div>
                 {% endif %}
                 {% if order.urgent_surcharge %}
-                <div class="flex justify-between border-b border-slate-700/50 pb-3">
-                    <span class="text-red-400">Urgent</span>
-                    <span class="text-red-400 font-semibold">+৳{{ order.urgent_surcharge|floatformat:0 }}</span>
+                <div class="flex justify-between border-b border-surface-border pb-3">
+                    <span class="text-danger-text">Urgent</span>
+                    <span class="text-danger-text font-semibold">+৳{{ order.urgent_surcharge|floatformat:0 }}</span>
                 </div>
                 {% endif %}
                 {% if order.discount_amount %}
-                <div class="flex justify-between border-b border-slate-700/50 pb-3">
-                    <span class="text-emerald-400">Discount</span>
-                    <span class="text-emerald-400 font-semibold">-৳{{ order.discount_amount|floatformat:0 }}</span>
+                <div class="flex justify-between border-b border-surface-border pb-3">
+                    <span class="text-success-text">Discount</span>
+                    <span class="text-success-text font-semibold">-৳{{ order.discount_amount|floatformat:0 }}</span>
                 </div>
                 {% endif %}
                 <div class="flex justify-between pt-2">
-                    <span class="text-white font-bold text-lg">Total</span>
-                    <span class="text-white font-display font-bold text-2xl">৳{{ order.total_amount|floatformat:0 }}</span>
+                    <span class="text-text-primary font-bold text-lg">Total</span>
+                    <span class="text-text-primary font-display font-bold text-2xl">৳{{ order.total_amount|floatformat:0 }}</span>
                 </div>
                 <div class="flex justify-between pt-1">
-                    <span class="text-slate-500">Paid</span>
-                    <span class="text-emerald-400 font-bold">৳{{ order.amount_paid|floatformat:0 }}</span>
+                    <span class="text-text-muted">Paid</span>
+                    <span class="text-success-text font-bold">৳{{ order.amount_paid|floatformat:0 }}</span>
                 </div>
                 {% if order.amount_due > 0 %}
                 <div class="flex justify-between">
-                    <span class="text-red-400">Due</span>
-                    <span class="text-red-400 font-bold">৳{{ order.amount_due|floatformat:0 }}</span>
+                    <span class="text-danger-text">Due</span>
+                    <span class="text-danger-text font-bold">৳{{ order.amount_due|floatformat:0 }}</span>
                 </div>
                 {% endif %}
             </div>
         </div>
 
         <!-- Customer Info -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-person-circle text-blue-400"></i> Customer
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-person-circle text-primary"></i> Customer
             </h3>
             <div class="space-y-3 text-sm">
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Name</span>
-                    <span class="text-white font-semibold">{{ order.customer_name }}</span>
+                    <span class="text-text-muted">Name</span>
+                    <span class="text-text-primary font-semibold">{{ order.customer_name }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Phone</span>
-                    <span class="text-slate-300">{{ order.customer_phone|default:"—" }}</span>
+                    <span class="text-text-muted">Phone</span>
+                    <span class="text-text-secondary">{{ order.customer_phone|default:"—" }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Assign Staff -->
-        <div class="premium-card p-6 rounded-2xl border border-slate-700/50">
-            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <i class="bi bi-person-gear text-brand-400"></i> Assign To
+        <div class="premium-card p-6 rounded-2xl border border-surface-border">
+            <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
+                <i class="bi bi-person-gear text-primary"></i> Assign To
             </h3>
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="assign">
-                <select name="assigned_to" onchange="this.blur()" class="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none mb-3">
+                <select name="assigned_to" onchange="this.blur()" class="w-full px-4 py-3 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none mb-3">
                     <option value="">Unassigned</option>
                     {% for s in staff_list %}
                     <option value="{{ s.pk }}" {% if order.assigned_to_id == s.pk %}selected{% endif %}>{{ s.display_name }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-brand-500/20 text-brand-400 text-sm font-bold border border-brand-500/30 hover:bg-brand-500/30 transition-colors">
+                <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-bold border border-primary/20 hover:bg-primary/20 transition-colors">
                     Assign
                 </button>
             </form>

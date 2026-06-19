@@ -2,18 +2,18 @@
 {% block title %}{{ walkin.name }} | Walk-in{% endblock %}
 {% block content %}
 <div class="max-w-3xl">
-  <h1 class="text-2xl font-bold text-white mb-2">{{ walkin.name }}</h1>
-  <p class="text-neutral-400 mb-6">{{ walkin.phone }} · {{ walkin.customer_id }}</p>
+  <h1 class="text-2xl font-bold text-text-primary mb-2">{{ walkin.name }}</h1>
+  <p class="text-text-muted mb-6">{{ walkin.phone }} · {{ walkin.customer_id }}</p>
   <div class="premium-card p-6 rounded-lg mb-6">
-    <h3 class="font-bold text-white mb-4">Order history</h3>
+    <h3 class="font-bold text-text-primary mb-4">Order history</h3>
     <div class="table-scroll">
       <table class="w-full text-sm min-w-[400px]">
-        <thead><tr class="text-neutral-500"><th class="p-2 text-left">Order</th><th class="p-2">Total</th><th class="p-2">Status</th></tr></thead>
+        <thead><tr class="text-text-muted"><th class="p-2 text-left">Order</th><th class="p-2">Total</th><th class="p-2">Status</th></tr></thead>
         <tbody>
           {% for o in orders %}
-          <tr class="border-t border-white/5"><td class="p-2"><a href="{% url 'admin_order_detail' o.pk %}" class="text-accent">{{ o.order_number }}</a></td><td class="p-2">৳{{ o.total_amount|floatformat:0 }}</td><td class="p-2">{{ o.get_status_display }}</td></tr>
+          <tr class="border-t border-surface-border"><td class="p-2"><a href="{% url 'admin_order_detail' o.pk %}" class="text-primary">{{ o.order_number }}</a></td><td class="p-2">৳{{ o.total_amount|floatformat:0 }}</td><td class="p-2">{{ o.get_status_display }}</td></tr>
           {% empty %}
-          <tr><td colspan="3" class="p-4 text-neutral-500">No orders</td></tr>
+          <tr><td colspan="3" class="p-4 text-text-muted">No orders</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -22,7 +22,7 @@
   {% if request.user.can_manage_users %}
   <form method="post" class="premium-card p-6 rounded-lg">
     {% csrf_token %}
-    <h3 class="font-bold text-white mb-3">Merge with online account</h3>
+    <h3 class="font-bold text-text-primary mb-3">Merge with online account</h3>
     <select name="user_id" class="form-input mb-3" onchange="this.blur()" required>
       <option value="">Select customer…</option>
       {% for u in online_users %}<option value="{{ u.pk }}">{{ u.email }} — {{ u.display_name }}</option>{% endfor %}

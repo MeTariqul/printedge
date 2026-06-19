@@ -5,27 +5,27 @@
 {% block content %}
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-white mb-1">Email Logs</h1>
-        <p class="text-slate-400 text-sm">Track all sent and failed emails</p>
+        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Email Logs</h1>
+        <p class="text-text-muted text-sm">Track all sent and failed emails</p>
     </div>
 </div>
 
-<div class="premium-card p-4 rounded-2xl mb-6 border border-slate-700/50">
+<div class="premium-card p-4 rounded-2xl mb-6 border border-surface-border">
     <form method="get" class="flex gap-3">
-        <select name="status" onchange="this.form.submit()" class="px-3 py-2.5 rounded-xl bg-slate-800/50 border border-slate-700 text-white text-sm focus:border-brand-500 outline-none">
+        <select name="status" onchange="this.form.submit()" class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
             <option value="" {% if not current_status %}selected{% endif %}>All Statuses</option>
             <option value="sent" {% if current_status == 'sent' %}selected{% endif %}>Sent</option>
             <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
         </select>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-semibold border border-slate-700 hover:bg-slate-700">Filter</button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-primary text-sm font-semibold border border-surface-border hover:bg-slate-50">Filter</button>
     </form>
 </div>
 
-<div class="premium-card rounded-2xl overflow-hidden border border-slate-700/50">
+<div class="premium-card rounded-2xl overflow-hidden border border-surface-border">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="bg-slate-800/50 text-slate-500 text-[10px] uppercase tracking-wider font-semibold border-b border-slate-700/50">
+                <tr class="bg-surface text-text-muted text-[10px] uppercase tracking-wider font-semibold border-b border-surface-border">
                     <th class="p-3 pl-5">Recipient</th>
                     <th class="p-3">Subject</th>
                     <th class="p-3">Status</th>
@@ -33,23 +33,23 @@
                     <th class="p-3 pr-5">Error</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-700/50">
+            <tbody class="divide-y divide-surface-border">
                 {% for log in logs %}
-                <tr class="hover:bg-slate-800/30 transition-colors">
-                    <td class="p-3 pl-5 text-sm text-white">{{ log.recipient }}</td>
-                    <td class="p-3 text-sm text-slate-300">{{ log.subject }}</td>
+                <tr class="hover:bg-surface/50 transition-colors">
+                    <td class="p-3 pl-5 text-sm text-text-primary">{{ log.recipient }}</td>
+                    <td class="p-3 text-sm text-text-secondary">{{ log.subject }}</td>
                     <td class="p-3">
                         {% if log.status == 'sent' %}
-                        <span class="text-emerald-400 text-[10px] font-bold">Sent</span>
+                        <span class="text-success-text text-[10px] font-bold">Sent</span>
                         {% else %}
-                        <span class="text-red-400 text-[10px] font-bold">Failed</span>
+                        <span class="text-danger-text text-[10px] font-bold">Failed</span>
                         {% endif %}
                     </td>
-                    <td class="p-3 text-xs text-slate-500">{{ log.created_at|date:"M d, Y g:i A" }}</td>
-                    <td class="p-3 pr-5 text-xs text-red-400 max-w-xs truncate">{{ log.error_message|default:"—"|truncatechars:60 }}</td>
+                    <td class="p-3 text-xs text-text-muted">{{ log.created_at|date:"M d, Y g:i A" }}</td>
+                    <td class="p-3 pr-5 text-xs text-danger-text max-w-xs truncate">{{ log.error_message|default:"—"|truncatechars:60 }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="p-12 text-center text-slate-500">No email logs found.</td></tr>
+                <tr><td colspan="5" class="p-12 text-center text-text-muted">No email logs found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

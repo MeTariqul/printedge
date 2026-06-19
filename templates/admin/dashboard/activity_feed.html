@@ -6,8 +6,8 @@
   <div class="p-4 md:p-6 max-h-[520px] overflow-y-auto space-y-3">
     {% for ev in events %}
     <a href="{{ ev.link|default:'#' }}" class="flex items-start gap-3 p-3 rounded-xl bg-surface/60 hover:bg-surface transition-colors group">
-      <div class="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-700/60">
-        <i class="{{ ev.icon }} text-sm text-cyan-400"></i>
+      <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+        <i class="{{ ev.icon }} text-sm text-primary"></i>
       </div>
       <div class="min-w-0 flex-1">
         <p class="text-sm text-text-primary font-medium leading-snug">{{ ev.text }}</p>

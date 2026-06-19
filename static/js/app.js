@@ -21,14 +21,14 @@
     show(message, type = 'info', duration = 5000) {
       const container = this.ensureContainer();
       const colors = {
-        success: 'border-emerald-500/40 bg-emerald-50',
-        error: 'border-red-500/40 bg-red-50',
-        info: 'border-primary/40 bg-white',
+        success: 'border-emerald-500/30 bg-emerald-50',
+        error: 'border-red-500/30 bg-red-50',
+        info: 'border-blue-500/30 bg-white',
       };
       const icons = {
         success: 'bi-check-lg text-emerald-600',
         error: 'bi-x-lg text-red-600',
-        info: 'bi-info-lg text-primary',
+        info: 'bi-info-lg text-blue-600',
       };
       const el = document.createElement('div');
       el.className = `pointer-events-auto flex items-center p-4 rounded-lg shadow-lg border card animate-fade-in ${colors[type] || colors.info}`;
@@ -173,15 +173,15 @@
         return;
       }
       list.innerHTML = items.map((n) => {
-        const unreadClass = n.is_read ? '' : ' bg-brand-500/5';
-        const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-brand-400 mt-1.5 flex-shrink-0"></span>';
-        return '<li class="px-4 py-3 hover:bg-white/5 transition-colors' + unreadClass + '">' +
+        const unreadClass = n.is_read ? '' : ' bg-primary/5';
+        const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>';
+        return '<li class="px-4 py-3 hover:bg-slate-50 transition-colors' + unreadClass + '">' +
           '<a href="' + (n.target_url || '#') + '" class="block notif-link" data-id="' + n.id + '">' +
           '<div class="flex items-start gap-2">' + unreadDot +
           '<div class="flex-1 min-w-0">' +
-          '<p class="font-semibold text-white text-sm break-words">' + n.verb + '</p>' +
-          '<p class="text-xs text-slate-400 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
-          '<p class="text-[10px] text-slate-500 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
+          '<p class="font-semibold text-slate-800 text-sm break-words">' + n.verb + '</p>' +
+          '<p class="text-xs text-slate-500 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
+          '<p class="text-[10px] text-slate-400 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
           '</div></div></a></li>';
       }).join('');
     }

@@ -1,36 +1,101 @@
 {% load static %}
-<nav class="navbar hidden md:block">
+<nav class="navbar hidden md:block" x-data="{ scrolled: false }" x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 20)" :class="scrolled ? 'shadow-lg shadow-black/5' : ''">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
+
             {% include "partials/site_logo.html" %}
-            <div class="flex items-center gap-6">
-                <a href="{% url 'public_index' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_index' %}text-primary{% else %}text-text-muted{% endif %}">Home</a>
-                <a href="{% url 'public_services_page' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_services_page' %}text-primary{% else %}text-text-muted{% endif %}">Services</a>
-                <a href="{% url 'public_contact_page' %}" class="text-sm font-semibold hover:text-primary {% if request.resolver_match.url_name == 'public_contact_page' %}text-primary{% else %}text-text-muted{% endif %}">Contact</a>
+
+            <!-- Center Nav Links -->
+            <div class="flex items-center gap-1">
+                <a href="{% url 'public_index' %}"
+                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors {% if request.resolver_match.url_name == 'public_index' %}text-primary bg-primary/8{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+                    Home
+                    {% if request.resolver_match.url_name == 'public_index' %}
+                    <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"></span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'public_services_page' %}"
+                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors {% if request.resolver_match.url_name == 'public_services_page' %}text-primary bg-primary/8{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+                    Services
+                    {% if request.resolver_match.url_name == 'public_services_page' %}
+                    <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"></span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'public_contact_page' %}"
+                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors {% if request.resolver_match.url_name == 'public_contact_page' %}text-primary bg-primary/8{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+                    Contact
+                    {% if request.resolver_match.url_name == 'public_contact_page' %}
+                    <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"></span>
+                    {% endif %}
+                </a>
+            </div>
+
+            <!-- Right Actions -->
+            <div class="flex items-center gap-3">
                 {% if user.is_authenticated %}
                     <div class="hidden md:block">{% include "partials/notifications_bell.html" with bell_uid="desktop" %}</div>
+
+                    <!-- User Menu Dropdown -->
                     <div class="relative" x-data="{ open: false }">
-                        <button type="button" @click="open = !open; $nextTick(() => { if(open) { $el.blur(); } })" class="flex items-center gap-2 min-h-[44px] px-3 rounded-lg hover:bg-surface">
-                            <span class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm overflow-hidden">
-                                {% if user_avatar_url %}<img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">{% else %}{{ user.first_name|default:user.email|first|upper }}{% endif %}
+                        <button type="button"
+                                @click="open = !open"
+                                class="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-surface-border hover:border-primary/30 hover:bg-surface transition-all min-h-[44px] group">
+                            <span class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs overflow-hidden flex-shrink-0">
+                                {% if user_avatar_url %}
+                                <img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">
+                                {% else %}{{ user.first_name|default:user.email|first|upper }}{% endif %}
                             </span>
-                            <i class="bi bi-chevron-down text-xs text-text-muted"></i>
+                            <span class="text-sm font-semibold text-text-primary">{{ user.first_name|default:"Account" }}</span>
+                            <i class="bi bi-chevron-down text-[10px] text-text-muted transition-transform group-aria-expanded:rotate-180"></i>
                         </button>
-                        <div x-show="open" @click.outside="open = false; $nextTick(() => document.activeElement.blur())" x-cloak class="absolute right-0 mt-2 w-48 py-2 rounded-lg card shadow-lg z-50" @click.stop="open = false">
+                        <div x-show="open"
+                             @click.outside="open = false"
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-52 rounded-xl card shadow-xl shadow-black/8 border border-surface-border z-50 overflow-hidden py-1"
+                             @click.stop="open = false">
+                            <div class="px-4 py-3 border-b border-surface-border">
+                                <p class="text-xs font-semibold text-text-muted uppercase tracking-widest">Signed in as</p>
+                                <p class="text-sm font-bold text-text-primary truncate mt-0.5">{{ user.email }}</p>
+                            </div>
                             {% if user.is_admin_user %}
-                            <a href="{% url 'admin_dashboard' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Admin</a>
+                            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-surface min-h-[44px] text-text-primary">
+                                <i class="bi bi-grid-fill text-primary w-4 text-center"></i> Admin Panel
+                            </a>
                             {% else %}
-                            <a href="{% url 'user_dashboard' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Dashboard</a>
+                            <a href="{% url 'user_dashboard' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-surface min-h-[44px] text-text-primary">
+                                <i class="bi bi-speedometer2 text-primary w-4 text-center"></i> Dashboard
+                            </a>
                             {% endif %}
-                            <a href="{% url 'user_profile' %}" class="block px-4 py-2 text-sm font-medium hover:bg-surface min-h-[44px]">Profile</a>
-                            <a href="{% url 'auth_logout' %}" class="block px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 min-h-[44px]">Logout</a>
+                            <a href="{% url 'user_profile' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-surface min-h-[44px] text-text-primary">
+                                <i class="bi bi-person-fill text-text-muted w-4 text-center"></i> Profile
+                            </a>
+                            <div class="border-t border-surface-border mt-1 pt-1">
+                                <a href="{% url 'auth_logout' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium hover:bg-red-50 text-red-600 min-h-[44px]">
+                                    <i class="bi bi-power w-4 text-center"></i> Logout
+                                </a>
+                            </div>
                         </div>
                     </div>
+
                 {% else %}
-                    <a href="{% url 'auth_login_page' %}" class="text-sm font-semibold text-text-muted hover:text-primary min-h-[44px] inline-flex items-center">Login</a>
-                    <a href="{% url 'auth_register_page' %}" class="btn-primary text-sm py-2 px-5">Register</a>
+                    <a href="{% url 'auth_login_page' %}"
+                       class="px-4 py-2 text-sm font-semibold text-text-muted hover:text-text-primary transition-colors min-h-[44px] inline-flex items-center">
+                        Login
+                    </a>
+                    <a href="{% url 'auth_register_page' %}"
+                       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary-dark transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]">
+                        <i class="bi bi-rocket-takeoff-fill text-xs"></i>
+                        Get Started
+                    </a>
                 {% endif %}
             </div>
+
         </div>
     </div>
 </nav>

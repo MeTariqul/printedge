@@ -79,33 +79,58 @@
 
             <!-- Hero Image/Illustration Area -->
             <div class="relative flex items-center justify-center animate-fade-in" style="animation-delay: 0.2s;">
-                <div class="relative w-full max-w-lg aspect-square">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-                    
-                    <!-- Cartoon Printing Shop Illustration Proxy -->
-                    <div class="absolute inset-0 flex items-center justify-center z-10">
-                        <div class="card w-full h-full rounded-3xl p-8 flex flex-col items-center justify-center gap-6 border-primary/30 overflow-hidden relative shadow-2xl shadow-primary/20 transform transition hover:scale-105">
-                            <div class="absolute top-0 right-0 p-4 opacity-50"><i class="bi bi-asterisk text-primary animate-spin" style="animation-duration: 10s;"></i></div>
-                            <div class="absolute bottom-10 left-10 p-4 opacity-50"><i class="bi bi-circle text-purple-400 animate-ping" style="animation-duration: 3s;"></i></div>
-                            
-                            <i class="bi bi-printer-fill text-8xl text-primary drop-shadow-lg"></i>
-                            <div class="text-center">
-                                <h3 class="text-2xl font-extrabold text-text-primary mb-2">Print-<span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">Edge</span> Express</h3>
-                                <p class="text-text-muted font-medium">Fast, Reliable, Student-Focused.</p>
-                            </div>
+
+                <!-- Outer glow rings -->
+                <div class="absolute w-[480px] h-[480px] rounded-full border border-primary/10 animate-pulse"></div>
+                <div class="absolute w-[360px] h-[360px] rounded-full border border-primary/20" style="animation: spin 20s linear infinite;"></div>
+
+                <!-- Background radial glow -->
+                <div class="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-primary/25 via-indigo-500/15 to-purple-500/20 blur-3xl"></div>
+
+                <!-- Main Illustration Card -->
+                <div class="relative z-10 w-[340px] h-[340px] md:w-[400px] md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-primary/30 ring-1 ring-primary/20 backdrop-blur-sm bg-gradient-to-br from-surface/80 to-canvas-alt/80 transition-transform hover:scale-[1.02] duration-500">
+                    <img src="{% static 'img/hero_illustration.png' %}"
+                         alt="PrintEdge campus printing illustration"
+                         class="w-full h-full object-cover object-center"
+                         loading="eager">
+                    <!-- Overlay shimmer -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+
+                <!-- Floating badge: Assignment Ready -->
+                <div class="absolute top-[6%] right-[-4%] z-20 animate-bounce" style="animation-delay: 0.8s; animation-duration: 3s;">
+                    <div class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-surface/90 backdrop-blur-md border border-surface-border shadow-xl shadow-success/10 ring-1 ring-success/20">
+                        <span class="w-8 h-8 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
+                            <i class="bi bi-check-circle-fill text-success-DEFAULT text-sm"></i>
+                        </span>
+                        <div>
+                            <p class="text-xs font-black text-text-primary leading-none">Assignment Ready</p>
+                            <p class="text-[10px] text-text-muted mt-0.5">Picked up in minutes</p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Floating Elements -->
-                    <div class="absolute top-[10%] right-[-5%] card px-4 py-2 rounded-xl border-success/30 flex items-center gap-2 z-20 animate-bounce" style="animation-delay: 1s; animation-duration: 3s;">
-                        <i class="bi bi-check-circle-fill text-success-text"></i>
-                        <span class="text-sm font-bold text-text-primary">Assignment Ready</span>
-                    </div>
-                    <div class="absolute bottom-[20%] left-[-10%] card px-4 py-2 rounded-xl border-warning/30 flex items-center gap-2 z-20 animate-bounce" style="animation-delay: 2s; animation-duration: 4s;">
-                        <i class="bi bi-lightning-charge-fill text-warning-text"></i>
-                        <span class="text-sm font-bold text-text-primary">Instant Printing</span>
+                <!-- Floating badge: Instant Printing -->
+                <div class="absolute bottom-[12%] left-[-8%] z-20 animate-bounce" style="animation-delay: 1.4s; animation-duration: 4s;">
+                    <div class="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-surface/90 backdrop-blur-md border border-surface-border shadow-xl shadow-warning/10 ring-1 ring-warning/20">
+                        <span class="w-8 h-8 rounded-xl bg-warning/10 flex items-center justify-center flex-shrink-0">
+                            <i class="bi bi-lightning-charge-fill text-warning-DEFAULT text-sm"></i>
+                        </span>
+                        <div>
+                            <p class="text-xs font-black text-text-primary leading-none">Instant Printing</p>
+                            <p class="text-[10px] text-text-muted mt-0.5">Zero wait time</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Floating badge: Online Order -->
+                <div class="absolute top-[40%] right-[-12%] z-20 animate-bounce hidden md:flex" style="animation-delay: 2s; animation-duration: 3.5s;">
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-primary/90 backdrop-blur-md shadow-xl shadow-primary/30">
+                        <i class="bi bi-cloud-arrow-up-fill text-white text-sm"></i>
+                        <p class="text-xs font-black text-white leading-none">Upload & Print</p>
+                    </div>
+                </div>
+
             </div>
             
         </div>

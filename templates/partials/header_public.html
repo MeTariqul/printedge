@@ -1,5 +1,18 @@
 {% load static %}
-<nav class="navbar hidden md:block" x-data="{ scrolled: false }" x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 20)" :class="scrolled ? 'shadow-lg shadow-black/5' : ''">
+<nav id="public-navbar" class="navbar hidden md:block">
+<script>
+  (function(){
+    var nav = document.getElementById('public-navbar');
+    if(!nav) return;
+    window.addEventListener('scroll', function(){
+      if(window.scrollY > 20){
+        nav.classList.add('shadow-lg');
+      } else {
+        nav.classList.remove('shadow-lg');
+      }
+    }, { passive: true });
+  })();
+</script>
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 

@@ -4,63 +4,64 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        /* Base canvas colors - light theme foundation */
+        /* Base canvas colors */
         canvas: {
-          DEFAULT: '#f8fafc',
-          alt: '#ffffff',
-          darker: '#f1f5f9',
+          DEFAULT: 'var(--pe-color-bg)',
+          alt: 'var(--pe-color-surface)',
+          darker: 'var(--pe-color-surface-soft)',
         },
-        /* Text colors with guaranteed contrast on light surfaces */
+        /* Text colors */
         text: {
-          primary: '#0f172a',    /* 15:1 on #ffffff */
-          secondary: '#475569',  /* 7.5:1 on #ffffff */
-          muted: '#64748b',      /* 4.5:1 on #ffffff */
+          DEFAULT: 'var(--pe-color-text)',
+          primary: 'var(--pe-color-text-strong)',
+          secondary: 'var(--pe-color-text)',
+          muted: 'var(--pe-color-text-muted)',
           disabled: '#94a3b8',
         },
-        /* Surface colors for cards, inputs, etc. */
+        /* Surface colors */
         surface: {
-          DEFAULT: '#ffffff',    /* Main card bg */
-          elevated: '#ffffff',   /* Slightly elevated surfaces */
-          border: '#e2e8f0',     /* Card borders */
-          input: '#ffffff',      /* Input backgrounds */
+          DEFAULT: 'var(--pe-color-surface)',
+          elevated: 'var(--pe-color-surface-raised)',
+          border: 'var(--pe-color-border)',
+          input: 'var(--pe-color-surface)',
         },
-        /* Primary accent - blue */
+        /* Primary accent */
         primary: {
-          DEFAULT: '#2563eb',
-          light: '#3b82f6',
-          dark: '#1d4ed8',
-          glow: 'rgba(37, 99, 235, 0.12)',
+          DEFAULT: 'var(--pe-color-primary)',
+          light: 'var(--pe-color-primary-soft)',
+          dark: 'var(--pe-color-primary-hover)',
+          glow: 'var(--pe-color-focus)',
         },
-        /* Status colors - designed for 4.5:1+ contrast on white */
+        /* Status colors */
         success: {
-          DEFAULT: '#059669',
-          text: '#047857',
+          DEFAULT: 'var(--pe-status-success)',
+          text: 'var(--pe-status-success)',
           bg: 'rgba(5, 150, 105, 0.1)',
           border: 'rgba(5, 150, 105, 0.2)',
         },
         warning: {
-          DEFAULT: '#d97706',
-          text: '#b45309',
+          DEFAULT: 'var(--pe-status-warning)',
+          text: 'var(--pe-status-warning)',
           bg: 'rgba(217, 119, 6, 0.1)',
           border: 'rgba(217, 119, 6, 0.2)',
         },
         danger: {
-          DEFAULT: '#dc2626',
-          text: '#b91c1c',
+          DEFAULT: 'var(--pe-status-danger)',
+          text: 'var(--pe-status-danger)',
           bg: 'rgba(220, 38, 38, 0.08)',
           border: 'rgba(220, 38, 38, 0.2)',
         },
         info: {
-          DEFAULT: '#2563eb',
-          text: '#1d4ed8',
+          DEFAULT: 'var(--pe-status-info)',
+          text: 'var(--pe-status-info)',
           bg: 'rgba(37, 99, 235, 0.08)',
           border: 'rgba(37, 99, 235, 0.2)',
         },
-        /* Semantic aliases - brand stays blue */
+        /* Semantic aliases */
         brand: {
-          400: '#3b82f6',
-          500: '#2563eb',
-          600: '#1d4ed8',
+          400: 'var(--pe-color-primary)',
+          500: 'var(--pe-color-primary)',
+          600: 'var(--pe-color-primary-hover)',
         },
       },
       fontFamily: {

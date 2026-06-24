@@ -5,7 +5,7 @@
 @layer base {
   html {
     font-size: 16px;
-    @apply bg-canvas text-text;
+    @apply bg-canvas text-text-primary;
   }
   body {
     @apply font-sans font-normal text-text-secondary bg-canvas antialiased min-h-screen;
@@ -29,20 +29,20 @@
     @apply btn bg-primary text-white hover:bg-primary-dark focus:ring-primary;
   }
   .btn-secondary {
-    @apply btn border-2 border-primary text-primary bg-white hover:bg-primary/5 focus:ring-primary;
+    @apply btn border-2 border-primary text-primary bg-white hover:bg-primary-light focus:ring-primary;
   }
   .btn-success {
-    @apply btn bg-success text-white hover:bg-success/90 focus:ring-success;
+    @apply btn bg-success text-white hover:bg-success focus:ring-success;
   }
   .btn-danger {
-    @apply btn bg-danger text-white hover:bg-danger/90 focus:ring-danger;
+    @apply btn bg-danger text-white hover:bg-danger focus:ring-danger;
   }
   .btn-cta {
     @apply btn bg-primary text-white hover:bg-primary-dark focus:ring-primary;
   }
   .form-input,
   .form-select {
-    @apply w-full px-3 py-2.5 rounded-lg bg-white border border-surface-border text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors min-h-[44px];
+    @apply w-full px-3 py-2.5 rounded-lg bg-white border border-surface-border text-text-primary placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary-glow outline-none transition-colors min-h-[44px];
   }
   .form-label {
     @apply block text-sm font-semibold text-text-primary mb-1;
@@ -101,7 +101,7 @@
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
   }
   .badge-info {
-    @apply badge bg-primary/10 text-primary;
+    @apply badge bg-primary-light text-primary;
   }
   .alert-warning {
     @apply p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800;
@@ -117,13 +117,13 @@
     @apply bg-primary-dark;
   }
   .btn-secondary:hover {
-    @apply bg-primary/5;
+    @apply bg-primary-light;
   }
   .btn-success:hover {
-    @apply bg-success/90;
+    @apply bg-success;
   }
   .btn-danger:hover {
-    @apply bg-danger/90;
+    @apply bg-danger;
   }
   .btn-cta:hover {
     @apply bg-primary-dark;

@@ -1,0 +1,111 @@
+:root,
+[data-pe-theme="printedge-default"] {
+  --pe-color-primary: #4f46e5;
+  --pe-color-primary-hover: #4338ca;
+  --pe-color-primary-soft: #eef2ff;
+  --pe-color-accent: #0ea5e9;
+
+  --pe-color-bg: #f8fafc;
+  --pe-color-surface: #ffffff;
+  --pe-color-surface-raised: #ffffff;
+  --pe-color-surface-soft: #f1f5f9;
+
+  --pe-color-text: #1e293b;
+  --pe-color-text-strong: #0f172a;
+  --pe-color-text-muted: #64748b;
+  --pe-color-border: #e2e8f0;
+  --pe-color-focus: rgba(79, 70, 229, .24);
+
+  --pe-status-success: #059669;
+  --pe-status-warning: #d97706;
+  --pe-status-danger: #dc2626;
+  --pe-status-info: #0ea5e9;
+  
+  /* Radii, shadows, and other properties can go here */
+  --pe-radius: 0.375rem;
+  --pe-shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+[data-pe-theme="campus-fresh"] {
+  --pe-color-primary: #0d9488;
+  --pe-color-primary-hover: #0f766e;
+  --pe-color-primary-soft: #f0fdfa;
+  --pe-color-accent: #f59e0b;
+
+  --pe-color-bg: #f8fafc;
+  --pe-color-surface: #ffffff;
+  --pe-color-surface-raised: #ffffff;
+  --pe-color-surface-soft: #f1f5f9;
+
+  --pe-color-text: #1e293b;
+  --pe-color-text-strong: #0f172a;
+  --pe-color-text-muted: #64748b;
+  --pe-color-border: #e2e8f0;
+  --pe-color-focus: rgba(13, 148, 136, .24);
+
+  --pe-status-success: #059669;
+  --pe-status-warning: #d97706;
+  --pe-status-danger: #dc2626;
+  --pe-status-info: #0ea5e9;
+}
+
+:root {
+  --pe-ink: var(--pe-color-text-strong);
+  --pe-body: var(--pe-color-text);
+  --pe-muted: var(--pe-color-text-muted);
+  --pe-line: var(--pe-color-border);
+  --pe-bg: var(--pe-color-bg);
+  --pe-card: var(--pe-color-surface);
+  --pe-indigo-600: var(--pe-color-primary);
+  --pe-indigo-700: var(--pe-color-primary-hover);
+  --pe-indigo-50: var(--pe-color-primary-soft);
+
+  --bs-primary: var(--pe-color-primary);
+  --bs-body-bg: var(--pe-color-bg);
+  --bs-body-color: var(--pe-color-text);
+  --bs-border-color: var(--pe-color-border);
+  --bs-link-color: var(--pe-color-primary);
+  --bs-link-hover-color: var(--pe-color-primary-hover);
+}
+
+/* Component Overrides using Tokens */
+
+body {
+  background-color: var(--pe-color-bg);
+  color: var(--pe-color-text);
+}
+
+.pe-btn, .btn-primary, .btn {
+  background-color: var(--pe-color-primary);
+  color: #fff;
+}
+.pe-btn:hover, .btn-primary:hover, .btn:hover {
+  background-color: var(--pe-color-primary-hover);
+}
+.pe-card, .card {
+  background-color: var(--pe-color-surface);
+  border: 1px solid var(--pe-color-border);
+  border-radius: var(--pe-radius);
+  box-shadow: var(--pe-shadow-card);
+}
+.pe-form-input, .form-input, .form-control {
+  border-color: var(--pe-color-border);
+  background-color: var(--pe-color-surface);
+  color: var(--pe-color-text);
+}
+.pe-form-input:focus, .form-input:focus, .form-control:focus {
+  border-color: var(--pe-color-primary);
+  box-shadow: 0 0 0 3px var(--pe-color-focus);
+}
+.pe-nav, .navbar {
+  background-color: var(--pe-color-surface);
+  border-bottom: 1px solid var(--pe-color-border);
+}
+.pe-sidebar, aside {
+  background-color: var(--pe-color-surface);
+  border-right: 1px solid var(--pe-color-border);
+}
+.pe-badge, .badge, .badge-info {
+  background-color: var(--pe-color-primary-soft);
+  color: var(--pe-color-primary);
+}

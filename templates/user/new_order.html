@@ -71,12 +71,12 @@
         {% if service_requires_file %}
         <div x-show="step === 1" class="card p-6">
           <h3 class="text-lg font-semibold mb-4">Upload your file</h3>
-          <div @click="handleFileClick" @dragover.prevent="dragActive = true" @dragleave="dragActive = false" @drop.prevent="handleDrop($event)" :class="['border-2', 'border-dashed', 'rounded-lg', 'p-8', 'text-center', 'cursor-pointer', 'transition-colors', dragActive ? 'border-primary bg-primary/5' : 'border-surface-border hover:border-primary']">
+          <label for="fileInput" @click="handleFileClick" @dragover.prevent="dragActive = true" @dragleave="dragActive = false" @drop.prevent="handleDrop($event)" :class="['border-2', 'border-dashed', 'rounded-lg', 'p-8', 'text-center', 'cursor-pointer', 'transition-colors', dragActive ? 'border-primary bg-primary/5' : 'border-surface-border hover:border-primary']">
             <i class="bi bi-cloud-arrow-up text-4xl text-text-muted mb-3 block"></i>
             <p class="font-semibold text-text-primary">Drop files or click to browse</p>
-                <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files (Max 50MB)</p>
+                <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files (Max 20MB)</p>
             <input type="file" id="fileInput" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)" @click.stop>
-          </div>
+          </label>
           <template x-if="files.length">
             <ul class="mt-4 space-y-2">
               <template x-for="(f, i) in files" :key="i">
@@ -101,7 +101,7 @@
                     <template x-if="isImage(f.name)">
                        <span class="text-xs text-primary font-semibold whitespace-nowrap">1 page</span>
                     </template>
-                    <button type="button" @click="removeFile(i)" class="text-danger-text hover:text-red-500 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                    <button type="button" @click="removeFile(i)" class="text-danger-text hover:text-danger min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Remove file">
                       <i class="bi bi-x-lg"></i>
                     </button>
                   </div>
@@ -249,7 +249,7 @@
               <div class="grid sm:grid-cols-2 gap-3">
                 {% for addon in addons %}
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-surface-border cursor-pointer">
-                  <input type="checkbox" name="addons" value="{{ addon.id }}" class="w-5 h-5" @change="updatePrice()">
+                  <input type="checkbox" name="addons" value="{{ addon.id }}" class="w-5 h-5" @change="updatePrice()" id="addon-{{ addon.id }}">
                   <span class="text-sm text-text-secondary">{{ addon.name }} (+৳{{ addon.price|floatformat:0 }})</span>
                 </label>
                 {% endfor %}
@@ -257,15 +257,15 @@
             </div>
             {% endif %}
 
-            <label class="flex items-center gap-3 mt-4 p-3 rounded-lg border border-warning/30 bg-warning/10 cursor-pointer min-h-[44px]">
-              <input type="checkbox" name="is_urgent" class="w-5 h-5" @change="updatePrice()">
+            <label class="flex items-center gap-3 mt-4 p-3 rounded-lg border border-warning/30 bg-warning/10 cursor-pointer min-h-[44px]" for="is-urgent-neworder">
+              <input type="checkbox" name="is_urgent" id="is-urgent-neworder" class="w-5 h-5" @change="updatePrice()">
               <span class="font-semibold text-sm text-warning-text">Urgent processing (+{{ SITE.urgent_surcharge_percent }}%)</span>
             </label>
 
             <div class="mt-4">
               <h4 class="font-semibold mb-2 text-text-primary">Pickup or delivery</h4>
-              <label class="mr-4 text-text-secondary"><input type="radio" name="fulfillment_type" value="pickup" x-model="fulfillment"> Pickup</label>
-              <label class="text-text-secondary"><input type="radio" name="fulfillment_type" value="delivery" x-model="fulfillment"> Delivery</label>
+              <label class="mr-4 text-text-secondary flex items-center gap-2"><input type="radio" name="fulfillment_type" value="pickup" x-model="fulfillment" class="w-4 h-4"> Pickup</label>
+              <label class="text-text-secondary flex items-center gap-2"><input type="radio" name="fulfillment_type" value="delivery" x-model="fulfillment" class="w-4 h-4"> Delivery</label>
               <div x-show="fulfillment === 'delivery'" x-cloak class="mt-3 space-y-2">
                 <p class="text-sm text-text-muted">Default delivery location: Gono Bishwabidyalay (convenience point only).</p>
                 <p class="text-xs text-text-muted">Not affiliated with Gono Bishwabidyalay.</p>

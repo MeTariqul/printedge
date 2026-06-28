@@ -59,13 +59,6 @@
     <main id="main-content" class="flex-grow md:pb-8" tabindex="-1">{% block content %}{% endblock %}</main>
     
     {% include "partials/footer_public.html" %}
-    
-    {% if SITE.messenger_link or SITE.whatsapp_number %}
-    <div class="fixed bottom-24 md:bottom-8 right-4 z-50 flex flex-col gap-3">
-        {% if SITE.messenger_link %}<a href="{{ SITE.messenger_link }}" target="_blank" rel="noopener" class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg min-h-[44px] min-w-[44px]" aria-label="Messenger"><i class="bi bi-messenger text-2xl"></i></a>{% endif %}
-        {% if SITE.whatsapp_number %}<a href="https://wa.me/{{ SITE.whatsapp_number }}" target="_blank" rel="noopener" class="w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center shadow-lg min-h-[44px] min-w-[44px]" aria-label="WhatsApp"><i class="bi bi-whatsapp text-2xl"></i></a>{% endif %}
-    </div>
-    {% endif %}
 
     {% block extra_js %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>

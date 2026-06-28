@@ -1,5 +1,12 @@
 # Print-Edge Bug Report
 
+> **Test date:** 2026-05-17  
+> **Environment:** Local (code review + Django test client)  
+> **Sorted by severity**  
+> Last updated: 2026-06-24
+
+---
+
 **Test date:** 2026-05-17  
 **Environment:** Local (code review + Django test client command; Python runtime unavailable in QA sandbox)  
 **Sorted by severity**

@@ -3,9 +3,9 @@
 {% block breadcrumb %}Orders{% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="pe-page-head">
     <div>
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">All Orders</h1>
+        <h1 class="text-2xl font-bold text-text-primary mb-1">All Orders</h1>
         <p class="text-text-muted text-sm">{{ total_count }} total orders</p>
     </div>
     <div class="flex gap-2">
@@ -20,7 +20,7 @@
 {% csrf_token %}
 <input type="hidden" name="bulk_action" id="bulkActionInput" value="">
 <input type="hidden" name="bulk_status_value" id="bulkStatusValue" value="">
-<div class="premium-card p-3 rounded-2xl mb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3" id="bulkBar" style="display:none;">
+<div class="pe-action-bar" id="bulkBar" style="display:none;">
     <span class="text-sm text-text-muted whitespace-nowrap"><span id="selectedCount">0</span> selected</span>
     <div class="flex flex-wrap gap-2 flex-1">
         <select id="bulkStatusSelect" class="px-3 py-2 rounded-lg bg-surface-input border border-surface-border text-text-primary text-xs focus:border-primary focus:outline-none">
@@ -28,19 +28,19 @@
             <option value="{{ key }}">{{ label }}</option>
             {% endfor %}
         </select>
-        <button type="button" onclick="submitBulkAction('bulk_status')" class="px-4 py-2 min-h-[44px] rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/80 transition-colors">
+        <button type="button" onclick="submitBulkAction('bulk_status')" class="px-4 py-2 min-h-[44px] rounded-lg bg-primary text-white text-xs font-bold hover:bg-blue-600 transition-colors">
             <i class="bi bi-pencil-square"></i> Update Status
         </button>
-        <button type="button" onclick="confirmBulkDelete()" class="px-4 py-2 min-h-[44px] rounded-lg bg-danger text-white text-xs font-bold hover:bg-danger/80 transition-colors">
+        <button type="button" onclick="confirmBulkDelete()" class="px-4 py-2 min-h-[44px] rounded-lg bg-danger text-white text-xs font-bold hover:bg-red-700 transition-colors">
             <i class="bi bi-trash3"></i> Delete
         </button>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="premium-card p-4 rounded-2xl mb-6">
-    <form method="get" class="flex flex-col sm:flex-row gap-3">
-        <div class="relative flex-1">
+<div class="pe-card p-4 pe-mb">
+    <form method="get" class="pe-filter-bar">
+        <div class="relative flex-1" style="min-width:180px">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <i class="bi bi-search text-text-muted text-sm"></i>
             </div>
@@ -65,100 +65,98 @@
 </div>
 
 <!-- Orders Table -->
-<div class="premium-card rounded-2xl overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse responsive-table">
-            <thead>
-                <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-wider font-semibold border-b border-surface-border">
-                    <th class="p-3 pl-5"><input type="checkbox" id="selectAll" class="w-4 h-4 rounded" title="Select all"></th>
-                    <th class="p-3">Order</th>
-                    <th class="p-3">Source</th>
-                    <th class="p-3">Customer</th>
-                    <th class="p-3">Specs</th>
-                    <th class="p-3">Amount</th>
-                    <th class="p-3">Payment</th>
-                    <th class="p-3">Status</th>
-                    <th class="p-3 pr-5"></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-surface-border">
-                {% for o in orders %}
-                <tr class="hover:bg-surface transition-colors">
-                    <td class="p-3 pl-5"><input type="checkbox" name="selected_orders" value="{{ o.pk }}" class="row-check w-4 h-4 rounded" data-order="{{ o.pk }}"></td>
-                    <td class="p-3" data-label="Order">
-                        <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
-                        <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
-                    </td>
-                    <td class="p-3" data-label="Source">
-                        {% if o.source == 'offline' %}
-                        <span class="px-2 py-0.5 rounded-md status-delivered text-text-primary text-[10px] font-bold">Walk-in</span>
-                        {% else %}
-                        <span class="px-2 py-0.5 rounded-md status-printing text-text-primary text-[10px] font-bold">Online</span>
-                        {% endif %}
-                    </td>
-                    <td class="p-3" data-label="Customer">
-                        <div class="text-sm font-medium text-text-primary">{{ o.customer_name }}</div>
-                        <div class="text-[10px] text-text-muted">{{ o.customer_phone }}</div>
-                    </td>
-                    <td class="p-3 text-xs text-text-secondary" data-label="Specs">
-                        {% if o.file_count > 1 %}<span class="px-2 py-0.5 rounded-md bg-info-bg text-info-text mr-1 text-[10px] font-bold">Multi</span>{% endif %}
-                        {{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}
-                        {% if o.is_urgent %}<span class="text-warning-text font-bold">⚡</span>{% endif %}
-                    </td>
-                    <td class="p-3 font-bold text-sm text-text-primary" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
-                    <td class="p-3" data-label="Payment">
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold
-                            {% if o.payment_status == 'paid' %}status-delivered
-                            {% elif o.payment_status == 'partial' %}status-pending
-                            {% else %}status-cancelled{% endif %}">
-                            {{ o.get_payment_status_display }}
-                        </span>
-                    </td>
-                    <td class="p-3" data-label="Status">
-                        <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
-                            {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
-                            {% elif o.status == 'printing' %}status-printing
-                            {% elif o.status == 'cancelled' %}status-cancelled
-                            {% else %}status-pending{% endif %}">
-                            {{ o.get_status_display }}
-                        </span>
-                    </td>
-                    <td class="p-3 pr-5 text-right" data-label="">
-                        <a href="{% url 'admin_order_detail' o.pk %}" class="w-11 h-11 inline-flex items-center justify-center rounded-lg border border-surface-border text-text-muted hover:text-primary transition-colors" aria-label="View order">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="9" class="p-12 text-center">
-                        <div class="w-16 h-16 rounded-full bg-surface border border-surface-border flex items-center justify-center mx-auto mb-4">
-                            <i class="bi bi-inbox text-2xl text-text-muted"></i>
-                        </div>
-                        <h4 class="text-lg font-bold text-text-primary mb-2">No orders found</h4>
+<div class="pe-table-wrap">
+    <table class="w-full text-left border-collapse responsive-table">
+        <thead>
+            <tr class="text-text-secondary text-[10px] uppercase tracking-wider font-semibold">
+                <th class="p-3 pl-5"><input type="checkbox" id="selectAll" class="w-4 h-4 rounded" title="Select all"></th>
+                <th class="p-3">Order</th>
+                <th class="p-3">Source</th>
+                <th class="p-3">Customer</th>
+                <th class="p-3">Specs</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Payment</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 pr-5"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-border">
+            {% for o in orders %}
+            <tr class="hover:bg-surface transition-colors">
+                <td class="p-3 pl-5"><input type="checkbox" name="selected_orders" value="{{ o.pk }}" class="row-check w-4 h-4 rounded" data-order="{{ o.pk }}"></td>
+                <td class="p-3" data-label="Order">
+                    <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
+                    <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
+                </td>
+                <td class="p-3" data-label="Source">
+                    {% if o.source == 'offline' %}
+                    <span class="pe-badge pe-badge-warning">Walk-in</span>
+                    {% else %}
+                    <span class="pe-badge pe-badge-info">Online</span>
+                    {% endif %}
+                </td>
+                <td class="p-3" data-label="Customer">
+                    <div class="text-sm font-medium text-text-primary">{{ o.customer_name }}</div>
+                    <div class="text-[10px] text-text-muted">{{ o.customer_phone }}</div>
+                </td>
+                <td class="p-3 text-xs text-text-secondary" data-label="Specs">
+                    {% if o.file_count > 1 %}<span class="pe-badge pe-badge-info mr-1">Multi</span>{% endif %}
+                    {{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}
+                    {% if o.is_urgent %}<span class="text-warning-text font-bold">⚡</span>{% endif %}
+                </td>
+                <td class="p-3 font-bold text-sm text-text-primary" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
+                <td class="p-3" data-label="Payment">
+                    <span class="pe-badge
+                        {% if o.payment_status == 'paid' %}pe-badge-success
+                        {% elif o.payment_status == 'partial' %}pe-badge-warning
+                        {% else %}pe-badge-danger{% endif %}">
+                        {{ o.get_payment_status_display }}
+                    </span>
+                </td>
+                <td class="p-3" data-label="Status">
+                    <span class="pe-badge
+                        {% if o.status == 'delivered' or o.status == 'ready' %}pe-badge-success
+                        {% elif o.status == 'printing' %}pe-badge-info
+                        {% elif o.status == 'cancelled' %}pe-badge-danger
+                        {% else %}pe-badge-warning{% endif %}">
+                        {{ o.get_status_display }}
+                    </span>
+                </td>
+                <td class="p-3 pr-5 text-right" data-label="">
+                    <a href="{% url 'admin_order_detail' o.pk %}" class="w-11 h-11 inline-flex items-center justify-center rounded-lg border border-surface-border text-text-muted hover:text-primary transition-colors" aria-label="View order">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="p-12 text-center">
+                    <div class="pe-empty">
+                        <div class="pe-empty-icon"><i class="bi bi-inbox"></i></div>
+                        <div class="pe-empty-title">No orders found</div>
                         <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 <!-- Mobile Card View -->
 <div class="md:hidden space-y-4">
     {% for o in orders %}
-    <div class="premium-card p-4 rounded-2xl space-y-3">
+    <div class="pe-card p-4 space-y-3">
         <div class="flex items-start justify-between gap-3">
             <div>
                 <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
                 <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
             </div>
-            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
-                {% if o.status == 'delivered' or o.status == 'ready' %}status-delivered
-                {% elif o.status == 'printing' %}status-printing
-                {% elif o.status == 'cancelled' %}status-cancelled
-                {% else %}status-pending{% endif %}">
+            <span class="pe-badge
+                {% if o.status == 'delivered' or o.status == 'ready' %}pe-badge-success
+                {% elif o.status == 'printing' %}pe-badge-info
+                {% elif o.status == 'cancelled' %}pe-badge-danger
+                {% else %}pe-badge-warning{% endif %}">
                 {{ o.get_status_display }}
             </span>
         </div>
@@ -181,10 +179,10 @@
             </div>
             <div>
                 <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Payment</span>
-                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold
-                    {% if o.payment_status == 'paid' %}status-delivered
-                    {% elif o.payment_status == 'partial' %}status-pending
-                    {% else %}status-cancelled{% endif %}">
+                <span class="pe-badge
+                    {% if o.payment_status == 'paid' %}pe-badge-success
+                    {% elif o.payment_status == 'partial' %}pe-badge-warning
+                    {% else %}pe-badge-danger{% endif %}">
                     {{ o.get_payment_status_display }}
                 </span>
             </div>
@@ -197,12 +195,12 @@
         </div>
     </div>
     {% empty %}
-    <div class="premium-card p-8 text-center rounded-2xl">
-        <div class="w-16 h-16 rounded-full bg-surface border border-surface-border flex items-center justify-center mx-auto mb-4">
-            <i class="bi bi-inbox text-2xl text-text-muted"></i>
+    <div class="pe-card p-8 text-center">
+        <div class="pe-empty">
+            <div class="pe-empty-icon"><i class="bi bi-inbox"></i></div>
+            <div class="pe-empty-title">No orders found</div>
+            <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
         </div>
-        <h4 class="text-lg font-bold text-text-primary mb-2">No orders found</h4>
-        <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
     </div>
     {% endfor %}
 </div>

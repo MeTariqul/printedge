@@ -6,7 +6,16 @@
 
   const POLL_MS = 30000;
   let pollTimer = null;
+  let sharedAudioCtx = null;
   
+  function getOrCreateAudioCtx() {
+    if (!sharedAudioCtx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      sharedAudioCtx = new Ctx();
+    }
+    return sharedAudioCtx;
+  }
+
   function getCookie(name) {
     if (document.cookie && document.cookie !== '') {
       const cookies = document.cookie.split(';');
@@ -22,8 +31,10 @@
 
   function playDing() {
     try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioContext();
+      const ctx = getOrCreateAudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
@@ -41,7 +52,7 @@
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.5);
     } catch (e) {
-      console.log('Audio play failed:', e);
+      /* audio play failed */
     }
   }
 

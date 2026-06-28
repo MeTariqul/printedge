@@ -3,42 +3,31 @@
 {% block breadcrumb %}Financial{% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="pe-page-head">
     <div>
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Financial Overview</h1>
+        <h1 class="text-2xl font-bold text-text-primary mb-1">Financial Overview</h1>
         <p class="text-text-muted text-sm">Track revenue, expenses, and profit</p>
     </div>
 </div>
 
 <!-- KPI Cards -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="premium-card p-6 rounded-2xl border-l-4 border-l-success relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 text-success/10 group-hover:text-success/20 transition-colors">
-            <i class="bi bi-graph-up-arrow text-7xl"></i>
-        </div>
-        <p class="text-text-muted text-xs font-bold uppercase tracking-wider mb-2">Revenue (7 days)</p>
-        <p class="text-3xl font-display font-bold text-text-primary"><span class="text-xl text-success-text">৳</span>{{ week_revenue|floatformat:0 }}</p>
+    <div class="pe-stat" style="border-left-color: var(--pe-color-success, #059669)">
+        <p class="pe-stat-label">Revenue (7 days)</p>
+        <p class="pe-stat-value">৳{{ week_revenue|floatformat:0 }}</p>
     </div>
-    <div class="premium-card p-6 rounded-2xl border-l-4 border-l-danger relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 text-danger/10 group-hover:text-danger/20 transition-colors">
-            <i class="bi bi-graph-down-arrow text-7xl"></i>
-        </div>
-        <p class="text-text-muted text-xs font-bold uppercase tracking-wider mb-2">Expenses (7 days)</p>
-        <p class="text-3xl font-display font-bold text-text-primary"><span class="text-xl text-danger-text">৳</span>{{ week_expenses|floatformat:0 }}</p>
+    <div class="pe-stat" style="border-left-color: var(--pe-color-danger, #dc2626)">
+        <p class="pe-stat-label">Expenses (7 days)</p>
+        <p class="pe-stat-value">৳{{ week_expenses|floatformat:0 }}</p>
     </div>
-    <div class="premium-card p-6 rounded-2xl border-l-4 border-l-primary relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
-            <i class="bi bi-wallet2 text-7xl"></i>
-        </div>
-        <p class="text-text-muted text-xs font-bold uppercase tracking-wider mb-2">Profit (7 days)</p>
-        <p class="text-3xl font-display font-bold {% if week_profit >= 0 %}text-success-text{% else %}text-danger-text{% endif %}">
-            <span class="text-xl">৳</span>{{ week_profit|floatformat:0 }}
-        </p>
+    <div class="pe-stat" style="border-left-color: var(--pe-color-primary, #4f46e5)">
+        <p class="pe-stat-label">Profit (7 days)</p>
+        <p class="pe-stat-value {% if week_profit < 0 %}text-danger-text{% endif %}">৳{{ week_profit|floatformat:0 }}</p>
     </div>
 </div>
 
 <!-- Due Payments (full width) -->
-<div class="premium-card rounded-2xl overflow-hidden border border-surface-border mb-6">
+<div class="pe-card rounded-2xl overflow-hidden border border-surface-border mb-6">
     <div class="p-5 border-b border-surface-border bg-surface flex items-center justify-between">
         <h3 class="text-base font-bold text-text-primary">Due Payments</h3>
         <span class="text-xs text-text-muted">{{ due_count }} outstanding · <span class="text-warning-text font-bold">৳{{ total_outstanding|floatformat:0 }}</span></span>
@@ -56,7 +45,7 @@
             </thead>
             <tbody class="divide-y divide-surface-border">
                 {% for o in due_orders %}
-                <tr class="hover:bg-surface/50 transition-colors">
+                <tr class="hover:bg-surface-soft transition-colors">
                     <td class="p-3 pl-5">
                         <a href="{% url 'admin_order_detail' o.pk %}" class="text-sm font-semibold text-text-primary hover:text-primary">{{ o.order_number }}</a>
                         <div class="text-[10px] text-text-muted">{{ o.created_at|date:"M d" }}</div>
@@ -64,8 +53,8 @@
                     <td class="p-3 text-xs text-text-secondary">{{ o.customer_name }}</td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded-md text-[10px] font-bold
-                            {% if o.payment_status == 'pending_review' %}bg-warning/10 text-warning-text
-                            {% elif o.payment_status == 'rejected' %}bg-danger/10 text-danger-text
+                            {% if o.payment_status == 'pending_review' %}bg-amber-100 text-warning-text
+                            {% elif o.payment_status == 'rejected' %}bg-red-100 text-danger-text
                             {% else %}bg-surface text-text-secondary border border-surface-border{% endif %}">
                             {{ o.get_payment_status_display }}
                         </span>
@@ -77,7 +66,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="mark_paid">
                                 <input type="hidden" name="order_id" value="{{ o.pk }}">
-                                <button type="submit" title="Mark as paid" class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-success/10 text-success-text hover:bg-success/20 transition-colors">
+                                <button type="submit" title="Mark as paid" class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-emerald-100 text-success-text hover:bg-emerald-200 transition-colors">
                                     <i class="bi bi-check2-circle"></i>
                                 </button>
                             </form>
@@ -86,7 +75,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="send_reminder">
                                 <input type="hidden" name="order_id" value="{{ o.pk }}">
-                                <button type="submit" title="Send reminder" class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                                <button type="submit" title="Send reminder" class="w-9 h-9 inline-flex items-center justify-center rounded-lg bg-blue-100 text-primary hover:bg-blue-200 transition-colors">
                                     <i class="bi bi-bell"></i>
                                 </button>
                             </form>
@@ -104,7 +93,7 @@
 
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <!-- Expenses Table -->
-    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden border border-surface-border">
+    <div class="xl:col-span-2 pe-card rounded-2xl overflow-hidden border border-surface-border">
         <div class="p-5 border-b border-surface-border bg-surface">
             <h3 class="text-base font-bold text-text-primary">Recent Expenses</h3>
         </div>
@@ -122,7 +111,7 @@
                 </thead>
                 <tbody class="divide-y divide-surface-border">
                     {% for e in expenses %}
-                    <tr class="hover:bg-surface/50 transition-colors">
+                    <tr class="hover:bg-surface-soft transition-colors">
                         <td class="p-3 pl-5 text-xs text-text-muted whitespace-nowrap">{{ e.date|date:"M d" }}</td>
                         <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-surface text-text-secondary text-[10px] font-bold border border-surface-border">{{ e.get_category_display }}</span></td>
                         <td class="p-3 text-sm text-text-secondary max-w-[200px] truncate">{{ e.description }}</td>
@@ -139,7 +128,7 @@
     </div>
 
     <!-- Add Expense -->
-    <div class="premium-card p-6 rounded-2xl border border-surface-border h-fit">
+    <div class="pe-card p-6 rounded-2xl border border-surface-border h-fit">
         <h3 class="text-base font-bold text-text-primary mb-5 flex items-center gap-2">
             <i class="bi bi-dash-circle text-danger-text"></i> Log Expense
         </h3>
@@ -178,7 +167,7 @@
                 <label class="block text-xs font-semibold text-text-muted mb-1.5">Date</label>
                 <input type="date" name="date" class="w-full px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
             </div>
-            <button type="submit" class="w-full py-3 rounded-xl bg-danger/10 text-danger-text text-sm font-bold border border-danger/20 hover:bg-danger/20 transition-colors">
+            <button type="submit" class="w-full py-3 rounded-xl bg-red-100 text-danger-text text-sm font-bold border border-red-200 hover:bg-red-200 transition-colors">
                 <i class="bi bi-plus-lg"></i> Log Expense
             </button>
         </form>

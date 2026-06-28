@@ -84,15 +84,10 @@
                 <!-- Background radial glow -->
                 <div class="absolute w-[400px] h-[400px] rounded-full blur-3xl" style="background: linear-gradient(to top right, var(--pe-color-primary, #4f46e5) 0.25, var(--pe-color-accent, #0ea5e9) 0.15);"></div>
 
-                <!-- Main Illustration Card -->
-                <div class="relative z-10 w-[340px] h-[340px] md:w-[400px] md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-primary/30 ring-1 ring-primary/20 backdrop-blur-sm bg-gradient-to-br from-surface/80 to-canvas-alt/80 transition-transform hover:scale-[1.02] duration-500">
-                    <img src="{% static 'img/hero_illustration.png' %}"
-                         alt="PrintEdge campus printing illustration"
-                         class="w-full h-full object-cover object-center"
-                         loading="eager">
-                    <!-- Overlay shimmer -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent pointer-events-none"></div>
-                </div>
+                <img src="{% static 'img/hero_illustration.png' %}?v=2"
+                     alt="PrintEdge campus printing illustration"
+                     class="relative z-10 w-[340px] md:w-[400px] object-contain drop-shadow-2xl"
+                     loading="eager">
 
                 <!-- Floating badge: Assignment Ready -->
                 <div class="absolute top-[6%] right-[-4%] z-20 animate-bounce" style="animation-delay: 0.8s; animation-duration: 3s;">

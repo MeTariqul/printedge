@@ -1,5 +1,10 @@
 # Print-Edge SEO Score
 
+> Search-engine optimization baseline and improvements.  
+> Last updated: 2026-06-24
+
+---
+
 **Overall: 72/100 -> ~85/100 after fixes**
 
 | Check | Before | After |

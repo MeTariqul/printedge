@@ -11,19 +11,19 @@
 </div>
 
 <!-- Search -->
-<div class="premium-card p-4 rounded-2xl mb-6 border border-surface-border">
+<div class="pe-card p-4 rounded-2xl mb-6 border border-surface-border">
     <form method="get" class="flex gap-3">
         <div class="relative flex-1">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="bi bi-search text-text-muted text-sm"></i></div>
             <input type="text" name="q" value="{{ search }}" placeholder="Search by name or phone…"
                    class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none">
         </div>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-primary text-sm font-semibold border border-surface-border hover:bg-slate-50 transition-colors">Search</button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-primary text-sm font-semibold border border-surface-border hover:bg-surface-alt transition-colors">Search</button>
     </form>
 </div>
 
 <!-- Table -->
-<div class="premium-card rounded-2xl overflow-hidden border border-surface-border">
+<div class="pe-card rounded-2xl overflow-hidden border border-surface-border">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -38,7 +38,7 @@
             </thead>
             <tbody class="divide-y divide-surface-border">
                 {% for c in customers %}
-                <tr class="hover:bg-surface/50 transition-colors">
+                <tr class="hover:bg-surface-soft transition-colors">
                     <td class="p-3 pl-5">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold text-sm border border-amber-500/20">
@@ -50,10 +50,10 @@
                     <td class="p-3 text-sm text-text-secondary font-mono">{{ c.phone }}</td>
                     <td class="p-3">
                         <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase
-                            {% if c.tier == 'platinum' %}bg-purple-500/10 text-purple-600
-                            {% elif c.tier == 'gold' %}bg-amber-500/10 text-amber-700
-                            {% elif c.tier == 'silver' %}bg-slate-500/10 text-slate-600
-                            {% else %}bg-primary/10 text-primary{% endif %}">
+                            {% if c.tier == 'platinum' %}bg-blue-100 text-primary
+                            {% elif c.tier == 'gold' %}bg-amber-100 text-warning-text
+                            {% elif c.tier == 'silver' %}bg-surface text-text-muted
+                            {% else %}bg-blue-100 text-primary{% endif %}">
                             {{ c.tier|title }}
                         </span>
                     </td>
@@ -67,7 +67,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="customer_id" value="{{ c.pk }}">
-                                <button type="submit" class="text-red-600 hover:text-red-700 transition-colors p-1">
+                                <button type="submit" class="text-danger-text hover:text-danger-text/80 transition-colors p-1">
                                     <i class="bi bi-trash3"></i>
                                 </button>
                             </form>

@@ -99,7 +99,7 @@ def _build_activity_events(limit=5):
     return events[:limit]
 
 
-def get_dashboard_context(user):
+def get_dashboard_context(user, chart_range='7'):
     role = user.role
     today = timezone.now().date()
     yesterday = today - timedelta(days=1)
@@ -159,9 +159,27 @@ def get_dashboard_context(user):
         else:
             ctx.update(common_kpis)
 
+        if role not in ('finance', 'operator'):
+            spark_start = today - timedelta(days=6)
+            spark_days = [spark_start + timedelta(days=i) for i in range(7)]
+            spark_orders = Order.objects.filter(created_at__date__gte=spark_start).annotate(
+                day=TruncDay('created_at')
+            ).values('day').annotate(cnt=Count('id'), rev=Sum('total_amount'), sh=Sum('total_sheets'))
+            spark_map = {r['day']: r for r in spark_orders}
+            ctx['spark_orders_json'] = json.dumps([spark_map.get(d, {}).get('cnt', 0) for d in spark_days])
+            ctx['spark_revenue_json'] = json.dumps([float(spark_map.get(d, {}).get('rev', 0) or 0) for d in spark_days])
+            ctx['spark_pages_json'] = json.dumps([spark_map.get(d, {}).get('sh', 0) or 0 for d in spark_days])
+            if role in ('super_admin', 'admin', 'manager'):
+                heatmap_data = Order.objects.filter(
+                    created_at__date__gte=today - timedelta(days=28)
+                ).values_list('created_at', flat=True)
+                heat_grid = [[0]*24 for _ in range(7)]
+                for dt in heatmap_data:
+                    heat_grid[dt.weekday()][dt.hour] += 1
+                ctx['heatmap_json'] = json.dumps(heat_grid)
+
         if role in ('super_admin', 'admin', 'manager'):
-            chart_range = '7'
-            days_back = 6
+            days_back = int(chart_range) - 1
             start_date = today - timedelta(days=days_back)
             revenue_by_day = Order.objects.filter(created_at__date__gte=start_date).annotate(
                 day=TruncDay('created_at')
@@ -304,7 +322,10 @@ def get_dashboard_context(user):
 
 @admin_required
 def admin_dashboard(request):
-    return render(request, 'admin/dashboard.html', get_dashboard_context(request.user))
+    chart_range = request.GET.get('range', '7')
+    if chart_range not in ('7', '30', '90'):
+        chart_range = '7'
+    return render(request, 'admin/dashboard.html', get_dashboard_context(request.user, chart_range))
 
 
 @admin_required

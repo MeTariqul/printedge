@@ -1,97 +1,156 @@
-# Print-Edge - Enterprise Printing Business App
+# Print-Edge
 
-A comprehensive, production-ready Django web application for a campus print shop. Default delivery convenience point: Gono Bishwabidyalay (not affiliated with the university).
+> **Enterprise Printing Business App** · Django · Supabase · Dark Mode  
+> Last updated: 2026-06-24 · [CHANGELOG](./CHANGELOG.md) · [Deploy Guide](./DEPLOY.md)
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)  
+2. [Features](#features)  
+   2.1 [Customer Portal](#customer-portal)  
+   2.2 [Walk-in Orders](#walk-in-orders)  
+   2.3 [Enterprise Security](#enterprise-security)  
+   2.4 [Dashboard & CRM](#dashboard--crm)  
+3. [Technology Stack](#technology-stack)  
+4. [Local Installation](#local-installation)  
+5. [Environment Variables](#environment-variables)  
+6. [Quality Checks](#quality-checks)  
+7. [Deployment](#deployment)  
+8. [Contributing](#contributing)  
+9. [QA & Reports](#qa--reports)  
+
+---
+
+## Overview
+
+Print-Edge is a production-ready Django web application for a campus print shop.
+Delivery convenience point: **Gono Bishwabidyalay** (not affiliated with the university).
+
+---
 
 ## Features
 
-### 🌟 Customer Portal
-*   **Instant Live Quotes**: Upload a document and immediately see the cost based on configuration.
-*   **File Support**: Upload PDF, DOC, DOCX, PPT, PPTX up to 50MB.
-*   **Order Tracking**: Visual status pipeline (Pending → Printing → Quality Check → Ready → Delivered).
-*   **Mobile-Ready UI**: Fully responsive with high-contrast Dark Mode.
+### Customer Portal
+- **Instant Live Quotes** — upload a document and immediately see the cost.
+- **File Support** — PDF, DOC, DOCX, PPT, PPTX up to 50 MB.
+- **Order Tracking** — Pending → Printing → Quality Check → Ready → Delivered.
+- **Mobile-Ready UI** — responsive high-contrast Dark Mode.
 
-### 💼 Walk-in / Offline Order System (Admin)
-*   **Quick Walk-in Orders**: Handle physical customers effortlessly.
-*   **No File Required Mode**: Manual page entry for hard-copy jobs.
-*   **One-click Presets**: "Thesis Print", "Assignment", "Poster".
-*   **Direct Receipt Printing**: Support for 80mm thermal receipts.
+### Walk-in Orders
+- **Quick Walk-in Orders** — handle physical customers effortlessly.
+- **No File Required Mode** — manual page entry for hard-copy jobs.
+- **One-click Presets** — "Thesis Print", "Assignment", "Poster".
+- **80 mm Thermal Receipts** — direct ESC/POS receipt printing.
 
-### 🛡️ Enterprise Security
-*   Supabase PostgreSQL Row Level Security (RLS).
-*   Django CSRF, XSS, and SQL Injection protections enabled.
-*   Strict RBAC (Role-Based Access Control) for Super Admin, Manager, and Operators.
-*   Automated inactivity session timeouts.
+### Enterprise Security
+- Supabase PostgreSQL **Row Level Security (RLS)**.
+- Django CSRF, XSS, and SQL Injection protections enabled.
+- **Auth Rate Limiting** — 5 failures / 5 minutes per IP.
+- **Magic-byte Upload Validation** — prevents extension-only bypass.
+- Strict **RBAC**: Super Admin, Manager, Operator.
+- Automated inactivity session timeouts.
 
-### 📊 Advanced Dashboard & CRM
-*   **Real-time Activity Feed**: Watch orders flow in as they are placed.
-*   **KPI Tracking**: Daily revenue, order volume, and active users.
-*   **Inventory Tracking**: Toner, paper reams, and binding coils tracking.
-*   **Dynamic Pricing Engine**: Automated bulk discounts and promo code applications.
+### Dashboard & CRM
+- **Real-time Activity Feed**.
+- **KPI Tracking** — daily revenue, order volume, active users.
+- **Inventory Tracking** — toner, paper, binding coils.
+- **Dynamic Pricing Engine** — bulk discounts + promo codes.
+- **System Status Page** — live checks for 6 services.
+
+---
 
 ## Technology Stack
-*   **Backend Framework**: Django 5.x
-*   **Database**: Supabase (PostgreSQL)
-*   **Frontend**: Custom HTML/CSS with Glassmorphism, Bootstrap 5, Chart.js
-*   **Storage**: Supabase Storage (S3-compatible)
-*   **PDF Generation**: ReportLab (invoices and receipts)
-*   **Scheduled Jobs**: Vercel Cron for expired-file purges
 
-## Installation
+| Layer | Technology |
+|---|---|
+| Backend framework | Django 5.x |
+| Database | Supabase (PostgreSQL) |
+| Frontend | HTML + Tailwind + Bootstrap 5 + Chart.js |
+| Storage | Supabase Storage (S3-compatible) |
+| PDF generation | ReportLab |
+| Scheduled jobs | Vercel Cron |
+| Static files | WhiteNoise |
+| Auth | Django Auth + custom EmailBackend |
 
-1. **Clone Repository**
-```bash
-git clone https://github.com/MeTariqul/printedge.git
-cd printedge
-```
+---
 
-2. **Setup Virtual Environment**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
+## Local Installation
 
-3. **Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
 
-4. **Environment Variables**
-Copy `.env.example` to `.env` and configure:
-- `DATABASE_URL` — Supabase Postgres connection string
-- `AWS_*` + `SUPABASE_STORAGE_BUCKET` — Supabase Storage S3 credentials (private `order-files` bucket)
-- `CRON_SECRET` — secures `/api/cron/purge-files/` for Vercel Cron
 
-5. **Migrate & seed**
-```bash
-python manage.py migrate
-python manage.py seed_data
-```
+Browser: **http://127.0.0.1:8000/**
 
-6. **Run the Application**
-```bash
-python manage.py runserver
-```
+---
 
-### File retention (7 days after delivery)
-- Configured in **Admin → Settings** (`auto_delete_files_days`, default 7).
-- Run manually: `python manage.py purge_order_files`
-- On Vercel: schedule daily `GET https://your-app.vercel.app/api/cron/purge-files/` with header `Authorization: Bearer YOUR_CRON_SECRET`.
+## Environment Variables
 
-### Admin capabilities
-- **Admin / Super Admin**: create customers & staff, view password copies, ban users, delete order files early, system status page.
-- **Operator / Manager**: orders, inventory, pricing, walk-in POS (no user management or settings).
+Create a  file in the project root using  as a template:
 
-## System Architecture
-*   `core/`: Core business logic, models, and user views.
-*   `print_edge/`: Django project settings and root routing.
-*   `templates/`: Master layout files containing the UI system.
-*   `static/css/`: Advanced CSS variables and dynamic dark-mode configuration.
-*   `docs/`: Service management spec and Supabase RLS policy docs.
-*   `qa_reports/`: Accessibility, security, performance, SEO, and audit reports.
+| Variable | Purpose | Required |
+|---|---|---|
+| SECRET_KEY | Django signing key | Yes |
+| DEBUG | True for dev; False in production | Yes |
+| DATABASE_URL | Supabase Postgres pooler URL | Yes |
+| ALLOWED_HOSTS | Comma-separated allowed hosts | Yes |
+| AWS_ACCESS_KEY_ID | Supabase service role key | Yes |
+| AWS_SECRET_ACCESS_KEY | Same service role key | Yes |
+| AWS_S3_ENDPOINT_URL | S3-compatible endpoint | Yes |
+| AWS_S3_REGION_NAME | auto | Yes |
+| SUPABASE_STORAGE_BUCKET | order-files | Yes |
+| DEFAULT_FROM_EMAIL | Outbound sender address | Yes |
+| EMAIL_HOST | SMTP host | optional |
+| EMAIL_HOST_USER | SMTP username | optional |
+| EMAIL_HOST_PASSWORD | SMTP app password | optional |
+| CRON_SECRET | Bearer token for purge-file cron | Yes |
+| ADMIN_EMAILS | Comma-separated super-admin addresses | Yes |
+
+---
+
+## Quality Checks
+
+
+
+---
+
+## Deployment
+
+Read the full guide in **[DEPLOY.md](./DEPLOY.md)**.
+
+### Pre-deploy checklist
+
+
+
+> **Security reminder:** never commit , , or any real credentials to version control.
+
+---
 
 ## Contributing
-*   Keep scratch / debug / QA scripts (`check_*.py`, `fix_*.py`, `verify_*.py`, `test_api.py`, `test_detail.py`) and local backups (`backup.json`, `printedge_backup.json`, `model_*.txt`) out of version control — they are gitignored.
-*   Run the quality checks listed in `AGENTS.md` before pushing.
-*   See `DEPLOY.md` for production deployment and `DEPLOYMENT_SUMMARY.md` for the implementation overview.
+
+- **Hygiene first** — remove scratch/debug scripts and local backups before committing. Follow the rules in [AGENTS.md](./AGENTS.md).
+- **Commit messages** — use [Conventional Commits](https://www.conventionalcommits.org/): , , , , .
+- **Push policy** — push only when explicitly asked; never push secrets or .
+- **Before push** — run the quality checks listed in [AGENTS.md](./AGENTS.md).
+
+---
+
+## QA & Reports
+
+All reports are in [](./qa_reports/).
+
+| File | Description |
+|------|-------------|
+| [BUG_REPORT.md](./qa_reports/BUG_REPORT.md) | Bugs sorted by severity |
+| [FIX_REPORT.md](./qa_reports/FIX_REPORT.md) | Fix summaries with files changed |
+| [ACCESSIBILITY_REPORT.md](./qa_reports/ACCESSIBILITY_REPORT.md) | WCAG 2.1 AA audit |
+| [SECURITY_REPORT.md](./qa_reports/SECURITY_REPORT.md) | OWASP Top 10 review |
+| [PERFORMANCE_REPORT.md](./qa_reports/PERFORMANCE_REPORT.md) | Lighthouse targets and bottlenecks |
+| [SEO_REPORT.md](./qa_reports/SEO_REPORT.md) | SEO score and improvements |
+| [COMPATIBILITY_REPORT.md](./qa_reports/COMPATIBILITY_REPORT.md) | Browser + device matrix |
+| [AUDIT_2026-05-24.md](./qa_reports/AUDIT_2026-05-24.md) | Brand + functional + security audit |
+| [FINAL_VERDICT.md](./qa_reports/FINAL_VERDICT.md) | Production-readiness verdict |
+
+---
 
 *Delivery convenience point: Gono Bishwabidyalay (not affiliated).*

@@ -2,28 +2,36 @@
 {% block title %}{{ walkin.name }} | Walk-in{% endblock %}
 {% block content %}
 <div class="max-w-3xl">
-  <h1 class="text-2xl font-bold text-text-primary mb-2">{{ walkin.name }}</h1>
-  <p class="text-text-muted mb-6">{{ walkin.phone }} · {{ walkin.customer_id }}</p>
-  <div class="premium-card p-6 rounded-lg mb-6">
-    <h3 class="font-bold text-text-primary mb-4">Order history</h3>
-    <div class="table-scroll">
-      <table class="w-full text-sm min-w-[400px]">
-        <thead><tr class="text-text-muted"><th class="p-2 text-left">Order</th><th class="p-2">Total</th><th class="p-2">Status</th></tr></thead>
+  <div class="pe-page-head">
+    <div>
+      <h1 class="text-2xl font-bold text-text-primary mb-1">{{ walkin.name }}</h1>
+      <p class="text-text-muted text-sm">{{ walkin.phone }} · {{ walkin.customer_id }}</p>
+    </div>
+  </div>
+  <div class="pe-card p-6 pe-mb">
+    <div class="pe-card-header">
+      <h3 class="font-bold text-text-primary">Order history</h3>
+    </div>
+    <div class="pe-table-wrap">
+      <table class="w-full text-sm">
+        <thead><tr><th class="p-2">Order</th><th class="p-2">Total</th><th class="p-2">Status</th></tr></thead>
         <tbody>
           {% for o in orders %}
-          <tr class="border-t border-surface-border"><td class="p-2"><a href="{% url 'admin_order_detail' o.pk %}" class="text-primary">{{ o.order_number }}</a></td><td class="p-2">৳{{ o.total_amount|floatformat:0 }}</td><td class="p-2">{{ o.get_status_display }}</td></tr>
+          <tr><td class="p-2"><a href="{% url 'admin_order_detail' o.pk %}" class="text-primary font-semibold">{{ o.order_number }}</a></td><td class="p-2">৳{{ o.total_amount|floatformat:0 }}</td><td class="p-2"><span class="pe-badge pe-badge-neutral">{{ o.get_status_display }}</span></td></tr>
           {% empty %}
-          <tr><td colspan="3" class="p-4 text-text-muted">No orders</td></tr>
+          <tr><td colspan="3" class="pe-empty"><div class="pe-empty-icon"><i class="bi bi-inbox"></i></div><p>No orders</p></td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
   {% if request.user.can_manage_users %}
-  <form method="post" class="premium-card p-6 rounded-lg">
+  <form method="post" class="pe-card p-6">
+    <div class="pe-card-header">
+      <h3 class="font-bold text-text-primary">Merge with online account</h3>
+    </div>
     {% csrf_token %}
-    <h3 class="font-bold text-text-primary mb-3">Merge with online account</h3>
-    <select name="user_id" class="form-input mb-3" onchange="this.blur()" required>
+    <select name="user_id" class="w-full px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none mb-3" onchange="this.blur()" required>
       <option value="">Select customer…</option>
       {% for u in online_users %}<option value="{{ u.pk }}">{{ u.email }} — {{ u.display_name }}</option>{% endfor %}
     </select>

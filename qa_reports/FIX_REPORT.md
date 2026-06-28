@@ -1,5 +1,10 @@
 # Print-Edge Fix Report
 
+> Implementation status for all open findings.  
+> Last updated: 2026-06-24
+
+---
+
 | ID | Severity | Summary | Files changed | Retest |
 |----|----------|---------|---------------|--------|
 | PE-001 | High | Restrict ALLOWED_HOSTS | `print_edge/settings.py`, `.env.example` | Pending |

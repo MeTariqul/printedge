@@ -1,40 +1,31 @@
 {% load static %}
-<nav id="public-navbar" class="navbar hidden md:block">
-<script>
-  (function(){
-    var nav = document.getElementById('public-navbar');
-    if(!nav) return;
-    window.addEventListener('scroll', function(){
-      nav.classList.toggle('shadow-lg', window.scrollY > 20);
-    }, { passive: true });
-  })();
-</script>
+<nav id="public-navbar" class="hidden md:block sticky top-0 z-50 bg-white/75 backdrop-blur-xl border-b border-white/20 transition-all duration-300" data-navbar>
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
             {% include "partials/site_logo.html" %}
 
             <!-- Center Nav Links -->
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-0.5">
                 <a href="{% url 'public_index' %}"
-                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors {% if request.resolver_match.url_name == 'public_index' %}text-primary{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 nav-link {% if request.resolver_match.url_name == 'public_index' %}text-primary nav-link-active{% else %}text-text-muted hover:text-text-primary hover:bg-primary/5{% endif %}">
                     Home
                     {% if request.resolver_match.url_name == 'public_index' %}
-                    <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary"></span>
+                    <span class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary"></span>
                     {% endif %}
                 </a>
                 <a href="{% url 'public_services_page' %}"
-                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors {% if request.resolver_match.url_name == 'public_services_page' %}text-primary{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 nav-link {% if request.resolver_match.url_name == 'public_services_page' %}text-primary nav-link-active{% else %}text-text-muted hover:text-text-primary hover:bg-primary/5{% endif %}">
                     Services
                     {% if request.resolver_match.url_name == 'public_services_page' %}
-                    <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary"></span>
+                    <span class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary"></span>
                     {% endif %}
                 </a>
                 <a href="{% url 'public_contact_page' %}"
-                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-colors {% if request.resolver_match.url_name == 'public_contact_page' %}text-primary{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+                   class="relative px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 nav-link {% if request.resolver_match.url_name == 'public_contact_page' %}text-primary nav-link-active{% else %}text-text-muted hover:text-text-primary hover:bg-primary/5{% endif %}">
                     Contact
                     {% if request.resolver_match.url_name == 'public_contact_page' %}
-                    <span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-primary"></span>
+                    <span class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary"></span>
                     {% endif %}
                 </a>
             </div>
@@ -45,42 +36,36 @@
 
                     <div class="hidden md:block">{% include "partials/notifications_bell.html" with bell_uid="desktop" %}</div>
 
-                    <!-- Flat User Pill — no dropdown needed, direct links -->
                     <a href="{% if user.is_admin_user %}{% url 'admin_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}"
-                       class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl border border-surface-border hover:border-primary/40 hover:bg-surface transition-all min-h-[40px] group">
-                        <!-- Avatar -->
+                       class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl border border-surface-border hover:border-primary/30 hover:bg-primary/[0.04] hover:shadow-sm transition-all min-h-[40px] group">
                         <span class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs overflow-hidden flex-shrink-0 ring-1 ring-primary/20">
                             {% if user_avatar_url %}
                             <img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">
                             {% else %}{{ user.first_name|default:user.email|first|upper }}{% endif %}
                         </span>
-                        <!-- Name -->
                         <span class="text-sm font-semibold text-text-primary group-hover:text-primary transition-colors">{{ user.first_name|default:"Account" }}</span>
-                        <!-- Arrow -->
-                        <i class="bi bi-arrow-right text-[10px] text-text-muted group-hover:text-primary transition-colors"></i>
+                        <i class="bi bi-chevron-right text-[10px] text-text-muted group-hover:text-primary transition-colors"></i>
                     </a>
 
-                    <!-- Profile shortcut -->
                     <a href="{% url 'user_profile' %}"
                        title="Profile"
-                       class="w-9 h-9 flex items-center justify-center rounded-lg border border-surface-border text-text-muted hover:text-primary hover:border-primary/40 hover:bg-surface transition-all">
+                       class="w-9 h-9 flex items-center justify-center rounded-xl border border-surface-border text-text-muted hover:text-primary hover:border-primary/30 hover:bg-primary/[0.04] hover:shadow-sm transition-all">
                         <i class="bi bi-person text-sm"></i>
                     </a>
 
-                    <!-- Logout -->
                     <a href="{% url 'auth_logout' %}"
                        title="Logout"
-                       class="w-9 h-9 flex items-center justify-center rounded-lg border border-surface-border text-text-muted hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all">
+                       class="w-9 h-9 flex items-center justify-center rounded-xl border border-surface-border text-text-muted hover:text-red-600 hover:border-red-200 hover:bg-red-50 hover:shadow-sm transition-all">
                         <i class="bi bi-box-arrow-right text-sm"></i>
                     </a>
 
                 {% else %}
                     <a href="{% url 'auth_login_page' %}"
-                       class="px-4 py-2 text-sm font-semibold text-text-muted hover:text-text-primary transition-colors min-h-[44px] inline-flex items-center">
+                       class="px-4 py-2 text-sm font-semibold text-text-muted hover:text-text-primary transition-colors min-h-[44px] inline-flex items-center rounded-lg hover:bg-primary/5">
                         Login
                     </a>
                     <a href="{% url 'auth_register_page' %}"
-                       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary-dark transition-all shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]">
+                       class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]">
                         <i class="bi bi-rocket-takeoff-fill text-xs"></i>
                         Get Started
                     </a>
@@ -91,14 +76,30 @@
     </div>
 </nav>
 
-<header class="navbar md:hidden pt-safe" style="overflow: visible !important;">
-    <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 h-14" style="overflow: visible !important;">
-        <button type="button" @click="mobileMenu = true" class="w-11 h-11 flex items-center justify-center rounded-lg border border-surface-border" aria-label="Open menu">
+<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/20 md:hidden pt-safe" data-mobile-header>
+    <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 h-14">
+        <button type="button" @click="mobileMenu = true" class="w-11 h-11 flex items-center justify-center rounded-xl border border-surface-border hover:bg-primary/5 hover:border-primary/30 transition-all" aria-label="Open menu">
             <i class="bi bi-list text-xl"></i>
         </button>
         <div class="flex justify-center min-w-0">{% include "partials/site_logo.html" %}</div>
-        <div class="flex items-center gap-1 md:hidden" style="overflow: visible !important;">
+        <div class="flex items-center gap-1 md:hidden">
             {% if user.is_authenticated %}{% include "partials/notifications_bell.html" with bell_uid="mobile" %}{% endif %}
         </div>
     </div>
 </header>
+
+<script>
+(function(){
+    var nav = document.getElementById('public-navbar');
+    if (!nav) return;
+    window.addEventListener('scroll', function(){
+        if (window.scrollY > 20) {
+            nav.classList.add('shadow-sm', 'bg-white/90');
+            nav.classList.remove('bg-white/75');
+        } else {
+            nav.classList.remove('shadow-sm', 'bg-white/90');
+            nav.classList.add('bg-white/75');
+        }
+    }, { passive: true });
+})();
+</script>

@@ -5,7 +5,7 @@
         class="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-text-muted hover:text-primary hover:bg-surface transition-colors"
         aria-label="Notifications" aria-expanded="false" aria-haspopup="true">
         <i class="bi bi-bell text-xl"></i>
-        <span data-notification-badge="{{ uid }}" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center hidden">0</span>
+        <span data-notification-badge="{{ uid }}" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center hidden" style="background: var(--pe-status-danger, #dc2626);">0</span>
     </button>
     <div data-notification-dropdown="{{ uid }}"
         id="notification-dropdown"

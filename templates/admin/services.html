@@ -4,9 +4,9 @@
 {% block breadcrumb %}Services{% endblock %}
 
 {% block content %}
-<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="pe-page-head">
     <div>
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Services Management</h1>
+        <h1 class="text-2xl font-bold text-text-primary mb-1">Services Management</h1>
         <p class="text-text-muted text-sm">Manage services, variants, and inventory</p>
     </div>
     <button type="button" onclick="openAddServiceModal()"
@@ -17,13 +17,13 @@
 <div class="flex flex-wrap gap-2 mb-6 border-b border-surface-border pb-4 overflow-x-auto">
     <a href="?category=all"
        class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap min-h-[44px]
-              {% if current_category == 'all' or not current_category %}bg-primary/10 text-primary{% else %}bg-surface text-text-muted hover:bg-surface/50{% endif %}">
+              {% if current_category == 'all' or not current_category %}bg-blue-100 text-primary{% else %}bg-surface text-text-muted hover:bg-surface-soft{% endif %}">
         All Services
     </a>
     {% for cat_key, cat_label in category_choices %}
     <a href="?category={{ cat_key }}"
        class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap min-h-[44px]
-              {% if current_category == cat_key %}bg-primary/10 text-primary{% else %}bg-surface text-text-muted hover:bg-surface/50{% endif %}">
+              {% if current_category == cat_key %}bg-blue-100 text-primary{% else %}bg-surface text-text-muted hover:bg-surface-soft{% endif %}">
         {{ cat_label }}
     </a>
     {% endfor %}
@@ -32,15 +32,15 @@
 <!-- Services Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 {% for service in services %}
-<div class="card p-4 flex flex-col gap-3" x-data="{ expanded: false }">
+<div class="border border-surface-border bg-surface rounded-2xl p-4 flex flex-col gap-3" x-data="{ expanded: false }">
     <div class="flex items-start gap-3">
         <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
-            {% if service.category == 'printing' %}bg-blue-500/10 text-blue-600
-            {% elif service.category == 'photo' %}bg-purple-500/10 text-purple-600
-            {% elif service.category == 'binding' %}bg-amber-500/10 text-amber-700
-            {% elif service.category == 'lamination' %}bg-emerald-500/10 text-emerald-600
-            {% elif service.category == 'stationery' %}bg-indigo-500/10 text-indigo-600
-            {% else %}bg-gray-500/10 text-gray-600{% endif %}">
+            {% if service.category == 'printing' %}bg-blue-100 text-primary
+            {% elif service.category == 'photo' %}bg-sky-100 text-accent
+            {% elif service.category == 'binding' %}bg-amber-100 text-warning-text
+            {% elif service.category == 'lamination' %}bg-emerald-100 text-success-text
+            {% elif service.category == 'stationery' %}bg-blue-100 text-primary
+            {% else %}bg-surface text-text-muted{% endif %}">
             <i class="bi bi-{% if service.category == 'printing' %}printer-fill{% elif service.category == 'photo' %}camera-fill{% elif service.category == 'binding' %}journal-text{% elif service.category == 'lamination' %}bounding-box{% elif service.category == 'stationery' %}pen-fill{% else %}gear-fill{% endif %} text-xl"></i>
         </div>
         <div class="flex-1 min-w-0">
@@ -50,7 +50,7 @@
         <div class="flex flex-col gap-1 items-end">
             {% if service.requires_file %}<i class="bi bi-paperclip text-primary" title="File upload required"></i>{% endif %}
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
-                {% if service.is_active %}bg-success/10 text-success-text{% else %}bg-danger/10 text-danger-text{% endif %}">
+                {% if service.is_active %}bg-emerald-100 text-success-text{% else %}bg-red-100 text-danger-text{% endif %}">
                 {% if service.is_active %}Active{% else %}Disabled{% endif %}
             </span>
         </div>
@@ -76,9 +76,9 @@
         Stock levels:
         {% for variant in service.variants.all|slice:":3" %}
         <span class="inline-block ml-1 px-1.5 py-0.5 rounded
-            {% if variant.is_out_of_stock %}bg-danger/10 text-danger-text
-            {% elif variant.is_low_stock %}bg-warning/10 text-warning-text
-            {% else %}bg-success/10 text-success-text{% endif %}">
+            {% if variant.is_out_of_stock %}bg-red-100 text-danger-text
+            {% elif variant.is_low_stock %}bg-amber-100 text-warning-text
+            {% else %}bg-emerald-100 text-success-text{% endif %}">
             {{ variant.name }}: {{ variant.stock }}
         </span>
         {% endfor %}
@@ -108,15 +108,15 @@
                     <td class="py-1.5 text-right font-bold text-primary">৳{{ variant.effective_price|floatformat:0 }}</td>
                     <td class="py-1.5 text-center">
                         <span class="inline-block px-2 py-0.5 rounded font-bold
-                            {% if variant.is_out_of_stock %}bg-danger/10 text-danger-text
-                            {% elif variant.is_low_stock %}bg-warning/10 text-warning-text
-                            {% else %}bg-success/10 text-success-text{% endif %}">
+                            {% if variant.is_out_of_stock %}bg-red-100 text-danger-text
+                            {% elif variant.is_low_stock %}bg-amber-100 text-warning-text
+                            {% else %}bg-emerald-100 text-success-text{% endif %}">
                             {{ variant.stock }}
                         </span>
                     </td>
                     <td class="py-1.5 text-center">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
-                            {% if variant.is_active %}bg-success/10 text-success-text{% else %}bg-danger/10 text-danger-text{% endif %}">
+                            {% if variant.is_active %}bg-emerald-100 text-success-text{% else %}bg-red-100 text-danger-text{% endif %}">
                             {% if variant.is_active %}Yes{% else %}No{% endif %}
                         </span>
                     </td>
@@ -127,7 +127,7 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete_variant">
                                 <input type="hidden" name="variant_id" value="{{ variant.pk }}">
-                                <button type="submit" class="text-danger-text hover:text-red-700 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="text-danger-text hover:text-danger-text/80 px-2 py-1 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>
                     </td>
@@ -149,13 +149,13 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="delete_service">
             <input type="hidden" name="service_id" value="{{ service.pk }}">
-            <button type="submit" class="text-danger-text hover:text-red-700 p-2 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
+            <button type="submit" class="text-danger-text hover:text-danger-text/80 p-2 min-h-[44px] min-w-[44px]"><i class="bi bi-trash"></i></button>
         </form>
         {% endif %}
     </div>
 </div>
 {% empty %}
-<div class="col-span-full card p-12 text-center text-text-muted">
+<div class="col-span-full border border-surface-border bg-surface rounded-2xl p-12 text-center text-text-muted">
     <i class="bi bi-briefcase text-4xl mb-3 block"></i>
     <p>No services configured. Click "Add Service" to get started.</p>
 </div>
@@ -166,7 +166,7 @@
 <div id="addServiceModal" x-data="{ open: false }" x-show="open" x-cloak
      class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
-    <div class="card w-full max-w-lg rounded-2xl p-6">
+    <div class="border border-surface-border bg-surface rounded-2xl w-full max-w-lg p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Add New Service</h3>
         <form method="post">
             {% csrf_token %}
@@ -174,11 +174,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Name</label>
-                    <input type="text" name="name" required class="form-input">
+                    <input type="text" name="name" required class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Category</label>
-                    <select name="category" class="form-select">
+                    <select name="category" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                         {% for key, label in category_choices %}
                         <option value="{{ key }}">{{ label }}</option>
                         {% endfor %}
@@ -186,7 +186,7 @@
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Base Price (৳)</label>
-                    <input type="number" name="base_price" required step="0.01" min="0" class="form-input">
+                    <input type="number" name="base_price" required step="0.01" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div class="flex items-end">
                     <label class="flex items-center gap-2 text-xs text-text-primary cursor-pointer">
@@ -196,7 +196,7 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Description</label>
-                    <input type="text" name="description" class="form-input">
+                    <input type="text" name="description" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -208,10 +208,10 @@
 </div>
 
 <!-- Edit Service Modal -->
-<div id="editServiceModal" x-data="{ open: false }" x-show="open" x-cloak
-     class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
-     @click.self="open = false">
-    <div class="card w-full max-w-lg rounded-2xl p-6">
+    <div id="editServiceModal" x-data="{ open: false }" x-show="open" x-cloak
+         class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
+         @click.self="open = false">
+        <div class="border border-surface-border bg-surface rounded-2xl w-full max-w-lg p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Edit Service</h3>
         <form method="post" id="editServiceForm">
             {% csrf_token %}
@@ -220,11 +220,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Name</label>
-                    <input type="text" name="name" id="editServiceName" required class="form-input">
+                    <input type="text" name="name" id="editServiceName" required class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Category</label>
-                    <select name="category" id="editServiceCategory" class="form-select">
+                    <select name="category" id="editServiceCategory" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                         {% for key, label in category_choices %}
                         <option value="{{ key }}">{{ label }}</option>
                         {% endfor %}
@@ -232,7 +232,7 @@
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Base Price (৳)</label>
-                    <input type="number" name="base_price" id="editServicePrice" required step="0.01" min="0" class="form-input">
+                    <input type="number" name="base_price" id="editServicePrice" required step="0.01" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div class="flex items-end">
                     <label class="flex items-center gap-2 text-xs text-text-primary cursor-pointer">
@@ -242,7 +242,7 @@
                 </div>
                 <div class="col-span-2">
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Description</label>
-                    <input type="text" name="description" id="editServiceDescription" class="form-input">
+                    <input type="text" name="description" id="editServiceDescription" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -257,7 +257,7 @@
 <div id="addVariantModal" x-data="{ open: false }" x-show="open" x-cloak
      class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
-    <div class="card w-full max-w-lg rounded-2xl p-6">
+    <div class="border border-surface-border bg-surface rounded-2xl w-full max-w-lg p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Add Variant</h3>
         <form method="post" id="addVariantForm">
             {% csrf_token %}
@@ -266,19 +266,19 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Variant Name</label>
-                    <input type="text" name="name" required class="form-input" placeholder="e.g. A4 80gsm Color">
+                    <input type="text" name="name" required class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. A4 80gsm Color">
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Price (৳)</label>
-                    <input type="number" name="price" required step="0.01" min="0" class="form-input">
+                    <input type="number" name="price" required step="0.01" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Stock</label>
-                    <input type="number" name="stock" value="0" min="0" class="form-input">
+                    <input type="number" name="stock" value="0" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-text-secondary font-semibold mb-1">Low Stock Threshold</label>
-                    <input type="number" name="low_stock_threshold" value="5" min="0" class="form-input">
+                    <input type="number" name="low_stock_threshold" value="5" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div id="dynamicSpecFields" class="col-span-2 space-y-3">
                     <!-- Dynamic spec fields injected by JS -->
@@ -323,10 +323,10 @@ function openAddVariantModal(serviceId) {
         const div = document.createElement('div');
         div.innerHTML = '<label class="block text-xs text-text-muted mb-1">' + field.label + '</label>' +
             (field.type === 'select' ?
-                '<select name="specs_' + field.field + '" class="form-select">' +
+                '<select name="specs_' + field.field + '" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">' +
                 field.options.map(o => '<option value="' + o + '">' + o + '</option>').join('') +
                 '</select>' :
-                '<input type="' + field.type + '" name="specs_' + field.field + '" class="form-input" ' +
+                '<input type="' + field.type + '" name="specs_' + field.field + '" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" ' +
                 (field.min !== undefined ? 'min="' + field.min + '"' : '') +
                 (field.max !== undefined ? 'max="' + field.max + '"' : '') + '>');
         container.appendChild(div);
@@ -353,10 +353,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const div = document.createElement('div');
                 div.innerHTML = '<label class="block text-xs text-text-muted mb-1">' + field.label + '</label>' +
                     (field.type === 'select' ?
-                        '<select name="specs_' + field.field + '" class="form-select">' +
+                        '<select name="specs_' + field.field + '" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">' +
                         field.options.map(o => '<option value="' + o + '">' + o + '</option>').join('') +
                         '</select>' :
-                        '<input type="' + field.type + '" name="specs_' + field.field + '" class="form-input" ' +
+                        '<input type="' + field.type + '" name="specs_' + field.field + '" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" ' +
                         (field.min !== undefined ? 'min="' + field.min + '"' : '') +
                         (field.max !== undefined ? 'max="' + field.max + '"' : '') + '>');
                 container.appendChild(div);

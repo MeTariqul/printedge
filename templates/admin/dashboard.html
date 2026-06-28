@@ -4,95 +4,144 @@
 {% block breadcrumb %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-8">
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="max-w-7xl mx-auto space-y-8 relative">
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-primary/[0.03] blur-[120px] animate-pulse"></div>
+    <div class="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-accent/[0.03] blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/[0.015] blur-[150px]"></div>
+  </div>
+
+  <div class="relative z-10">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
     <div>
-      <h1 class="text-2xl lg:text-3xl font-bold text-text-primary mb-1">Dashboard</h1>
-      <p class="text-text-muted text-sm">Welcome back, {{ request.user.first_name|default:request.user.email }}</p>
+      <h1 class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-text-strong via-primary to-accent bg-clip-text text-transparent mb-1">Dashboard</h1>
+      <p class="text-text-muted text-sm flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-success-text animate-pulse"></span>
+        Welcome back, {{ request.user.first_name|default:request.user.email }}
+      </p>
     </div>
-    <div class="flex items-center gap-3 text-xs text-text-muted">
-      <span>Cached for 60s</span>
-      <a href="?range={{ chart_range }}" class="px-3 py-1.5 rounded-lg bg-surface text-text-secondary hover:bg-slate-50 border border-surface-border min-h-[36px]">Refresh</a>
+    <div class="flex items-center gap-2">
+      <div class="flex gap-0.5 p-0.5 rounded-2xl bg-surface-soft border border-surface-border shadow-sm">
+        {% for b in chart_backtests %}
+        <a href="?range={{ b.value }}"
+           class="px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all duration-200 min-h-[32px]
+                  {% if chart_range == b.value %}bg-primary text-white shadow-md shadow-primary/20{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
+          {{ b.label }}
+        </a>
+        {% endfor %}
+      </div>
+      <a href="?range={{ chart_range }}" class="px-3 py-1.5 rounded-xl border border-surface-border text-text-muted hover:bg-surface hover:text-text-primary hover:border-primary/30 text-sm min-h-[36px] flex items-center gap-1.5 transition-all duration-200" title="Refresh">
+        <i class="bi bi-arrow-clockwise"></i>
+      </a>
     </div>
   </div>
 
   {% include "admin/dashboard/kpi_row.html" %}
 
   {% if db_latency %}
-  <div class="text-xs text-text-muted">DB latency: {{ db_latency }} ms</div>
+  <div class="text-xs text-text-muted flex items-center gap-1.5 bg-surface-soft/50 px-3 py-1.5 rounded-xl border border-surface-border w-fit">
+    <span class="w-1.5 h-1.5 rounded-full bg-success-text"></span> DB latency: {{ db_latency }} ms
+  </div>
   {% endif %}
 
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="xl:col-span-2 dash-card">
+      <div class="dash-card-header">
         <div>
-          <h3 class="text-lg font-bold text-text-primary">Revenue Trend</h3>
-          <p class="text-xs text-text-muted mt-1">Last {{ chart_range }} days</p>
+          <h3 class="text-base font-bold text-text-strong">Revenue Trend</h3>
+          <p class="text-xs text-text-muted mt-0.5">Last {{ chart_range }} days</p>
         </div>
-        <div class="flex gap-2 flex-wrap">
-          {% for b in chart_backtests %}
-          <a href="?range={{ b.value }}" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors min-h-[36px] {% if chart_range == b.value %}bg-primary text-white{% else %}bg-surface text-text-muted hover:bg-slate-50 border border-surface-border{% endif %}">
-            {{ b.label }}
-          </a>
-          {% endfor %}
-        </div>
+        <span class="px-2 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">৳ BDT</span>
       </div>
       <div class="p-4 md:p-6">
-        <canvas id="revenueChart" height="220"></canvas>
+        <canvas id="revenueChart" height="220" role="img" aria-label="Revenue trend chart last {{ chart_range }} days"></canvas>
       </div>
     </div>
-    <div class="premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary">Order Status</h3>
-        <p class="text-xs text-text-muted mt-1">Current distribution</p>
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div>
+          <h3 class="text-base font-bold text-text-strong">Order Status</h3>
+          <p class="text-xs text-text-muted mt-0.5">Current distribution</p>
+        </div>
+        <span class="w-8 h-8 rounded-xl bg-warning-text/10 text-warning-text flex items-center justify-center text-sm border border-warning-text/20"><i class="bi bi-pie-chart-fill"></i></span>
       </div>
       <div class="p-4 md:p-6">
-        <canvas id="statusChart" height="220"></canvas>
+        <canvas id="statusChart" height="220" role="img" aria-label="Order status distribution doughnut chart"></canvas>
       </div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary">Daily Order Volume</h3>
-        <p class="text-xs text-text-muted mt-1">Last 14 days — online vs walk-in</p>
+    <div class="xl:col-span-2 dash-card">
+      <div class="dash-card-header">
+        <div>
+          <h3 class="text-base font-bold text-text-strong">Daily Order Volume</h3>
+          <p class="text-xs text-text-muted mt-0.5">Last 14 days — online vs walk-in</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-text-muted">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#4f46e5"></span> Online</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#f97316"></span> Walk-in</span>
+        </div>
       </div>
       <div class="p-4 md:p-6">
-        <canvas id="volumeChart" height="220"></canvas>
+        <canvas id="volumeChart" height="220" role="img" aria-label="Daily order volume stacked bar chart"></canvas>
       </div>
     </div>
-    <div class="premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary">Print Types</h3>
-        <p class="text-xs text-text-muted mt-1">Today's mix</p>
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div>
+          <h3 class="text-base font-bold text-text-strong">Print Types</h3>
+          <p class="text-xs text-text-muted mt-0.5">Today's mix</p>
+        </div>
+        <span class="w-8 h-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-sm border border-accent/20"><i class="bi bi-file-earmark-bar-graph-fill"></i></span>
       </div>
       <div class="p-4 md:p-6">
-        <canvas id="printTypeChart" height="220"></canvas>
+        <canvas id="printTypeChart" height="220" role="img" aria-label="Print type distribution pie chart"></canvas>
       </div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-    <div class="xl:col-span-2 premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary">Top Customers</h3>
-        <p class="text-xs text-text-muted mt-1">This month by revenue</p>
+    <div class="xl:col-span-2 dash-card">
+      <div class="dash-card-header">
+        <div>
+          <h3 class="text-base font-bold text-text-strong">Top Customers</h3>
+          <p class="text-xs text-text-muted mt-0.5">This month by revenue</p>
+        </div>
+        <span class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center text-sm border border-purple-500/20"><i class="bi bi-trophy-fill"></i></span>
       </div>
       <div class="p-4 md:p-6">
-        <canvas id="topCustomersChart" height="220"></canvas>
+        <canvas id="topCustomersChart" height="220" role="img" aria-label="Top customers horizontal bar chart"></canvas>
       </div>
     </div>
-    <div class="premium-card rounded-2xl overflow-hidden">
-      <div class="p-5 md:p-6 border-b border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary">Revenue by Category</h3>
-        <p class="text-xs text-text-muted mt-1">This month</p>
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div>
+          <h3 class="text-base font-bold text-text-strong">Revenue by Category</h3>
+          <p class="text-xs text-text-muted mt-0.5">This month</p>
+        </div>
+        <span class="w-8 h-8 rounded-xl bg-success-text/10 text-success-text flex items-center justify-center text-sm border border-success-text/20"><i class="bi bi-bar-chart-fill"></i></span>
       </div>
       <div class="p-4 md:p-6">
-        <canvas id="categoryRevenueChart" height="220"></canvas>
+        <canvas id="categoryRevenueChart" height="220" role="img" aria-label="Revenue by category bar chart"></canvas>
       </div>
     </div>
   </div>
+
+  {% if heatmap_json %}
+  <div class="dash-card">
+    <div class="dash-card-header">
+      <div>
+        <h3 class="text-base font-bold text-text-strong">Order Volume Heatmap</h3>
+        <p class="text-xs text-text-muted mt-0.5">28-day view — darker = busier</p>
+      </div>
+      <span class="px-2 py-1 rounded-lg text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">Hourly</span>
+    </div>
+    <div class="p-4 md:p-6 overflow-x-auto">
+      <canvas id="heatmapCanvas" height="130" role="img" aria-label="Order volume heatmap by day and hour"></canvas>
+    </div>
+  </div>
+  {% endif %}
 
   {% include "admin/dashboard/reminders_row.html" with items=reminders %}
 
@@ -101,170 +150,167 @@
       {% include "admin/dashboard/activity_feed.html" with events=recent_activity %}
     </div>
     <div class="space-y-6">
-      <div class="premium-card rounded-2xl p-5">
-        <h3 class="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <a href="{% url 'admin_walkin_order' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
-            <i class="bi bi-plus-circle"></i> New Order
-          </a>
-           <a href="{% url 'admin_mail_compose' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
-             <i class="bi bi-envelope-plus"></i> Compose Email
-           </a>
-           <a href="{% url 'admin_coupons' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
-             <i class="bi bi-tags"></i> Coupons
-           </a>
-           <a href="{% url 'admin_services' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
-             <i class="bi bi-grid"></i> Services
-           </a>
-          <a href="{% url 'admin_system_status' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
-            <i class="bi bi-hdd-network"></i> System Status
-          </a>
-          <a href="{% url 'admin_inventory' %}" class="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface border border-surface-border hover:border-primary/40 hover:bg-slate-50 text-sm font-bold text-text-secondary transition-colors min-h-[48px]">
-            <i class="bi bi-box-seam"></i> Inventory
-          </a>
+      <div class="dash-card">
+        <div class="dash-card-header">
+          <div>
+            <h3 class="text-base font-bold text-text-strong">Quick Actions</h3>
+            <p class="text-xs text-text-muted mt-0.5">Common tasks</p>
+          </div>
+          <span class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-sm border border-primary/20"><i class="bi bi-lightning-fill"></i></span>
+        </div>
+        <div class="p-5 pt-2">
+          <div class="grid grid-cols-2 gap-2.5">
+            <a href="{% url 'admin_walkin_order' %}" class="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 text-primary border border-primary/20 hover:from-primary/20 hover:to-primary/10 hover:shadow-md hover:shadow-primary/10 text-sm font-bold transition-all duration-200 min-h-[64px]">
+              <i class="bi bi-plus-circle-fill text-lg"></i>
+              <span>New Order</span>
+            </a>
+            <a href="{% url 'admin_mail_compose' %}" class="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm text-sm font-bold text-text-muted hover:text-text-primary transition-all duration-200 min-h-[64px]">
+              <i class="bi bi-envelope-plus-fill text-lg"></i>
+              <span>Email</span>
+            </a>
+            <a href="{% url 'admin_coupons' %}" class="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm text-sm font-bold text-text-muted hover:text-text-primary transition-all duration-200 min-h-[64px]">
+              <i class="bi bi-tags-fill text-lg"></i>
+              <span>Coupons</span>
+            </a>
+            <a href="{% url 'admin_services' %}" class="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm text-sm font-bold text-text-muted hover:text-text-primary transition-all duration-200 min-h-[64px]">
+              <i class="bi bi-grid-fill text-lg"></i>
+              <span>Services</span>
+            </a>
+            <a href="{% url 'admin_system_status' %}" class="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm text-sm font-bold text-text-muted hover:text-text-primary transition-all duration-200 min-h-[64px]">
+              <i class="bi bi-hdd-network-fill text-lg"></i>
+              <span>System</span>
+            </a>
+            <a href="{% url 'admin_inventory' %}" class="flex flex-col items-center justify-center gap-1.5 p-3.5 rounded-2xl bg-surface border border-surface-border hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm text-sm font-bold text-text-muted hover:text-text-primary transition-all duration-200 min-h-[64px]">
+              <i class="bi bi-box-seam-fill text-lg"></i>
+              <span>Inventory</span>
+            </a>
+          </div>
         </div>
       </div>
-
       {% include "admin/dashboard/health_grid.html" with items=health_items %}
     </div>
+  </div>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  const gridColor = 'rgba(226,232,240,0.8)';
-  const textColor = '#64748b';
-  Chart.defaults.color = textColor;
-  Chart.defaults.font = { family: 'Inter, ui-sans-serif, system-ui, sans-serif', size: 12 };
-  Chart.defaults.plugins.tooltip.backgroundColor = '#ffffff';
-  Chart.defaults.plugins.tooltip.borderColor = '#e2e8f0';
-  Chart.defaults.plugins.tooltip.borderWidth = 1;
-  Chart.defaults.plugins.tooltip.padding = 10;
-  Chart.defaults.plugins.tooltip.cornerRadius = 8;
-  Chart.defaults.plugins.tooltip.titleColor = '#0f172a';
-  Chart.defaults.plugins.tooltip.bodyColor = '#475569';
-  Chart.defaults.plugins.tooltip.titleFont = { weight: 'bold' };
+(function() {
+  const cc = (window.PrintEdge && PrintEdge.chartColors()) || {
+    primary: '#4f46e5', accent: '#0ea5e9', warning: '#d97706', info: '#3b82f6',
+    success: '#059669', muted: '#64748b', danger: '#dc2626', text: '#0f172a',
+    border: '#e2e8f0', surface: '#ffffff', gridColor: 'rgba(226,232,240,0.8)',
+    makeGrid() { return { color: this.gridColor, drawBorder: false }; },
+    defaults(d) {
+      d.color = '#64748b';
+      d.font = { family: 'Inter, ui-sans-serif, system-ui, sans-serif', size: 12 };
+      d.plugins.tooltip.backgroundColor = '#ffffff';
+      d.plugins.tooltip.borderColor = '#e2e8f0'; d.plugins.tooltip.borderWidth = 1;
+      d.plugins.tooltip.padding = 10; d.plugins.tooltip.cornerRadius = 8;
+      d.plugins.tooltip.titleColor = '#0f172a'; d.plugins.tooltip.bodyColor = '#475569';
+      d.plugins.tooltip.titleFont = { weight: 'bold' };
+    },
+    line(d, f) { return { borderColor: this.primary, backgroundColor: f || this.primary + '1a', fill: true, tension: 0.35, pointRadius: 3, pointHoverRadius: 6, borderWidth: 2 }; },
+    bar(c) { return { backgroundColor: c || this.primary, borderRadius: 4 }; },
+    doughnut(c) { return { backgroundColor: c || [this.warning, this.info, this.success, this.muted, this.danger], borderWidth: 0, hoverOffset: 6 }; },
+    pie(c) { return { backgroundColor: c || [this.primary, this.accent, this.warning, this.danger], borderWidth: 0, hoverOffset: 8 }; },
+    barH(c) { return { backgroundColor: c || this.primary, borderRadius: 6 }; },
+  };
+  cc.defaults(Chart.defaults);
+  const charts = [];
 
-  function makeGrid() {
-    return { color: gridColor, drawBorder: false };
-  }
-
-  new Chart(document.getElementById('revenueChart'), {
+  charts.push(new Chart(document.getElementById('revenueChart'), {
     type: 'line',
     data: {
       labels: {{ revenue_labels_json|safe }},
-      datasets: [{
-        label: 'Revenue (৳)',
-        data: {{ revenue_trend_json|safe }},
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37,99,235,0.1)',
-        fill: true,
-        tension: 0.35,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        borderWidth: 2,
-      }]
+      datasets: [Object.assign({ label: 'Revenue (৳)', data: {{ revenue_trend_json|safe }} }, cc.line())]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: textColor }, grid: makeGrid() },
-        y: { ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true }
+        x: { ticks: { color: cc.muted }, grid: cc.makeGrid() },
+        y: { ticks: { color: cc.muted }, grid: cc.makeGrid(), beginAtZero: true }
       }
     }
-  });
+  }));
 
-  new Chart(document.getElementById('statusChart'), {
+  charts.push(new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
       labels: {{ chart_status_labels_json|safe }},
-      datasets: [{
-        data: {{ chart_status_json|safe }},
-        backgroundColor: ['#f59e0b','#3b82f6','#10b981','#64748b','#ef4444'],
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
+      datasets: [{ data: {{ chart_status_json|safe }}, backgroundColor: cc.doughnut() }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '65%',
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
       plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } } }
     }
-  });
+  }));
 
-  new Chart(document.getElementById('volumeChart'), {
+  charts.push(new Chart(document.getElementById('volumeChart'), {
     type: 'bar',
     data: {
       labels: {{ daily_volume_labels_json|safe }},
       datasets: [
-        { label: 'Online', data: {{ daily_volume_online_json|safe }}, backgroundColor: '#2563eb', borderRadius: 4 },
-        { label: 'Walk-in', data: {{ daily_volume_walkin_json|safe }}, backgroundColor: '#f97316', borderRadius: 4 }
+        Object.assign({ label: 'Online', data: {{ daily_volume_online_json|safe }} }, cc.bar(cc.primary)),
+        Object.assign({ label: 'Walk-in', data: {{ daily_volume_walkin_json|safe }} }, cc.bar('#f97316'))
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { labels: { usePointStyle: true } } },
       scales: {
-        x: { stacked: true, ticks: { color: textColor }, grid: { display: false } },
-        y: { stacked: true, ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true }
+        x: { stacked: true, ticks: { color: cc.muted }, grid: { display: false } },
+        y: { stacked: true, ticks: { color: cc.muted }, grid: cc.makeGrid(), beginAtZero: true }
       }
     }
-  });
+  }));
 
-  new Chart(document.getElementById('printTypeChart'), {
+  charts.push(new Chart(document.getElementById('printTypeChart'), {
     type: 'pie',
     data: {
       labels: {{ print_type_labels_json|safe }},
-      datasets: [{ data: {{ print_type_values_json|safe }}, backgroundColor: ['#1e40af','#2563eb','#f97316','#8b5cf6'], borderWidth: 0, hoverOffset: 8 }]
+      datasets: [{ data: {{ print_type_values_json|safe }}, backgroundColor: cc.pie(), borderWidth: 0, hoverOffset: 8 }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } } }
     }
-  });
+  }));
 
-  new Chart(document.getElementById('topCustomersChart'), {
+  charts.push(new Chart(document.getElementById('topCustomersChart'), {
     type: 'bar',
     data: {
       labels: {{ top_customer_names_json|safe }},
-      datasets: [{ label: 'Revenue (৳)', data: {{ top_customer_counts_json|safe }}, backgroundColor: '#8b5cf6', borderRadius: 6 }]
+      datasets: [Object.assign({ label: 'Revenue (৳)', data: {{ top_customer_counts_json|safe }} }, cc.barH('#8b5cf6'))]
     },
     options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true },
-        y: { ticks: { color: textColor }, grid: { display: false } }
+        x: { ticks: { color: cc.muted }, grid: cc.makeGrid(), beginAtZero: true },
+        y: { ticks: { color: cc.muted }, grid: { display: false } }
       }
     }
-  });
+  }));
 
-  new Chart(document.getElementById('categoryRevenueChart'), {
+  charts.push(new Chart(document.getElementById('categoryRevenueChart'), {
     type: 'bar',
     data: {
       labels: {{ category_labels_json|safe }},
-      datasets: [{ label: 'Revenue (৳)', data: {{ category_values_json|safe }}, backgroundColor: '#10b981', borderRadius: 6 }]
+      datasets: [Object.assign({ label: 'Revenue (৳)', data: {{ category_values_json|safe }} }, cc.bar(cc.success))]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: textColor }, grid: { display: false } },
-        y: { ticks: { color: textColor }, grid: makeGrid(), beginAtZero: true }
+        x: { ticks: { color: cc.muted }, grid: { display: false } },
+        y: { ticks: { color: cc.muted }, grid: cc.makeGrid(), beginAtZero: true }
       }
     }
-  });
+  }));
 
   document.querySelectorAll('.counter').forEach((el) => {
     const target = parseInt(el.getAttribute('data-target'), 10) || 0;
@@ -278,5 +324,53 @@
     }
     requestAnimationFrame(step);
   });
+
+  document.querySelectorAll('[data-sparkline]').forEach((el) => {
+    try {
+      const data = JSON.parse(el.getAttribute('data-sparkline'));
+      const color = el.getAttribute('data-sparkline-color') || cc.primary;
+      if (PrintEdge && PrintEdge.sparkline) {
+        PrintEdge.sparkline(el, data, color);
+      }
+    } catch(e) {}
+  });
+
+  const heatEl = document.getElementById('heatmapCanvas');
+  if (heatEl && PrintEdge && PrintEdge.heatmap) {
+    try {
+      PrintEdge.heatmap(heatEl, {{ heatmap_json|safe }});
+    } catch(e) {}
+  }
+
+  // Staggered card entrance animation
+  const cards = document.querySelectorAll('.dash-card, .dash-kpi-card');
+  cards.forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(12px)';
+    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    card.style.transitionDelay = (i * 0.04) + 's';
+    requestAnimationFrame(() => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    });
+  });
+})();
 </script>
+
+<style>
+@media print {
+  body { background: #fff !important; }
+  aside, header, .skip-link, #django-messages, [x-show], .modal-backdrop,
+  .bottom-24, .fixed { display: none !important; }
+  .flex.h-screen { display: block !important; }
+  .flex-1.flex { display: block !important; }
+  main#main-content { overflow: visible !important; padding: 0 !important; }
+  .max-w-7xl { max-width: 100% !important; }
+  .rounded-2xl { border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
+  canvas { max-height: 180px; }
+  .counter { font-size: 1.5rem !important; }
+  a[href]:after { content: none !important; }
+  .grid { break-inside: avoid; }
+}
+</style>
 {% endblock %}

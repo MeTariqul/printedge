@@ -18,26 +18,26 @@
 
 <!-- Statistics Cards -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="premium-card p-4 rounded-2xl text-center">
+    <div class="pe-card p-4 rounded-2xl text-center">
         <div class="text-2xl font-bold text-text-primary">{{ stats.total_emails|default:0 }}</div>
         <div class="text-xs text-text-muted uppercase tracking-widest">Total Emails</div>
     </div>
-    <div class="premium-card p-4 rounded-2xl text-center">
+    <div class="pe-card p-4 rounded-2xl text-center">
         <div class="text-2xl font-bold text-success-text">{{ stats.sent_count|default:0 }}</div>
         <div class="text-xs text-text-muted uppercase tracking-widest">Sent</div>
     </div>
-    <div class="premium-card p-4 rounded-2xl text-center">
+    <div class="pe-card p-4 rounded-2xl text-center">
         <div class="text-2xl font-bold text-danger-text">{{ stats.failed_count|default:0 }}</div>
         <div class="text-xs text-text-muted uppercase tracking-widest">Failed</div>
     </div>
-    <div class="premium-card p-4 rounded-2xl text-center">
+    <div class="pe-card p-4 rounded-2xl text-center">
         <div class="text-2xl font-bold text-primary">{{ stats.emails_today|default:0 }}</div>
         <div class="text-xs text-text-muted uppercase tracking-widest">Today</div>
     </div>
 </div>
 
 <!-- Filters -->
-<div class="premium-card p-4 rounded-2xl mb-6">
+<div class="pe-card p-4 rounded-2xl mb-6 border border-surface-border">
     <form method="get" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
         <select name="status" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
             <option value="">All Statuses</option>
@@ -48,7 +48,7 @@
         <input type="text" name="subject" value="{{ current_subject }}" placeholder="Subject contains" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary outline-none">
         <input type="date" name="date_from" value="{{ date_from }}" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
         <input type="date" name="date_to" value="{{ date_to }}" class="px-3 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary outline-none">
-        <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-canvas-dark font-bold hover:bg-primary-dark transition-colors min-h-[44px] sm:col-span-2 md:col-span-1">Filter</button>
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors min-h-[44px] sm:col-span-2 md:col-span-1">Filter</button>
     </form>
 </div>
 
@@ -57,11 +57,11 @@
     {% csrf_token %}
     
     <!-- Desktop Table View -->
-    <div class="hidden md:block premium-card rounded-2xl overflow-hidden">
+    <div class="hidden md:block pe-card rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-canvas-alt text-text-secondary text-[10px] uppercase tracking-widest font-bold border-b border-surface-border">
+                    <tr class="bg-surface text-text-secondary text-[10px] uppercase tracking-widest font-bold border-b border-surface-border">
                         <th class="p-3 pl-5"><input type="checkbox" onclick="toggleAll(this)" aria-label="Select all"></th>
                         <th class="p-3">#</th>
                         <th class="p-3">Recipient</th>
@@ -111,7 +111,7 @@
     <!-- Mobile Card View -->
     <div class="md:hidden space-y-3">
         {% for log in logs %}
-        <div class="premium-card p-4 rounded-2xl">
+        <div class="pe-card p-4 rounded-2xl">
             <div class="flex justify-between items-start mb-3">
                 <div class="flex-1 min-w-0">
                     <div class="text-sm font-semibold text-text-primary truncate">{{ log.subject|truncatechars:40 }}</div>
@@ -141,13 +141,13 @@
                 <button type="button" onclick="viewEmail('{{ log.subject|escapejs }}', `{{ log.body|escapejs }}`)" class="flex-1 text-center py-2 rounded-lg bg-surface text-primary font-medium text-sm min-h-[44px]">
                     View
                 </button>
-                <button type="submit" name="action" value="resend" onclick="setResend({{ log.id }})" class="flex-1 text-center py-2 rounded-lg bg-success-bg text-success-text font-medium text-sm min-h-[44px]">
+                <button type="submit" name="action" value="resend" onclick="setResend({{ log.id }})" class="flex-1 text-center py-2 rounded-lg bg-emerald-100 text-success-text font-medium text-sm min-h-[44px]">
                     Resend
                 </button>
             </div>
         </div>
         {% empty %}
-        <div class="premium-card p-8 rounded-2xl text-center">
+        <div class="pe-card p-8 rounded-2xl text-center">
             <div class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
                 <i class="bi bi-envelope text-2xl text-text-muted"></i>
             </div>
@@ -165,7 +165,7 @@
                 <option value="bulk_delete">Delete Selected</option>
                 <option value="export_csv">Export as CSV</option>
             </select>
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-canvas-dark font-bold hover:bg-primary-dark transition-colors min-h-[44px]">Apply</button>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-colors min-h-[44px]">Apply</button>
         </div>
         <div class="text-sm text-text-muted">
             {{ logs|length }} log{{ logs|pluralize }} shown
@@ -175,7 +175,7 @@
 
 <!-- View Email Modal -->
 <div id="viewModal" class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;">
-    <div class="premium-card max-w-2xl w-full p-6 rounded-2xl max-h-[80vh] flex flex-col">
+    <div class="pe-card max-w-2xl w-full p-6 rounded-2xl max-h-[80vh] flex flex-col">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-surface-border">
             <h3 class="text-lg font-bold text-text-primary" id="modalSubject">Email Subject</h3>
             <button type="button" onclick="closeModal()" class="w-9 h-9 flex items-center justify-center rounded-lg text-text-muted hover:bg-surface min-h-[44px] min-w-[44px]" aria-label="Close modal">

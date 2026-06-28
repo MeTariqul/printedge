@@ -9,7 +9,7 @@
         <p class="text-text-muted text-sm">Manage reusable email templates</p>
     </div>
     {% if request.user.is_full_admin %}
-    <button type="button" onclick="openAddModal()" class="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+    <button type="button" onclick="openAddModal()" class="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-blue-700 transition-colors">
         <i class="bi bi-plus-lg"></i> Add Template
     </button>
     {% endif %}
@@ -18,12 +18,12 @@
 {% if messages %}
 <div class="mb-4">
     {% for msg in messages %}
-    <div class="p-3 rounded-xl {% if msg.tags == 'success' %}bg-success-text/10 text-success-text{% else %}bg-danger-text/10 text-danger-text{% endif %}">{{ msg }}</div>
+    <div class="p-3 rounded-xl {% if msg.tags == 'success' %}bg-emerald-100 text-success-text{% else %}bg-red-100 text-danger-text{% endif %}">{{ msg }}</div>
     {% endfor %}
 </div>
 {% endif %}
 
-<div class="premium-card rounded-2xl overflow-hidden border border-surface-border">
+<div class="pe-card rounded-2xl overflow-hidden border border-surface-border">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -58,7 +58,7 @@
 
 <!-- Preview Modal -->
 <div x-show="previewModalOpen" x-cloak class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" id="previewModal" style="display: none;">
-    <div class="card max-w-2xl w-full p-6 rounded-2xl bg-white shadow-xl">
+    <div class="border border-surface-border bg-surface rounded-2xl max-w-2xl w-full p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-text-primary">Template Preview</h3>
             <button type="button" onclick="closeModal('previewModal')" class="text-text-muted hover:text-text-primary"><i class="bi bi-x-lg"></i></button>
@@ -69,7 +69,7 @@
 
 <!-- Add/Edit Modal -->
 <div x-show="addModalOpen" x-cloak class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" id="addModal" style="display: none;">
-    <form method="post" class="card max-w-2xl w-full p-6 rounded-2xl bg-white shadow-xl">
+    <form method="post" class="border border-surface-border bg-surface rounded-2xl max-w-2xl w-full p-6">
         {% csrf_token %}
         <input type="hidden" name="action" id="modalAction" value="add">
         <input type="hidden" name="template_id" id="modalTemplateId" value="">
@@ -92,7 +92,7 @@
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 rounded-xl bg-surface border border-surface-border text-text-secondary text-sm hover:bg-surface-alt">Cancel</button>
-                <button type="submit" class="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90">Save</button>
+                <button type="submit" class="px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-blue-700">Save</button>
             </div>
         </div>
     </form>

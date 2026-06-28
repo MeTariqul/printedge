@@ -4,7 +4,7 @@
 {% block content %}
 <section class="flex items-center justify-center px-4 py-12 min-h-[80vh]">
     <div class="w-full max-w-md premium-card rounded-2xl p-6 md:p-8 text-center animate-fade-in">
-        <img src="{% static 'icons/logo.png' %}" alt="PrintEdge" class="h-10 w-auto mx-auto mb-6 object-contain">
+        <img src="{% static 'icons/logo.svg' %}" alt="PrintEdge" class="h-10 w-auto mx-auto mb-6 object-contain" onerror="this.src='{% static 'icons/logo.png' %}'">
         <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl">
             <i class="bi bi-envelope-check"></i>
         </div>

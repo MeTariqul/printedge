@@ -3,12 +3,12 @@
 {% block breadcrumb %}Uploaded Files{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Uploaded Files</h1>
+<div class="pe-page-head">
+    <h1 class="text-2xl font-bold text-text-primary">Uploaded Files</h1>
     <p class="text-text-muted text-sm">All order attachments across online and walk-in orders</p>
 </div>
 
-<div class="premium-card rounded-2xl overflow-hidden border border-surface-border mb-6">
+<div class="pe-card rounded-2xl overflow-hidden border border-surface-border mb-6">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse responsive-table">
             <thead>
@@ -24,7 +24,7 @@
             </thead>
             <tbody class="divide-y divide-surface-border">
                 {% for f in order_files %}
-                <tr class="hover:bg-surface/50">
+                <tr class="hover:bg-surface-soft">
                     <td class="px-4 py-3 text-sm font-medium text-text-primary max-w-[200px] truncate" title="{{ f.file_name }}">{{ f.file_name|default:"—" }}</td>
                     <td class="px-4 py-3 text-sm text-text-muted">
                         {% if f.file_size_bytes %}{{ f.file_size_bytes|filesizeformat }}{% else %}—{% endif %}
@@ -48,14 +48,14 @@
                         <form method="post" class="inline" onsubmit="return confirm('Delete this file from storage? The order will be kept.');">
                             {% csrf_token %}
                             <input type="hidden" name="file_id" value="{{ f.pk }}">
-                            <button type="submit" class="text-danger-text hover:text-red-700 text-sm font-semibold min-h-[44px] px-2">Delete</button>
+                            <button type="submit" class="text-danger-text hover:text-danger-text/80 text-sm font-semibold min-h-[44px] px-2">Delete</button>
                         </form>
                         {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
                 {% for o in legacy_orders %}
-                <tr class="hover:bg-surface/50">
+                <tr class="hover:bg-surface-soft">
                     <td class="px-4 py-3 text-sm font-medium text-text-primary max-w-[200px] truncate">{{ o.file_name|default:"—" }}</td>
                     <td class="px-4 py-3 text-sm text-text-muted">{% if o.file_size_bytes %}{{ o.file_size_bytes|filesizeformat }}{% else %}—{% endif %}</td>
                     <td class="px-4 py-3 text-sm text-text-secondary">
@@ -69,7 +69,7 @@
                         <form method="post" class="inline" onsubmit="return confirm('Delete this file from storage?');">
                             {% csrf_token %}
                             <input type="hidden" name="order_id" value="{{ o.pk }}">
-                            <button type="submit" class="text-danger-text hover:text-red-700 text-sm font-semibold min-h-[44px] px-2">Delete</button>
+                            <button type="submit" class="text-danger-text hover:text-danger-text/80 text-sm font-semibold min-h-[44px] px-2">Delete</button>
                         </form>
                         {% endif %}
                     </td>

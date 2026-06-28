@@ -1,6 +1,4 @@
 {% load static %}
 <a href="{% url 'public_index' %}" class="flex items-center group shrink-0" aria-label="PrintEdge home">
-    <span class="bg-primary rounded-lg px-3 py-1 flex items-center">
-        <img src="{% static 'icons/logo.png' %}" alt="PrintEdge" class="h-7 md:h-8 w-auto object-contain">
-    </span>
+    <img src="{% static 'icons/logo.svg' %}" alt="PrintEdge" class="h-7 md:h-8 w-auto object-contain" onerror="this.src='{% static 'icons/logo.png' %}'">
 </a>

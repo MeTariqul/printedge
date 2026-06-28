@@ -2,389 +2,560 @@
 {% block title %}System Status | Print-Edge Admin{% endblock %}
 {% block breadcrumb %}System Status{% endblock %}
 
-{% block content %}
-{% if messages %}
-{% for message in messages %}
-<div class="mb-6 p-4 rounded-xl {% if message.tags == 'success' %}bg-success-text/10 border border-success-text/20 text-success-text{% else %}bg-danger-text/10 border border-danger-text/20 text-danger-text{% endif %} text-sm font-bold">
-    {{ message }}
-</div>
-{% endfor %}
-{% endif %}
+{% block extra_css %}
+<style>
+  .sys-grid { display: grid; gap: 1.5rem; }
+  .sys-grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .sys-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .sys-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .sys-card {
+    background: var(--pe-color-surface, #fff);
+    border: 1px solid var(--pe-color-border, #e2e8f0);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: box-shadow .2s;
+  }
+  .sys-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+  .sys-card-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--pe-color-border, #e2e8f0);
+    background: var(--pe-color-surface-soft, #f8fafc);
+  }
+  .sys-card-header h3 {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--pe-color-text-strong, #0f172a);
+  }
+  .sys-card-body { padding: 1.5rem; }
 
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6" x-data="statusPage()" x-init="startAutoRefresh()">
+  .sys-stat {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+  }
+  .sys-stat-label {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--pe-color-text-muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .sys-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--pe-color-text-strong, #0f172a);
+    line-height: 1.1;
+    letter-spacing: -.02em;
+  }
+
+  .sys-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .25rem .65rem;
+    border-radius: 9999px;
+    font-size: .72rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .sys-badge-live { background: rgba(5,150,105,.1); color: var(--pe-status-success, #059669); border: 1px solid rgba(5,150,105,.2); }
+  .sys-badge-issue { background: rgba(220,38,38,.1); color: var(--pe-status-danger, #dc2626); border: 1px solid rgba(220,38,38,.2); }
+  .sys-badge-healthy { background: rgba(5,150,105,.1); color: var(--pe-status-success, #059669); border: 1px solid rgba(5,150,105,.2); }
+  .sys-badge-degraded { background: rgba(217,119,6,.1); color: var(--pe-status-warning, #d97706); border: 1px solid rgba(217,119,6,.2); }
+  .sys-badge-down { background: rgba(220,38,38,.1); color: var(--pe-status-danger, #dc2626); border: 1px solid rgba(220,38,38,.2); }
+
+  .sys-icon-wrap {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+
+  .sys-prop { display: flex; align-items: center; justify-content: space-between; padding: .5rem 0; }
+  .sys-prop + .sys-prop { border-top: 1px solid var(--pe-color-border, #e2e8f0); }
+  .sys-prop-label { font-size: .82rem; color: var(--pe-color-text-muted, #64748b); display: flex; align-items: center; gap: .35rem; }
+  .sys-prop-value { font-size: .82rem; font-weight: 600; color: var(--pe-color-text-strong, #0f172a); text-align: right; max-width: 60%; word-break: break-all; }
+
+  .sys-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    padding: 1rem .5rem;
+    border-radius: .875rem;
+    border: 1px solid var(--pe-color-border, #e2e8f0);
+    transition: all .2s;
+    cursor: default;
+  }
+  .sys-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+  .sys-chip-icon {
+    width: 2.75rem; height: 2.75rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    position: relative;
+  }
+  .sys-chip-dot {
+    position: absolute; bottom: -1px; right: -1px;
+    width: .625rem; height: .625rem;
+    border-radius: 50%;
+    border: 2px solid var(--pe-color-surface, #fff);
+  }
+  .sys-chip-label { font-size: .72rem; font-weight: 700; color: var(--pe-color-text-strong, #0f172a); text-align: center; line-height: 1.2; }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .75rem;
+    border-radius: .75rem;
+    transition: background .15s;
+  }
+  .activity-item:hover { background: var(--pe-color-surface-soft, #f1f5f9); }
+  .activity-dot {
+    width: .5rem; height: .5rem;
+    border-radius: 50%;
+    margin-top: .35rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 1023px) {
+    .sys-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .sys-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .sys-chip { padding: .75rem .5rem; }
+  }
+  @media (max-width: 639px) {
+    .sys-grid-4, .sys-grid-3, .sys-grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="systemStatus()" x-init="startAutoRefresh()">
+  <!-- Messages -->
+  {% if messages %}
+  <div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold
+      {% if message.tags == 'success' %}bg-success-text/10 border border-success-text/20 text-success-text
+      {% else %}bg-danger-text/10 border border-danger-text/20 text-danger-text{% endif %}">
+      <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
     <div>
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">System Status</h1>
-        <p class="text-text-muted text-sm">Real-time monitoring dashboard</p>
+      <h1 class="text-2xl font-display font-bold text-text-primary">System Status</h1>
+      <p class="text-sm text-text-muted mt-1">Real-time monitoring dashboard</p>
     </div>
     <div class="flex items-center gap-3 flex-wrap">
-        <span class="text-sm text-text-muted">Last updated: <span x-text="countdown"></span></span>
-        <button @click="refreshNow()" class="px-4 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-bold border border-primary/20 hover:bg-primary/20 transition-colors">
-            <i class="bi bi-arrow-clockwise"></i> Refresh Now
+      <span class="text-sm text-text-muted flex items-center gap-1.5">
+        <i class="bi bi-clock"></i> <span x-text="countdown"></span>
+      </span>
+      <button @click="refreshNow()" class="px-4 py-2 rounded-xl bg-blue-100 text-primary text-sm font-bold border border-blue-200 hover:bg-blue-200 transition-colors">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+      <form method="post" class="inline">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="purge_now">
+        <button type="submit" class="px-4 py-2 rounded-xl bg-warning-text/10 text-warning-text text-sm font-bold border border-warning-text/20 hover:bg-warning-text/20 transition-colors">
+          <i class="bi bi-trash"></i> Purge Files
         </button>
-        <form method="post" class="inline">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="purge_now">
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-warning-text/10 text-warning-text text-sm font-bold border border-warning-text/20 hover:bg-warning-text/20 transition-colors">
-                Run file purge now
-            </button>
-        </form>
-        <form method="post" class="inline" onsubmit="return confirm('Backup database as JSON? This may take a moment.')">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="backup_database">
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-bold border border-primary/20 hover:bg-primary/20 transition-colors">
-                <i class="bi bi-download"></i> Backup Database
-            </button>
-        </form>
-        <form method="post" class="inline" onsubmit="return confirm('Clear all cache? This will flush cached pricing and pages.')">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="clear_cache">
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-danger-text/10 text-danger-text text-sm font-bold border border-danger-text/20 hover:bg-danger-text/20 transition-colors">
-                <i class="bi bi-trash"></i> Clear Cache
-            </button>
-        </form>
+      </form>
+      <form method="post" class="inline" onsubmit="return confirm('Backup database as JSON? This may take a moment.')">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="backup_database">
+        <button type="submit" class="px-4 py-2 rounded-xl bg-blue-100 text-primary text-sm font-bold border border-blue-200 hover:bg-blue-200 transition-colors">
+          <i class="bi bi-download"></i> Backup
+        </button>
+      </form>
+      <form method="post" class="inline" onsubmit="return confirm('Clear all cache? This will flush cached pricing and pages.')">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="clear_cache">
+        <button type="submit" class="px-4 py-2 rounded-xl bg-danger-text/10 text-danger-text text-sm font-bold border border-danger-text/20 hover:bg-danger-text/20 transition-colors">
+          <i class="bi bi-memory"></i> Clear Cache
+        </button>
+      </form>
     </div>
-</div>
+  </div>
 
-<!-- Overall Health -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <div class="flex items-center gap-4">
-        <span class="text-5xl">{{ health_emoji }}</span>
-        <div>
-            <h2 class="text-xl font-bold text-text-primary mb-1">Overall Health</h2>
-            <p class="text-lg font-semibold {% if health_status == 'operational' %}text-success-text{% elif health_status == 'degraded' %}text-warning-text{% else %}text-danger-text{% endif %}">
-                {% if health_status == 'operational' %}All systems operational{% elif health_status == 'degraded' %}Degraded performance{% else %}Outage{% endif %}
-            </p>
+  <!-- Health Hero -->
+  <div class="sys-card mb-6">
+    <div class="sys-card-body p-6 md:p-8">
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <!-- Status Ring -->
+        <div class="relative flex-shrink-0">
+          <div class="w-24 h-24 rounded-full flex items-center justify-center border-[3px]
+            {% if health_status == 'operational' %}border-success-text/30 bg-success-text/10
+            {% elif health_status == 'degraded' %}border-warning-text/30 bg-warning-text/10
+            {% else %}border-danger-text/30 bg-danger-text/10{% endif %}">
+            <div class="absolute inset-0 rounded-full animate-ping
+              {% if health_status == 'operational' %}bg-success-text/20
+              {% elif health_status == 'degraded' %}bg-warning-text/20
+              {% else %}bg-danger-text/20{% endif %} opacity-40"></div>
+            <span class="relative text-4xl">{{ health_emoji }}</span>
+          </div>
         </div>
-    </div>
-</div>
-
-<!-- Health Indicators Row -->
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
-        <i class="bi bi-hdd-network text-2xl {% if db_status.default.connected %}text-success-text{% else %}text-danger-text{% endif %} mb-2"></i>
-        <div class="text-xs text-text-muted">Database</div>
-        <div class="{% if db_status.default.connected %}text-success-text{% else %}text-danger-text{% endif %} text-sm font-bold">{{ db_status.default.vendor|default:"N/A" }}</div>
-    </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
-        <i class="bi bi-cloud text-2xl {% if db_status.supabase.connected %}text-success-text{% else %}text-warning-text{% endif %} mb-2"></i>
-        <div class="text-xs text-text-muted">Supabase</div>
-        <div class="{% if db_status.supabase.connected %}text-success-text{% else %}text-warning-text{% endif %} text-sm font-bold">{% if db_status.supabase.connected %}Connected{% else %}Not configured{% endif %}</div>
-    </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
-        <i class="bi bi-cloud-upload text-2xl {% if storage_status.connected %}text-success-text{% else %}text-danger-text{% endif %} mb-2"></i>
-        <div class="text-xs text-text-muted">Storage</div>
-        <div class="{% if storage_status.connected %}text-success-text{% else %}text-danger-text{% endif %} text-sm font-bold">{{ storage_backend }}</div>
-    </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
-        <i class="bi bi-envelope-paper text-2xl {% if email_status.connected %}text-success-text{% else %}text-warning-text{% endif %} mb-2"></i>
-        <div class="text-xs text-text-muted">Email</div>
-        <div class="{% if email_status.connected %}text-success-text{% else %}text-warning-text{% endif %} text-sm font-bold">{% if email_status.connected %}Connected{% else %}{{ email_status.status|default:"Not configured" }}{% endif %}</div>
-    </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
-        <i class="bi bi-memory text-2xl {% if cache_status.connected %}text-success-text{% else %}text-danger-text{% endif %} mb-2"></i>
-        <div class="text-xs text-text-muted">Cache</div>
-        <div class="{% if cache_status.connected %}text-success-text{% else %}text-danger-text{% endif %} text-sm font-bold">{{ cache_status.backend|default:"LocMem" }}</div>
-    </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
-        <i class="bi bi-shield-check text-2xl {% if not security_status.debug %}text-success-text{% else %}text-danger-text{% endif %} mb-2"></i>
-        <div class="text-xs text-text-muted">Security</div>
-        <div class="{% if not security_status.debug %}text-success-text{% else %}text-danger-text{% endif %} text-sm font-bold">{% if security_status.debug %}DEBUG ON{% else %}Secure{% endif %}</div>
-    </div>
-</div>
-
-<!-- Database Details -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-hdd-stack"></i> Database Connections
-    </h3>
-    <div class="grid md:grid-cols-2 gap-4">
-        {% for db_name, db_info in db_status.items %}
-        {% if db_name == 'default' %}
-        <div class="p-4 rounded-xl bg-surface border border-surface-border">
-            <div class="flex items-center justify-between mb-2">
-                <h4 class="font-bold text-text-primary">{{ db_name|title }} (Primary)</h4>
-                <span class="px-2 py-1 text-xs rounded-full {% if db_info.connected %}bg-success-text/10 text-success-text{% else %}bg-danger-text/10 text-danger-text{% endif %}">
-                    {% if db_info.connected %}Connected{% else %}Error{% endif %}
-                </span>
-            </div>
-            <div class="text-sm space-y-1">
-                <p><span class="text-text-muted">Type:</span> <span class="text-text-primary">{{ db_info.vendor|capfirst }}</span></p>
-                <p><span class="text-text-muted">Version:</span> <span class="text-text-primary text-xs break-all">{{ db_info.version|truncatechars:50 }}</span></p>
-                <p><span class="text-text-muted">Latency:</span> <span class="text-text-primary">{{ db_info.latency_ms|default:"—" }} ms</span></p>
-                <p><span class="text-text-muted">Tables:</span> <span class="text-text-primary">{{ db_info.table_count|default:"—" }}</span></p>
-                <p><span class="text-text-muted">Size:</span> <span class="text-text-primary">{{ db_info.size_mb|default:"—" }} MB</span></p>
-            </div>
+        <!-- Status Text -->
+        <div class="text-center md:text-left flex-1">
+          <p class="text-sm font-semibold text-text-muted mb-1">Overall Health</p>
+          <h2 class="text-2xl md:text-3xl font-display font-bold mb-2
+            {% if health_status == 'operational' %}text-success-text
+            {% elif health_status == 'degraded' %}text-warning-text
+            {% else %}text-danger-text{% endif %}">
+            {% if health_status == 'operational' %}All Systems Operational
+            {% elif health_status == 'degraded' %}Degraded Performance
+            {% else %}Service Outage{% endif %}
+          </h2>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border
+            {% if health_status == 'operational' %}sys-badge-healthy
+            {% elif health_status == 'degraded' %}sys-badge-degraded
+            {% else %}sys-badge-down{% endif %}">
+            <span class="w-2 h-2 rounded-full
+              {% if health_status == 'operational' %}bg-success-text
+              {% elif health_status == 'degraded' %}bg-warning-text
+              {% else %}bg-danger-text{% endif %}"></span>
+            {% if health_status == 'operational' %}All healthy
+            {% elif health_status == 'degraded' %}Degraded
+            {% else %}Down{% endif %}
+          </span>
         </div>
-        {% endif %}
+        <!-- Quick Stats -->
+        <div class="flex gap-6 md:gap-10 flex-shrink-0">
+          <div class="text-center">
+            <p class="text-2xl font-bold text-text-primary">{{ healthy_count|default:"0" }}</p>
+            <p class="text-xs text-text-muted">Healthy</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold text-warning-text">{{ degraded_count|default:"0" }}</p>
+            <p class="text-xs text-text-muted">Degraded</p>
+          </div>
+          <div class="text-center">
+            <p class="text-2xl font-bold text-danger-text">{{ down_count|default:"0" }}</p>
+            <p class="text-xs text-text-muted">Down</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Indicators Chip Grid -->
+  <div class="sys-card mb-6">
+    <div class="sys-card-header">
+      <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-pulse"></i></div>
+      <div class="flex-1">
+        <h3>Health Indicators</h3>
+        <p class="text-xs text-text-muted">{{ items|length }} services · auto-refresh</p>
+      </div>
+      <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-success-text/10 text-success-text border-success-text/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-success-text animate-pulse"></span> Live
+      </span>
+    </div>
+    <div class="sys-card-body">
+      <div class="sys-grid sys-grid-4">
+        {% for item in items %}
+        <div class="sys-chip {% if item.status %}border-success-text/25 bg-success-text/[0.03] hover:border-success-text/40{% else %}border-danger-text/25 bg-danger-text/[0.03] hover:border-danger-text/40{% endif %}">
+          <div class="sys-chip-icon {% if item.status %}bg-success-text/15 text-success-text border-2 border-success-text/30{% else %}bg-danger-text/15 text-danger-text border-2 border-danger-text/30{% endif %}">
+            <i class="bi bi-{{ item.icon }}"></i>
+            <span class="sys-chip-dot {% if item.status %}bg-success-text{% else %}bg-danger-text{% endif %}"></span>
+          </div>
+          <div class="sys-chip-label">{{ item.label }}</div>
+          <span class="sys-badge {% if item.status %}sys-badge-live{% else %}sys-badge-issue{% endif %}">
+            {{ item.status|yesno:"LIVE,ISSUE" }}
+          </span>
+        </div>
+        {% empty %}
+        <div class="col-span-full flex flex-col items-center justify-center py-8 text-text-muted">
+          <i class="bi bi-pulse text-3xl mb-2 opacity-40"></i>
+          <p class="text-sm font-semibold">No health indicators available</p>
+          <p class="text-xs mt-1">Run a health check to populate service statuses</p>
+        </div>
         {% endfor %}
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Server & Environment -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-pc-horizontal"></i> Server & Environment
-    </h3>
-    <div class="grid md:grid-cols-3 gap-4 text-sm">
-        <div>
-            <p class="text-text-muted">Hostname</p>
-            <p class="text-text-primary font-semibold">{{ server_info.hostname|default:"N/A" }}</p>
+  <!-- Quick Metrics -->
+  <div class="sys-grid sys-grid-4 mb-6">
+    <div class="sys-card">
+      <div class="sys-card-body">
+        <div class="sys-stat">
+          <span class="sys-stat-label"><i class="bi bi-people"></i> Users</span>
+          <span class="sys-stat-value">{{ app_metrics.total_users|default:0 }}</span>
         </div>
-        <div>
-            <p class="text-text-muted">IP Address</p>
-            <p class="text-text-primary font-semibold">{{ server_info.ip_address|default:"N/A" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Operating System</p>
-            <p class="text-text-primary font-semibold text-xs break-all">{{ server_info.os|default:"N/A"|truncatechars:40 }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Python Version</p>
-            <p class="text-text-primary font-semibold">{{ server_info.python_version|default:"N/A" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Django Version</p>
-            <p class="text-text-primary font-semibold">{{ django_version|default:"N/A" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Environment</p>
-            <p class="text-text-primary font-semibold {% if server_info.debug %}text-danger-text{% else %}text-success-text{% endif %}">{{ server_info.environment|default:"N/A" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Timezone</p>
-            <p class="text-text-primary font-semibold">{{ timezone|default:"N/A" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Server Time</p>
-            <p class="text-text-primary font-semibold">{{ server_info.server_time|date:"M d, Y g:i A" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">DEBUG Mode</p>
-            <p class="{% if server_info.debug %}text-danger-text{% else %}text-success-text{% endif %} font-semibold">{{ server_info.debug|yesno:"Yes,No" }}</p>
-        </div>
+      </div>
     </div>
-</div>
-
-<!-- Application Metrics -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-graph-up-arrow"></i> Application Metrics
-    </h3>
-    <div class="grid md:grid-cols-4 gap-4">
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Total Users</p>
-            <p class="text-2xl font-bold text-text-primary">{{ app_metrics.total_users|default:0 }}</p>
+    <div class="sys-card">
+      <div class="sys-card-body">
+        <div class="sys-stat">
+          <span class="sys-stat-label"><i class="bi bi-receipt"></i> Orders</span>
+          <span class="sys-stat-value">{{ app_metrics.total_orders|default:0 }}</span>
         </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Total Orders</p>
-            <p class="text-2xl font-bold text-text-primary">{{ app_metrics.total_orders|default:0 }}</p>
-        </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Orders Today</p>
-            <p class="text-2xl font-bold text-text-primary">{{ app_metrics.orders_today|default:0 }}</p>
-        </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Pending Orders</p>
-            <p class="{% if app_metrics.pending_orders > 0 %}text-warning-text{% else %}text-success-text{% endif %} text-2xl font-bold">{{ app_metrics.pending_orders|default:0 }}</p>
-        </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Total Revenue</p>
-            <p class="text-2xl font-bold text-success-text">৳{{ app_metrics.total_revenue|floatformat:0|default:0 }}</p>
-        </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Avg Order Value</p>
-            <p class="text-2xl font-bold text-text-primary">৳{{ app_metrics.avg_order_value|floatformat:0|default:0 }}</p>
-        </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Online Orders</p>
-            <p class="text-2xl font-bold text-primary">{{ app_metrics.online_orders|default:0 }}</p>
-        </div>
-        <div class="text-center p-3 rounded-xl bg-surface">
-            <p class="text-text-muted text-xs">Walk-in Orders</p>
-            <p class="text-2xl font-bold text-warning-text">{{ app_metrics.walkin_orders|default:0 }}</p>
-        </div>
+      </div>
     </div>
-</div>
-
-<!-- File Storage -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-cloud-upload"></i> File Storage (Supabase)
-    </h3>
-    <div class="grid md:grid-cols-3 gap-4 text-sm">
-        <div>
-            <p class="text-text-muted">Bucket</p>
-            <p class="text-text-primary font-mono">{{ storage_bucket|default:"—" }}</p>
+    <div class="sys-card">
+      <div class="sys-card-body">
+        <div class="sys-stat">
+          <span class="sys-stat-label"><i class="bi bi-cash"></i> Revenue</span>
+          <span class="sys-stat-value text-success-text">৳{{ app_metrics.total_revenue|floatformat:0|default:0 }}</span>
         </div>
-        <div>
-            <p class="text-text-muted">Connection</p>
-            <p class="{% if storage_status.connected %}text-success-text{% else %}text-danger-text{% endif %} font-semibold">
-                {% if storage_status.connected %}Connected{% else %}{{ storage_status.status_detail|default:"Error" }}{% endif %}
-            </p>
-        </div>
-        <div>
-            <p class="text-text-muted">Files in Bucket</p>
-            <p class="text-text-primary font-semibold">{{ storage_status.total_files|default:"—" }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Orders with Attachments</p>
-            <p class="text-text-primary font-semibold">{{ files_with_attachment|default:0 }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">S3 Total Size</p>
-            <p class="text-text-primary font-semibold">{{ storage_status.total_size_bytes|default:0|filesizeformat }}</p>
-        </div>
-        <div>
-            <p class="text-text-muted">Retention Policy</p>
-            <p class="text-text-primary font-semibold">{{ site.auto_delete_files_days }} days</p>
-        </div>
+      </div>
     </div>
-</div>
-
-<!-- Security Status -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-shield-lock"></i> Security Status
-    </h3>
-    <div class="grid md:grid-cols-3 gap-4 text-sm">
-        <div class="flex items-center gap-2">
-            <i class="bi {% if security_status.debug %}bi-exclamation-triangle text-danger-text{% else %}bi-check-circle text-success-text{% endif %}"></i>
-            <span class="{% if security_status.debug %}text-danger-text{% else %}text-success-text{% endif %} font-semibold">DEBUG Mode</span>
-            <span class="text-text-muted">: {{ security_status.debug|yesno:"ON,OFF" }}</span>
+    <div class="sys-card">
+      <div class="sys-card-body">
+        <div class="sys-stat">
+          <span class="sys-stat-label"><i class="bi bi-hourglass-split"></i> Pending</span>
+          <span class="sys-stat-value {% if app_metrics.pending_orders > 0 %}text-warning-text{% else %}text-success-text{% endif %}">{{ app_metrics.pending_orders|default:0 }}</span>
         </div>
-        <div class="flex items-center gap-2">
-            <i class="bi bi-check-circle text-success-text"></i>
-            <span class="text-success-text font-semibold">CSRF Protection</span>
-            <span class="text-text-muted">: Enabled</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <i class="bi {% if security_status.ssl_secured %}bi-check-circle text-success-text{% else %}bi-exclamation-triangle text-warning-text{% endif %}"></i>
-            <span class="{% if security_status.ssl_secured %}text-success-text{% else %}text-warning-text{% endif %} font-semibold">SSL/HTTPS</span>
-            <span class="text-text-muted">: {{ security_status.ssl_secured|yesno:"Secured,Not secured" }}</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <i class="bi bi-check-circle text-success-text"></i>
-            <span class="text-success-text font-semibold">X-Frame-Options</span>
-            <span class="text-text-muted">: DENY</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <i class="bi bi-clock text-text-secondary"></i>
-            <span class="text-text-secondary font-semibold">Session Timeout</span>
-            <span class="text-text-muted">: {{ security_status.session_timeout }} seconds</span>
-        </div>
-        <div>
-            <p class="text-text-muted mb-1">Allowed Hosts</p>
-            <p class="text-text-primary text-xs break-all">{{ security_status.allowed_hosts|join:", "|default:"N/A" }}</p>
-        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Cache Status -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-memory"></i> Cache Status
-    </h3>
-    <div class="grid md:grid-cols-3 gap-4 text-sm">
-        <div>
-            <p class="text-text-muted">Backend</p>
-            <p class="text-text-primary font-mono">{{ cache_status.backend|default:"LocMem"|truncatechars:30 }}</p>
+  <!-- DB + Server + Cache Row -->
+  <div class="sys-grid sys-grid-3 mb-6">
+    <!-- Database Connections -->
+    <div class="sys-card">
+      <div class="sys-card-header">
+        <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-hdd-stack"></i></div>
+        <h3>Database</h3>
+      </div>
+      <div class="sys-card-body">
+        {% for db_name, db_info in db_status.items %}
+        <div class="mb-4 last:mb-0">
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md flex items-center justify-center {% if db_info.connected %}bg-success-text/10 text-success-text{% else %}bg-danger-text/10 text-danger-text{% endif %}">
+                <i class="bi bi-{% if db_info.connected %}check-lg{% else %}x-lg{% endif %} text-[10px]"></i>
+              </span>
+              <span class="text-sm font-bold text-text-primary">{{ db_name|title }}</span>
+              {% if db_name == 'default' %}<span class="text-[10px] text-text-muted font-medium">Primary</span>{% endif %}
+            </div>
+            <span class="sys-badge {% if db_info.connected %}sys-badge-live{% else %}sys-badge-issue{% endif %}">
+              {% if db_info.connected %}Live{% else %}Down{% endif %}
+            </span>
+          </div>
+          <div class="space-y-1.5">
+            <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-cpu"></i> Engine</span><span class="sys-prop-value">{{ db_info.vendor|capfirst|default:"—" }}</span></div>
+            <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-tag"></i> Version</span><span class="sys-prop-value">{{ db_info.version|truncatechars:35|default:"—" }}</span></div>
+            <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-lightning-charge"></i> Latency</span><span class="sys-prop-value">{{ db_info.latency_ms|default:"—" }} ms</span></div>
+            <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-table"></i> Tables</span><span class="sys-prop-value">{{ db_info.table_count|default:"—" }}</span></div>
+            <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-database"></i> Size</span><span class="sys-prop-value">{{ db_info.size_mb|default:"—" }} MB</span></div>
+          </div>
         </div>
-        <div>
-            <p class="text-text-muted">Status</p>
-            <p class="{% if cache_status.connected %}text-success-text{% else %}text-danger-text{% endif %} font-semibold">
-                {% if cache_status.connected %}Connected{% else %}Error{% endif %}
-            </p>
-        </div>
-        <div>
-            <p class="text-text-muted">Memory (Redis)</p>
-            <p class="text-text-primary font-semibold">{% if cache_status.memory_mb %}{{ cache_status.memory_mb }} MB{% else %}N/A{% endif %}</p>
-        </div>
+        {% empty %}
+        <p class="text-sm text-text-muted">No database info available</p>
+        {% endfor %}
+      </div>
     </div>
-</div>
 
-<!-- Email Delivery Status -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border mb-6">
-    <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-        <i class="bi bi-envelope-exclamation"></i> Email Delivery Status
-    </h3>
-    <div class="grid md:grid-cols-3 gap-4 text-sm">
-        <div>
-            <p class="text-text-muted">Failed (24h)</p>
-            <p class="{% if failed_emails_24h > 0 %}text-danger-text{% else %}text-success-text{% endif %} text-2xl font-bold">{{ failed_emails_24h|default:0 }}</p>
+    <!-- Server & Environment -->
+    <div class="sys-card">
+      <div class="sys-card-header">
+        <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-pc-horizontal"></i></div>
+        <h3>Server</h3>
+      </div>
+      <div class="sys-card-body">
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-server"></i> Hostname</span><span class="sys-prop-value">{{ server_info.hostname|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-globe"></i> IP</span><span class="sys-prop-value">{{ server_info.ip_address|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-terminal"></i> OS</span><span class="sys-prop-value">{{ server_info.os|truncatechars:35|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-filetype-py"></i> Python</span><span class="sys-prop-value">{{ server_info.python_version|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label">Django</span><span class="sys-prop-value">{{ django_version|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-diagram-3"></i> Env</span>
+          <span class="sys-prop-value {% if server_info.debug %}text-danger-text{% else %}text-success-text{% endif %}">{{ server_info.environment|default:"—" }}</span>
         </div>
-        <div>
-            <p class="text-text-muted">Total Logs</p>
-            <p class="text-text-primary font-semibold">{{ failed_emails_24h|default:0 }}</p>
-            <a href="{% url 'admin_email_logs' %}" class="text-xs text-primary hover:underline">View all logs</a>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-clock"></i> Timezone</span><span class="sys-prop-value">{{ timezone|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-calendar-event"></i> Server Time</span><span class="sys-prop-value">{{ server_info.server_time|date:"M d, g:i A" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-bug"></i> DEBUG</span>
+          <span class="sys-prop-value {% if server_info.debug %}text-danger-text{% else %}text-success-text{% endif %}">{{ server_info.debug|yesno:"ON,OFF" }}</span>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Recent Activity -->
-<div class="grid md:grid-cols-2 gap-6 mb-6">
-    <div class="premium-card p-6 rounded-2xl border border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-            <i class="bi bi-clock-history"></i> Recent Orders
-        </h3>
+    <!-- Cache + Email + Security -->
+    <div class="space-y-6">
+      <!-- Cache -->
+      <div class="sys-card">
+        <div class="sys-card-header">
+          <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-memory"></i></div>
+          <h3>Cache</h3>
+        </div>
+        <div class="sys-card-body">
+          <div class="sys-prop"><span class="sys-prop-label">Backend</span><span class="sys-prop-value font-mono">{{ cache_status.backend|default:"LocMem"|truncatechars:30 }}</span></div>
+          <div class="sys-prop"><span class="sys-prop-label">Status</span>
+            <span class="sys-prop-value {% if cache_status.connected %}text-success-text{% else %}text-danger-text{% endif %}">
+              {% if cache_status.connected %}Connected{% else %}Error{% endif %}
+            </span>
+          </div>
+          <div class="sys-prop"><span class="sys-prop-label">Memory</span><span class="sys-prop-value">{% if cache_status.memory_mb %}{{ cache_status.memory_mb }} MB{% else %}—{% endif %}</span></div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="sys-card">
+        <div class="sys-card-header">
+          <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-envelope"></i></div>
+          <h3>Email</h3>
+        </div>
+        <div class="sys-card-body">
+          <div class="sys-prop"><span class="sys-prop-label">Failed (24h)</span>
+            <span class="sys-prop-value {% if failed_emails_24h > 0 %}text-danger-text{% else %}text-success-text{% endif %}">{{ failed_emails_24h|default:0 }}</span>
+          </div>
+          <div class="sys-prop">
+            <span class="sys-prop-label">Logs</span>
+            <a href="{% url 'admin_email_logs' %}" class="text-sm font-semibold text-primary hover:underline">View all &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Storage + Security Row -->
+  <div class="sys-grid sys-grid-2 mb-6">
+    <!-- File Storage -->
+    <div class="sys-card">
+      <div class="sys-card-header">
+        <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-cloud-upload"></i></div>
+        <h3>File Storage</h3>
+        <span class="text-xs text-text-muted">(Supabase)</span>
+      </div>
+      <div class="sys-card-body">
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-folder"></i> Bucket</span><span class="sys-prop-value font-mono">{{ storage_bucket|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-plug"></i> Connection</span>
+          <span class="sys-prop-value {% if storage_status.connected %}text-success-text{% else %}text-danger-text{% endif %}">
+            {% if storage_status.connected %}Connected{% else %}{{ storage_status.status_detail|default:"Error" }}{% endif %}
+          </span>
+        </div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-file-earmark"></i> Files</span><span class="sys-prop-value">{{ storage_status.total_files|default:"—" }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-paperclip"></i> Orders w/ Attachments</span><span class="sys-prop-value">{{ files_with_attachment|default:0 }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-database-gear"></i> Total Size</span><span class="sys-prop-value">{{ storage_status.total_size_bytes|default:0|filesizeformat }}</span></div>
+        <div class="sys-prop"><span class="sys-prop-label"><i class="bi bi-calendar-range"></i> Retention</span><span class="sys-prop-value">{{ site.auto_delete_files_days }} days</span></div>
+      </div>
+    </div>
+
+    <!-- Security Status -->
+    <div class="sys-card">
+      <div class="sys-card-header">
+        <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-shield-lock"></i></div>
+        <h3>Security</h3>
+      </div>
+      <div class="sys-card-body">
+        <div class="sys-prop">
+          <span class="sys-prop-label"><i class="bi {% if security_status.debug %}bi-exclamation-triangle text-danger-text{% else %}bi-check-circle text-success-text{% endif %}"></i> DEBUG</span>
+          <span class="sys-prop-value {% if security_status.debug %}text-danger-text{% else %}text-success-text{% endif %}">{{ security_status.debug|yesno:"ON,OFF" }}</span>
+        </div>
+        <div class="sys-prop">
+          <span class="sys-prop-label"><i class="bi bi-shield-check"></i> CSRF</span>
+          <span class="sys-prop-value text-success-text">Enabled</span>
+        </div>
+        <div class="sys-prop">
+          <span class="sys-prop-label"><i class="bi {% if security_status.ssl_secured %}bi-lock-fill text-success-text{% else %}bi-unlock-fill text-warning-text{% endif %}"></i> SSL</span>
+          <span class="sys-prop-value {% if security_status.ssl_secured %}text-success-text{% else %}text-warning-text{% endif %}">{{ security_status.ssl_secured|yesno:"Secured,Not secured" }}</span>
+        </div>
+        <div class="sys-prop">
+          <span class="sys-prop-label"><i class="bi bi-window-stack"></i> X-Frame-Options</span>
+          <span class="sys-prop-value text-success-text">DENY</span>
+        </div>
+        <div class="sys-prop">
+          <span class="sys-prop-label"><i class="bi bi-clock-history"></i> Session Timeout</span>
+          <span class="sys-prop-value">{{ security_status.session_timeout }}s</span>
+        </div>
+        <div class="pt-2 mt-2 border-t border-surface-border">
+          <p class="text-xs text-text-muted mb-1.5">Allowed Hosts</p>
+          <p class="text-xs font-mono text-text-primary bg-surface-soft px-2.5 py-1.5 rounded-lg break-all">{{ security_status.allowed_hosts|join:", "|default:"—" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Row -->
+  <div class="sys-grid sys-grid-2 mb-6">
+    <!-- Recent Orders -->
+    <div class="sys-card">
+      <div class="sys-card-header">
+        <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-clock-history"></i></div>
+        <h3>Recent Orders</h3>
+      </div>
+      <div class="sys-card-body p-3">
         {% if recent_orders %}
-        <div class="space-y-3">
-            {% for order in recent_orders %}
-            <div class="flex items-center justify-between p-3 rounded-lg bg-surface">
-                <div>
-                    <p class="text-sm font-semibold text-text-primary">{{ order.order_number }}</p>
-                    <p class="text-xs text-text-muted">{{ order.customer_name|truncatechars:25 }}</p>
-                </div>
-                <span class="px-2 py-1 text-xs rounded-full {% if order.status == 'delivered' %}bg-success-text/10 text-success-text{% else %}bg-warning-text/10 text-warning-text{% endif %}">
-                    {{ order.get_status_display }}
-                </span>
+        <div class="space-y-1">
+          {% for order in recent_orders %}
+          <div class="activity-item">
+            <span class="activity-dot {% if order.status == 'delivered' %}bg-success-text{% else %}bg-warning-text{% endif %}"></span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-text-primary">{{ order.order_number }}</p>
+              <p class="text-xs text-text-muted">{{ order.customer_name|truncatechars:30 }}</p>
             </div>
-            {% endfor %}
+            <span class="sys-badge {% if order.status == 'delivered' %}sys-badge-live{% else %}sys-badge-issue{% endif %} text-[11px]">
+              {{ order.get_status_display }}
+            </span>
+          </div>
+          {% endfor %}
         </div>
         {% else %}
-        <p class="text-text-muted">No recent orders</p>
+        <p class="text-sm text-text-muted text-center py-6">No recent orders</p>
         {% endif %}
+      </div>
     </div>
 
-    <div class="premium-card p-6 rounded-2xl border border-surface-border">
-        <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-            <i class="bi bi-journal-text"></i> Recent Activity
-        </h3>
+    <!-- Recent Activity -->
+    <div class="sys-card">
+      <div class="sys-card-header">
+        <div class="sys-icon-wrap bg-blue-100 text-primary"><i class="bi bi-journal-text"></i></div>
+        <h3>Recent Activity</h3>
+      </div>
+      <div class="sys-card-body p-3">
         {% if recent_audits %}
-        <div class="space-y-3">
-            {% for log in recent_audits %}
-            <div class="p-3 rounded-lg bg-surface">
-                <p class="text-sm font-semibold text-text-primary">{{ log.action }}</p>
-                <p class="text-xs text-text-muted">{{ log.user.display_name|default:"System" }} · {{ log.timestamp|date:"M d, g:i A" }}</p>
+        <div class="space-y-1">
+          {% for log in recent_audits %}
+          <div class="activity-item">
+            <span class="activity-dot bg-primary"></span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-text-primary truncate">{{ log.action }}</p>
+              <p class="text-xs text-text-muted">{{ log.user.display_name|default:"System" }} &middot; {{ log.timestamp|date:"M d, g:i A" }}</p>
             </div>
-            {% endfor %}
+          </div>
+          {% endfor %}
         </div>
         {% else %}
-        <p class="text-text-muted">No recent activity</p>
+        <p class="text-sm text-text-muted text-center py-6">No recent activity</p>
         {% endif %}
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('statusPage', () => ({
-        countdown: '30s',
-        timer: null,
-        startAutoRefresh() {
-            let count = 30;
-            this.countdown = count + 's';
-            this.timer = setInterval(() => {
-                count--;
-                if (count <= 0) {
-                    count = 30;
-                    window.location.reload();
-                }
-                this.countdown = count + 's';
-            }, 1000);
-        },
-        refreshNow() {
-            window.location.reload();
+  Alpine.data('systemStatus', () => ({
+    countdown: '30s',
+    timer: null,
+    startAutoRefresh() {
+      let count = 30;
+      this.countdown = count + 's';
+      this.timer = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          count = 30;
+          window.location.reload();
         }
-    }));
+        this.countdown = count + 's';
+      }, 1000);
+    },
+    refreshNow() {
+      window.location.reload();
+    }
+  }));
 });
 </script>
 {% endblock %}

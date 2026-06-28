@@ -3,13 +3,13 @@
 {% block breadcrumb %}Mail Service / Dashboard{% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="pe-page-head">
     <div>
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Mail Dashboard</h1>
+        <h1 class="text-2xl font-bold text-text-primary mb-1">Mail Dashboard</h1>
         <p class="text-text-muted text-sm">Email communication metrics and analytics</p>
     </div>
     <div class="flex gap-3">
-        <a href="{% url 'admin_mail_compose' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+        <a href="{% url 'admin_mail_compose' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-blue-700 transition-colors">
             <i class="bi bi-envelope-plus"></i> Compose Email
         </a>
         <a href="{% url 'admin_mail_logs' %}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface text-text-secondary text-sm font-semibold border border-surface-border hover:bg-surface-alt transition-colors">
@@ -20,23 +20,23 @@
 
 <!-- Statistics Cards -->
 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
+    <div class="pe-card p-4 rounded-xl border border-surface-border text-center">
         <p class="text-text-muted text-xs">Total Emails Sent</p>
         <p class="text-2xl font-bold text-text-primary">{{ total_emails|default:0 }}</p>
     </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
+    <div class="pe-card p-4 rounded-xl border border-surface-border text-center">
         <p class="text-text-muted text-xs">Sent Today</p>
         <p class="text-2xl font-bold text-success-text">{{ emails_today|default:0 }}</p>
     </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
+    <div class="pe-card p-4 rounded-xl border border-surface-border text-center">
         <p class="text-text-muted text-xs">Failed Today</p>
         <p class="text-2xl font-bold {% if failed_today > 0 %}text-danger-text{% else %}text-success-text{% endif %}">{{ failed_today|default:0 }}</p>
     </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
+    <div class="pe-card p-4 rounded-xl border border-surface-border text-center">
         <p class="text-text-muted text-xs">Open Rate</p>
         <p class="text-2xl font-bold text-warning-text">N/A</p>
     </div>
-    <div class="premium-card p-4 rounded-xl border border-surface-border text-center">
+    <div class="pe-card p-4 rounded-xl border border-surface-border text-center">
         <p class="text-text-muted text-xs">Click Rate</p>
         <p class="text-2xl font-bold text-warning-text">N/A</p>
     </div>
@@ -44,13 +44,13 @@
 
 <!-- Charts Row -->
 <div class="grid lg:grid-cols-3 gap-6 mb-6">
-    <div class="premium-card p-6 rounded-2xl border border-surface-border lg:col-span-2">
+    <div class="pe-card p-6 rounded-2xl border border-surface-border lg:col-span-2">
         <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
             <i class="bi bi-bar-chart-line"></i> Daily Email Volume (30 days)
         </h3>
         <canvas id="emailVolumeChart" height="120"></canvas>
     </div>
-    <div class="premium-card p-6 rounded-2xl border border-surface-border">
+    <div class="pe-card p-6 rounded-2xl border border-surface-border">
         <h3 class="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
             <i class="bi bi-pie-chart"></i> Delivery Status
         </h3>
@@ -59,7 +59,7 @@
 </div>
 
 <!-- Recent Emails -->
-<div class="premium-card rounded-2xl border border-surface-border mb-6">
+<div class="pe-card rounded-2xl border border-surface-border mb-6">
     <div class="p-6 border-b border-surface-border">
         <h3 class="text-lg font-bold text-text-primary flex items-center gap-2">
             <i class="bi bi-envelope"></i> Recent Emails
@@ -97,17 +97,24 @@
 
 <script>
 document.addEventListener('alpine:init', () => {
+    const style = getComputedStyle(document.documentElement);
+    const success = style.getPropertyValue('--pe-status-success').trim() || '#10b981';
+    const danger = style.getPropertyValue('--pe-status-danger').trim() || '#ef4444';
+    const muted = style.getPropertyValue('--pe-text-muted').trim() || '#64748b';
+    const secondary = style.getPropertyValue('--pe-text-secondary').trim() || '#475569';
+    const border = style.getPropertyValue('--pe-surface-border').trim() || 'rgba(226,232,240,0.8)';
+
     const volumeCtx = document.getElementById('emailVolumeChart').getContext('2d');
     new Chart(volumeCtx, {
         type: 'bar',
         data: {
             labels: {{ chart_labels|safe }},
             datasets: [
-                { label: 'Sent', data: {{ chart_sent|safe }}, backgroundColor: '#10b981' },
-                { label: 'Failed', data: {{ chart_failed|safe }}, backgroundColor: '#ef4444' }
+                { label: 'Sent', data: {{ chart_sent|safe }}, backgroundColor: success },
+                { label: 'Failed', data: {{ chart_failed|safe }}, backgroundColor: danger }
             ]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { color: '#64748b' }, grid: { color: 'rgba(226,232,240,0.8)' } }, x: { ticks: { color: '#64748b' } } }, plugins: { legend: { labels: { color: '#475569' } } } }
+        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { color: muted }, grid: { color: border } }, x: { ticks: { color: muted } } }, plugins: { legend: { labels: { color: secondary } } } }
     });
 
     const statusCtx = document.getElementById('deliveryStatusChart').getContext('2d');
@@ -115,9 +122,9 @@ document.addEventListener('alpine:init', () => {
         type: 'doughnut',
         data: {
             labels: ['Sent', 'Failed'],
-            datasets: [{ data: [{{ sent_count }}, {{ failed_count }}], backgroundColor: ['#10b981', '#ef4444'] }]
+            datasets: [{ data: [{{ sent_count }}, {{ failed_count }}], backgroundColor: [success, danger] }]
         },
-        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#475569' } } } }
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: secondary } } } }
     });
 });
 </script>

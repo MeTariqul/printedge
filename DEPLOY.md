@@ -1,5 +1,10 @@
 # PrintEdge — Deployment Guide
 
+> Production deployment checklist for Vercel + Supabase.  
+> Last updated: 2026-06-24
+
+---
+
 Deployed to **Vercel**. Read this file before deploying to production for the first time.
 
 ## Pre-requisites

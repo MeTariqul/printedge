@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<div class="premium-card p-4 rounded-2xl mb-6 border border-surface-border">
+<div class="pe-card p-4 rounded-2xl mb-6 border border-surface-border">
     <form method="get" class="flex gap-3">
         <select name="status" onchange="this.form.submit()" class="px-3 py-2.5 rounded-xl bg-white border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
             <option value="" {% if not current_status %}selected{% endif %}>All Statuses</option>
@@ -21,7 +21,7 @@
     </form>
 </div>
 
-<div class="premium-card rounded-2xl overflow-hidden border border-surface-border">
+<div class="pe-card rounded-2xl overflow-hidden border border-surface-border">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -35,7 +35,7 @@
             </thead>
             <tbody class="divide-y divide-surface-border">
                 {% for log in logs %}
-                <tr class="hover:bg-surface/50 transition-colors">
+                <tr class="hover:bg-surface-soft transition-colors">
                     <td class="p-3 pl-5 text-sm text-text-primary">{{ log.recipient }}</td>
                     <td class="p-3 text-sm text-text-secondary">{{ log.subject }}</td>
                     <td class="p-3">

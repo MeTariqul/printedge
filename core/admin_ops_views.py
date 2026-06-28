@@ -304,6 +304,22 @@ def admin_system_status(request):
         health_status = 'outage'
         health_emoji = '🔴'
 
+    items = [
+        {'label': 'Database', 'icon': 'database', 'status': db_ok,
+         'ok_label': f'{db_status.get("default", {}).get("latency_ms", "—")}ms', 'warn_label': 'Offline'},
+        {'label': 'Supabase', 'icon': 'cloud-arrow-up', 'status': supabase_ok,
+         'ok_label': 'Connected', 'warn_label': 'Not configured'},
+        {'label': 'Storage', 'icon': 'archive', 'status': storage_status.get('connected', False),
+         'ok_label': 'S3 Connected', 'warn_label': storage_status.get('status_detail', 'Error')},
+        {'label': 'Email', 'icon': 'envelope', 'status': email_status.get('connected', False),
+         'ok_label': 'Brevo API', 'warn_label': 'Disconnected'},
+        {'label': 'Cache', 'icon': 'memory', 'status': cache_status.get('connected', True),
+         'ok_label': cache_status.get('backend', 'LocMem'), 'warn_label': 'Not responding'},
+    ]
+    healthy_count = sum(1 for item in items if item['status'])
+    down_count = sum(1 for item in items if not item['status'])
+    degraded_count = 0
+
     pending_purge = orders_eligible_for_purge().count()
     files_with_attachment = Order.objects.filter(file_deleted_at__isnull=True).exclude(file='').count()
 
@@ -352,6 +368,10 @@ def admin_system_status(request):
         'supabase_url': supabase_project_url(),
         'storage_bucket': os.environ.get('SUPABASE_STORAGE_BUCKET', ''),
         'cron_configured': bool(getattr(settings, 'CRON_SECRET', '')),
+        'items': items,
+        'healthy_count': healthy_count,
+        'degraded_count': degraded_count,
+        'down_count': down_count,
         'health_status': health_status,
         'health_emoji': health_emoji,
         'django_version': django.get_version(),

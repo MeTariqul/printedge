@@ -1,5 +1,10 @@
 # Print-Edge Security Report
 
+> OWASP Top 10 + Django security-header review.  
+> Last updated: 2026-06-24
+
+---
+
 ## OWASP Top 10 Summary
 
 | Risk | Status | Notes |

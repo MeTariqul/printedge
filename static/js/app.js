@@ -20,22 +20,19 @@
 
     show(message, type = 'info', duration = 5000) {
       const container = this.ensureContainer();
-      const colors = {
-        success: 'border-emerald-500/30 bg-emerald-50',
-        error: 'border-red-500/30 bg-red-50',
-        info: 'border-blue-500/30 bg-white',
+      const typeMap = {
+        success: { border: 'var(--pe-status-success, #059669)', bg: 'var(--pe-color-surface, #ffffff)', icon: 'bi-check-lg', iconColor: 'var(--pe-status-success, #059669)' },
+        error: { border: 'var(--pe-status-danger, #dc2626)', bg: 'var(--pe-color-surface, #ffffff)', icon: 'bi-x-lg', iconColor: 'var(--pe-status-danger, #dc2626)' },
+        info: { border: 'var(--pe-color-accent, #0ea5e9)', bg: 'var(--pe-color-surface, #ffffff)', icon: 'bi-info-lg', iconColor: 'var(--pe-color-accent, #0ea5e9)' },
       };
-      const icons = {
-        success: 'bi-check-lg text-emerald-600',
-        error: 'bi-x-lg text-red-600',
-        info: 'bi-info-lg text-blue-600',
-      };
+      const t = typeMap[type] || typeMap.info;
       const el = document.createElement('div');
-      el.className = `pointer-events-auto flex items-center p-4 rounded-lg shadow-lg border card animate-fade-in ${colors[type] || colors.info}`;
+      el.className = 'pointer-events-auto flex items-center p-4 rounded-lg shadow-lg border card animate-fade-in';
+      el.style.cssText = `border-color: ${t.border}; background: ${t.bg};`;
       el.innerHTML = `
-        <i class="bi ${icons[type] || icons.info} text-xl mr-3"></i>
-        <p class="text-sm font-semibold text-text flex-1">${message}</p>
-        <button type="button" class="ml-3 text-gray-400 hover:text-gray-600" aria-label="Dismiss">&times;</button>
+        <i class="bi ${t.icon} text-xl mr-3" style="color: ${t.iconColor}"></i>
+        <p class="text-sm font-semibold flex-1" style="color: var(--pe-color-text, #1e293b)">${message}</p>
+        <button type="button" class="ml-3 min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Dismiss" style="color: var(--pe-color-text-muted, #64748b)">&times;</button>
       `;
       el.querySelector('button').addEventListener('click', () => el.remove());
       container.appendChild(el);
@@ -169,19 +166,19 @@
       if (!list) return;
       const items = data.notifications || [];
       if (!items.length) {
-        list.innerHTML = '<li class="px-4 py-6 text-slate-500 text-center">No notifications</li>';
+        list.innerHTML = '<li class="px-4 py-6 text-text-muted text-center">No notifications</li>';
         return;
       }
       list.innerHTML = items.map((n) => {
         const unreadClass = n.is_read ? '' : ' bg-primary/5';
         const unreadDot = n.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>';
-        return '<li class="px-4 py-3 hover:bg-slate-50 transition-colors' + unreadClass + '">' +
+        return '<li class="px-4 py-3 hover:bg-surface transition-colors' + unreadClass + '">' +
           '<a href="' + (n.target_url || '#') + '" class="block notif-link" data-id="' + n.id + '">' +
           '<div class="flex items-start gap-2">' + unreadDot +
           '<div class="flex-1 min-w-0">' +
-          '<p class="font-semibold text-slate-800 text-sm break-words">' + n.verb + '</p>' +
-          '<p class="text-xs text-slate-500 mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
-          '<p class="text-[10px] text-slate-400 mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
+          '<p class="font-semibold text-text-strong text-sm break-words">' + n.verb + '</p>' +
+          '<p class="text-xs text-text-muted mt-0.5 line-clamp-2">' + (n.description || '') + '</p>' +
+          '<p class="text-[10px] text-text-muted mt-1">' + (n.actor_name || '') + ' ' + timeAgo(n.created_at) + '</p>' +
           '</div></div></a></li>';
       }).join('');
     }
@@ -363,6 +360,145 @@
     }
   };
 
+  /**
+   * Returns Chart.js color palette that respects the current theme.
+   * Reads CSS custom properties so it works with theme switching.
+   */
+  function chartColors() {
+    const style = getComputedStyle(document.documentElement);
+    const primary = style.getPropertyValue('--pe-color-primary').trim() || '#4f46e5';
+    const accent = style.getPropertyValue('--pe-color-accent').trim() || '#0ea5e9';
+    const success = style.getPropertyValue('--pe-status-success').trim() || '#059669';
+    const warning = style.getPropertyValue('--pe-status-warning').trim() || '#d97706';
+    const danger = style.getPropertyValue('--pe-status-danger').trim() || '#dc2626';
+    const info = style.getPropertyValue('--pe-status-info').trim() || '#0ea5e9';
+    const text = style.getPropertyValue('--pe-color-text').trim() || '#1e293b';
+    const muted = style.getPropertyValue('--pe-color-text-muted').trim() || '#64748b';
+    const border = style.getPropertyValue('--pe-color-border').trim() || '#e2e8f0';
+    const surface = style.getPropertyValue('--pe-color-surface').trim() || '#ffffff';
+    return {
+      primary,
+      accent,
+      success,
+      warning,
+      danger,
+      info,
+      text,
+      muted,
+      border,
+      surface,
+      gridColor: border + '99',
+      makeGrid() {
+        return { color: this.gridColor, drawBorder: false };
+      },
+      defaults(chartDefaults) {
+        chartDefaults.color = muted;
+        chartDefaults.font = { family: 'Inter, ui-sans-serif, system-ui, sans-serif', size: 12 };
+        const tb = chartDefaults.plugins.tooltip;
+        tb.backgroundColor = surface;
+        tb.borderColor = border;
+        tb.borderWidth = 1;
+        tb.padding = 10;
+        tb.cornerRadius = 8;
+        tb.titleColor = text;
+        tb.bodyColor = muted;
+        tb.titleFont = { weight: 'bold' };
+      },
+      line(data, fillColor) {
+        return { borderColor: primary, backgroundColor: fillColor || primary + '1a', fill: true, tension: 0.35, pointRadius: 3, pointHoverRadius: 6, borderWidth: 2 };
+      },
+      bar(color) {
+        return { backgroundColor: color || primary, borderRadius: 4 };
+      },
+      doughnut(colors) {
+        return { backgroundColor: colors || [warning, info, success, muted, danger], borderWidth: 0, hoverOffset: 6 };
+      },
+      pie(colors) {
+        return { backgroundColor: colors || [primary, accent, warning, danger], borderWidth: 0, hoverOffset: 8 };
+      },
+      barH(color) {
+        return { backgroundColor: color || primary, borderRadius: 6 };
+      },
+    };
+  }
+
+  function sparkline(canvas, data, color, height) {
+    if (!canvas || !data || data.length < 2) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width || 80;
+    const h = height || 24;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const max = Math.max(...data, 1);
+    const min = Math.min(...data, 0);
+    const range = max - min || 1;
+    const pad = 1;
+    const xs = data.map((_, i) => pad + (i / (data.length - 1)) * (w - pad * 2));
+    const ys = data.map(v => h - pad - ((v - min) / range) * (h - pad * 2));
+    ctx.beginPath();
+    ctx.moveTo(xs[0], ys[0]);
+    for (let i = 1; i < data.length; i++) {
+      const cpx = (xs[i - 1] + xs[i]) / 2;
+      ctx.bezierCurveTo(cpx, ys[i - 1], cpx, ys[i], xs[i], ys[i]);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(xs[xs.length - 1], ys[ys.length - 1], 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  function heatmap(canvas, data) {
+    if (!canvas || !data || data.length !== 7) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width || 300;
+    const h = rect.height || 120;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const rows = 7, cols = 24;
+    const cw = w / cols, ch = h / rows;
+    const max = Math.max(...data.flat(), 1);
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const style = getComputedStyle(document.documentElement);
+    const primary = style.getPropertyValue('--pe-color-primary').trim() || '#4f46e5';
+    const muted = style.getPropertyValue('--pe-color-text-muted').trim() || '#64748b';
+    ctx.textBaseline = 'middle';
+    ctx.font = '8px Inter, ui-sans-serif';
+    for (let r = 0; r < rows; r++) {
+      ctx.fillStyle = muted;
+      ctx.textAlign = 'right';
+      ctx.fillText(days[r], -2, r * ch + ch / 2);
+      for (let c = 0; c < cols; c++) {
+        const val = data[r][c];
+        const alpha = val / max;
+        ctx.fillStyle = alpha > 0 ? primary.replace(')', `, ${0.08 + alpha * 0.6})`) : 'transparent';
+        const x = c * cw, y = r * ch;
+        ctx.beginPath();
+        ctx.roundRect(x + 1, y + 1, cw - 2, ch - 2, 2);
+        ctx.fill();
+        if (val > 0) {
+          ctx.fillStyle = alpha > 0.5 ? '#fff' : muted;
+          ctx.textAlign = 'center';
+          ctx.font = '7px Inter, ui-sans-serif';
+          if (cw > 16) ctx.fillText(val > 99 ? '99+' : val, x + cw / 2, y + ch / 2);
+        }
+      }
+    }
+  }
+
   global.PrintEdge = {
     Toast,
     confirmAction,
@@ -372,5 +508,8 @@
     showSkeletons,
     getCsrfToken,
     pdfUtils,
+    chartColors,
+    sparkline,
+    heatmap,
   };
 })(window);

@@ -1,5 +1,10 @@
 # Print-Edge Accessibility Report
 
+> WCAG 2.1 AA compliance review.  
+> Last updated: 2026-06-24
+
+---
+
 **Target:** WCAG 2.1 AA  
 **Method:** Code audit + planned Lighthouse (run locally after `python manage.py runserver`)
 

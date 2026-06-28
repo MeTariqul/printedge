@@ -71,12 +71,12 @@
         {% if service_requires_file %}
         <div x-show="step === 1" class="card p-6">
           <h3 class="text-lg font-semibold mb-4">Upload your file</h3>
-          <label for="fileInput" @click="handleFileClick" @dragover.prevent="dragActive = true" @dragleave="dragActive = false" @drop.prevent="handleDrop($event)" :class="['border-2', 'border-dashed', 'rounded-lg', 'p-8', 'text-center', 'cursor-pointer', 'transition-colors', dragActive ? 'border-primary bg-primary/5' : 'border-surface-border hover:border-primary']">
+          <div @click="handleFileClick" @dragover.prevent="dragActive = true" @dragleave="dragActive = false" @drop.prevent="handleDrop($event)" :class="['border-2', 'border-dashed', 'rounded-lg', 'p-8', 'text-center', 'cursor-pointer', 'transition-colors', dragActive ? 'border-primary bg-primary/5' : 'border-surface-border hover:border-primary']" role="button" tabindex="0" @keydown.enter="handleFileClick">
             <i class="bi bi-cloud-arrow-up text-4xl text-text-muted mb-3 block"></i>
             <p class="font-semibold text-text-primary">Drop files or click to browse</p>
                 <p class="text-sm text-text-muted mt-1">PDF, Office, images — select multiple files (Max 20MB)</p>
             <input type="file" id="fileInput" name="files" x-ref="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.zip" class="hidden" @change="handleFiles($event)" @click.stop>
-          </label>
+          </div>
           <template x-if="files.length">
             <ul class="mt-4 space-y-2">
               <template x-for="(f, i) in files" :key="i">
@@ -346,6 +346,7 @@ function orderWizard() {
     uploading: false,
     uploadProgress: 0,
     dragActive: false,
+    _lastFileClick: 0,
     get filesConfigJson() {
       return JSON.stringify(this.files.map(f => ({
         file_name: f.name,
@@ -361,9 +362,11 @@ function orderWizard() {
     },
     handleFileClick(e) {
       if (this.uploading) return;
-      if (this.$refs && this.$refs.fileInput) {
-        this.$refs.fileInput.click();
-      }
+      const now = Date.now();
+      if (now - this._lastFileClick < 500) return;
+      this._lastFileClick = now;
+      const input = document.getElementById('fileInput');
+      if (input) input.click();
     },
     async handleFiles(e) {
       const list = e.target.files;

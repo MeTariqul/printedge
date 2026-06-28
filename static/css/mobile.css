@@ -4,19 +4,21 @@
  */
 
 :root {
-  /* Color Palette */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
+  /* Color Palette - derived from theme variables */
+  --color-primary: var(--pe-color-primary, #2563eb);
+  --color-primary-dark: var(--pe-color-primary-hover, #1d4ed8);
   --color-primary-glow: rgba(37, 99, 235, 0.35);
-  --color-light-bg: #f8fafc;
+  --color-light-bg: var(--pe-color-bg, #f8fafc);
   --color-light-card: rgba(255, 255, 255, 0.9);
-  --color-light-border: #e2e8f0;
-  --color-text: #1e293b;
-  --color-text-muted: #64748b;
+  --color-light-border: var(--pe-color-border, #e2e8f0);
+  --color-text: var(--pe-color-text, #1e293b);
+  --color-text-muted: var(--pe-color-text-muted, #64748b);
   --color-text-light: #94a3b8;
-  --color-success: #059669;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
+
+  /* Status colors */
+  --color-success: var(--pe-status-success, #059669);
+  --color-warning: var(--pe-status-warning, #d97706);
+  --color-danger: var(--pe-status-danger, #dc2626);
   --color-orange: #ea580c;
 
   /* Typography */
@@ -47,6 +49,7 @@
     right: 0;
     z-index: 50;
     background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--color-light-border);
     padding-bottom: env(safe-area-inset-bottom);
@@ -97,9 +100,61 @@
     filter: drop-shadow(0 0 8px var(--color-primary-glow));
   }
 
+  /* New mobile nav item styles */
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 8px;
+    min-width: 56px;
+    min-height: 44px;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.15s ease;
+    color: var(--color-text-muted, #94a3b8);
+    text-decoration: none;
+    position: relative;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--color-primary);
+  }
+
+  .mobile-nav-item:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-nav-icon-wrap {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    position: relative;
+  }
+
+  .mobile-nav-item.active .mobile-nav-icon-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 8px;
+    background: rgba(37, 99, 235, 0.08);
+    z-index: -1;
+  }
+
+  .mobile-nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
   /* Card-based Layout */
   .mobile-card {
     background: var(--color-light-card);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid var(--color-light-border);
     border-radius: 12px;

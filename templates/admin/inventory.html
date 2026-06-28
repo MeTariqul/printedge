@@ -3,9 +3,9 @@
 {% block breadcrumb %}Inventory{% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div class="pe-page-head">
     <div>
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Inventory Management</h1>
+        <h1 class="text-2xl font-bold text-text-primary mb-1">Inventory Management</h1>
         <p class="text-text-muted text-sm">Track stock levels and receive low-stock alerts</p>
     </div>
     <div class="text-sm text-text-muted">
@@ -15,15 +15,15 @@
 
 <div class="space-y-8">
     <!-- Variant Stock Table -->
-    <div class="premium-card rounded-2xl overflow-hidden">
-        <div class="p-6 border-b border-surface-border">
+    <div class="pe-card overflow-hidden">
+        <div class="pe-card-header p-5">
             <h3 class="text-lg font-bold text-text-primary">Service Variant Stock</h3>
-            <p class="text-xs text-text-muted mt-1">Stock tracked directly on service variants</p>
+            <p class="text-xs text-text-muted">Stock tracked directly on service variants</p>
         </div>
-        <div class="overflow-x-auto">
+        <div class="pe-table-wrap border-0 rounded-none">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-surface text-text-secondary text-[10px] uppercase tracking-wider font-bold border-b border-surface-border">
+                    <tr>
                         <th class="p-3 pl-5">Variant</th>
                         <th class="p-3">Service</th>
                         <th class="p-3">Stock</th>
@@ -34,7 +34,7 @@
                 </thead>
                 <tbody class="divide-y divide-surface-border">
                     {% for v in variants %}
-                    <tr class="hover:bg-surface transition-colors {% if v.is_out_of_stock %}bg-red-500/5{% elif v.is_low_stock %}bg-amber-500/5{% endif %}">
+                    <tr class="hover:bg-surface transition-colors {% if v.is_out_of_stock %}bg-red-50{% elif v.is_low_stock %}bg-amber-50{% endif %}">
                         <td class="p-3 pl-5">
                             <div class="font-semibold text-sm text-text-primary">{{ v.name }}</div>
                             <div class="text-[10px] text-text-muted">৳{{ v.effective_price|floatformat:0 }}</div>
@@ -43,13 +43,12 @@
                         <td class="p-3 font-bold text-sm {% if v.is_out_of_stock %}text-danger-text{% elif v.is_low_stock %}text-warning-text{% else %}text-text-primary{% endif %}">{{ v.stock }}</td>
                         <td class="p-3 text-sm text-text-muted">{{ v.low_stock_threshold }}</td>
                         <td class="p-3">
-                            {% if v.is_out_of_stock %}
-                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-danger/10 text-danger-text border border-danger/20">Out of Stock</span>
-                            {% elif v.is_low_stock %}
-                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-warning/10 text-warning-text border border-warning/20">Low Stock</span>
-                            {% else %}
-                            <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success-text border border-success/20">In Stock</span>
-                            {% endif %}
+                            <span class="pe-badge
+                                {% if v.is_out_of_stock %}pe-badge-danger
+                                {% elif v.is_low_stock %}pe-badge-warning
+                                {% else %}pe-badge-success{% endif %}">
+                                {% if v.is_out_of_stock %}Out of Stock{% elif v.is_low_stock %}Low Stock{% else %}In Stock{% endif %}
+                            </span>
                         </td>
                         <td class="p-3 pr-5">
                             <form method="post" class="flex items-center gap-2">
@@ -61,7 +60,7 @@
                                     <option value="in">Add</option>
                                     <option value="out">Remove</option>
                                 </select>
-                                <button type="submit" class="px-2 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold border border-primary/20 hover:bg-primary/20 transition-colors" title="Adjust Stock">
+                                <button type="submit" class="px-2 py-1.5 rounded-lg bg-blue-100 text-primary text-xs font-bold border border-blue-200 hover:bg-blue-200 transition-colors" title="Adjust Stock">
                                     <i class="bi bi-arrow-repeat"></i>
                                 </button>
                             </form>
@@ -77,15 +76,15 @@
     </div>
 
     <!-- Inventory Items Table -->
-    <div class="premium-card rounded-2xl overflow-hidden">
-        <div class="p-6 border-b border-surface-border">
+    <div class="pe-card overflow-hidden">
+        <div class="pe-card-header p-5">
             <h3 class="text-lg font-bold text-text-primary">Detailed Inventory Items</h3>
-            <p class="text-xs text-text-muted mt-1">Paper, toner, binding materials, etc.</p>
+            <p class="text-xs text-text-muted">Paper, toner, binding materials, etc.</p>
         </div>
-        <div class="overflow-x-auto">
+        <div class="pe-table-wrap border-0 rounded-none">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-surface text-text-secondary text-[10px] uppercase tracking-wider font-bold border-b border-surface-border">
+                    <tr>
                         <th class="p-3 pl-5">Item</th>
                         <th class="p-3">Category</th>
                         <th class="p-3">Stock</th>
@@ -97,7 +96,7 @@
                 </thead>
                 <tbody class="divide-y divide-surface-border">
                     {% for i in items %}
-                    <tr class="hover:bg-surface transition-colors {% if i.status.0 == 'danger' %}bg-red-500/5{% elif i.status.0 == 'warning' %}bg-amber-500/5{% endif %}">
+                    <tr class="hover:bg-surface transition-colors {% if i.status.0 == 'danger' %}bg-red-50{% elif i.status.0 == 'warning' %}bg-amber-50{% endif %}">
                         <td class="p-3 pl-5">
                             <div class="font-semibold text-sm text-text-primary">{{ i.name }}</div>
                             {% if i.variant %}
@@ -105,18 +104,17 @@
                             {% endif %}
                         </td>
                         <td class="p-3">
-                            <span class="px-2 py-0.5 rounded-md bg-surface text-text-secondary text-[10px] font-bold border border-surface-border">{{ i.get_category_display }}</span>
+                            <span class="pe-badge pe-badge-neutral">{{ i.get_category_display }}</span>
                         </td>
                         <td class="p-3 font-bold text-sm {% if i.status.0 == 'danger' %}text-danger-text{% elif i.status.0 == 'warning' %}text-warning-text{% else %}text-text-primary{% endif %}">{{ i.current_stock }} {{ i.unit }}</td>
                         <td class="p-3 text-sm text-text-muted">{{ i.min_alert_level }} {{ i.unit }}</td>
                         <td class="p-3 text-sm text-text-muted">৳{{ i.cost_per_unit|floatformat:0 }}</td>
                         <td class="p-3">
                             {% with status=i.status %}
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold
-                                {% if status.0 == 'danger' %}bg-danger/10 text-danger-text
-                                {% elif status.0 == 'warning' %}bg-warning/10 text-warning-text
-                                {% else %}bg-success/10 text-success-text{% endif %}">
-                                <span class="w-1.5 h-1.5 rounded-full {% if status.0 == 'danger' %}bg-danger-text{% elif status.0 == 'warning' %}bg-warning-text{% else %}bg-success-text{% endif %}"></span>
+                            <span class="pe-badge
+                                {% if status.0 == 'danger' %}pe-badge-danger
+                                {% elif status.0 == 'warning' %}pe-badge-warning
+                                {% else %}pe-badge-success{% endif %}">
                                 {{ status.1 }}
                             </span>
                             {% endwith %}
@@ -132,7 +130,7 @@
                                         <option value="in">Add</option>
                                         <option value="out">Remove</option>
                                     </select>
-                                    <button type="submit" class="px-2 py-1.5 rounded-lg bg-success/10 text-success-text text-xs font-bold border border-success/20 hover:bg-success/20 transition-colors" title="Stock In">
+                                    <button type="submit" class="px-2 py-1.5 rounded-lg bg-emerald-100 text-success-text text-xs font-bold border border-emerald-200 hover:bg-emerald-200 transition-colors" title="Stock In">
                                         <i class="bi bi-plus-lg"></i>
                                     </button>
                                 </form>
@@ -140,7 +138,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="item_id" value="{{ i.pk }}">
-                                    <button type="submit" onclick="return confirm('PERMANENT DELETE: Are you sure you want to remove this item from inventory?')" class="px-2.5 py-1.5 rounded-lg bg-danger/10 text-danger-text text-xs border border-danger/20 hover:bg-danger/20 transition-all" title="Delete Item">
+                                    <button type="submit" onclick="return confirm('PERMANENT DELETE: Are you sure you want to remove this item from inventory?')" class="px-2.5 py-1.5 rounded-lg bg-red-100 text-danger-text text-xs border border-red-200 hover:bg-red-200 transition-all" title="Delete Item">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
@@ -157,10 +155,12 @@
 </div>
 
 <!-- Add New Item Form -->
-<div class="premium-card p-6 rounded-2xl border border-surface-border max-w-3xl">
-    <h3 class="text-base font-bold text-text-primary mb-5 flex items-center gap-2">
-        <i class="bi bi-plus-circle text-primary"></i> Add Inventory Item
-    </h3>
+<div class="pe-card p-6 max-w-3xl">
+    <div class="pe-card-header">
+        <h3 class="text-base font-bold text-text-primary flex items-center gap-2">
+            <i class="bi bi-plus-circle text-primary"></i> Add Inventory Item
+        </h3>
+    </div>
     <form method="post" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% csrf_token %}
         <input type="hidden" name="action" value="add_item">

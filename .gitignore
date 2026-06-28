@@ -86,3 +86,16 @@ fix_*.py
 verify_*.py
 test_api.py
 test_detail.py
+# Scratch scripts
+regen*.py
+write_probe.txt
+
+# Chunk markers
+.chunk*.done
+
+# Windows artifacts
+nul
+
+# --- NilCode Ops ---
+.agent/
+CLAUDE.md

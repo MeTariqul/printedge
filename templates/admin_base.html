@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-pe-theme="{{ SITE.theme_slug|default:'printedge-default' }}">
+<script>document.documentElement.setAttribute('data-pe-theme', localStorage.getItem('pe_theme') || '{{ SITE.theme_slug|default:"printedge-default" }}')</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +21,15 @@
             return {
                 sidebarOpen: false,
                 searchOpen: false,
+                userMenuOpen: false,
+                themeMenuOpen: false,
+                currentTheme: document.documentElement.getAttribute('data-pe-theme') || 'printedge-default',
+                setTheme(theme) {
+                    this.currentTheme = theme;
+                    document.documentElement.setAttribute('data-pe-theme', theme);
+                    localStorage.setItem('pe_theme', theme);
+                    this.themeMenuOpen = false;
+                },
                 async runSearch(e) {
                     const q = e.target.value.trim();
                     const el = document.getElementById('searchResults');
@@ -38,7 +48,7 @@
                         }
                         el.innerHTML = data.results.map(item =>
                             '<a href="' + item.url + '" class="flex items-center gap-4 p-4 rounded-lg hover:bg-surface border border-transparent hover:border-surface-border min-h-[44px]">' +
-                            '<div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0"><i class="bi bi-receipt"></i></div>' +
+                            '<div class="w-10 h-10 rounded-lg bg-blue-100 text-primary flex items-center justify-center flex-shrink-0"><i class="bi bi-receipt"></i></div>' +
                             '<div class="flex-1 min-w-0"><p class="font-semibold truncate">' + item.order_number + '</p>' +
                             '<p class="text-sm text-text-muted truncate">' + item.customer_name + ' · ' + item.status + ' · ৳' + Number(item.total_price).toFixed(0) + '</p></div></a>'
                         ).join('');
@@ -56,78 +66,302 @@
 <div class="flex h-screen">
     <div x-show="sidebarOpen" @click="sidebarOpen=false" class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden" x-cloak></div>
 
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 lg:translate-x-0 lg:static flex flex-col border-r border-surface-border bg-canvas-alt shadow-sm">
-        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 text-sm" style="overflow-y: auto; overflow-x: hidden; position: relative;">
-            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'admin_operator_dashboard' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-person-gear"></i> Admin / Staff</a>
-            <p class="px-4 pt-4 pb-1 text-xs font-bold uppercase text-text-muted">Orders</p>
-            <a href="{% url 'admin_walkin_order' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-all mb-1"><i class="bi bi-plus-lg"></i> Walk-in POS</a>
-            <a href="{% url 'admin_orders' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_orders' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-list-check"></i> All Orders</a>
-            <a href="{% url 'admin_uploaded_files' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_uploaded_files' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-folder-fill"></i> Uploaded Files</a>
-            <p class="px-4 pt-4 pb-1 text-xs font-bold uppercase text-text-muted">Management</p>
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 w-64 transform transition-all duration-300 ease-out lg:translate-x-0 lg:static flex flex-col border-r border-surface-border bg-white shadow-sm">
+        <div class="h-16 flex items-center gap-3 px-5 border-b border-surface-border flex-shrink-0">
+            {% include "partials/site_logo.html" %}
+        </div>
+        <nav role="navigation" aria-label="Admin sidebar" class="flex-1 overflow-y-auto py-3 px-2.5 space-y-0.5 sidebar-nav">
+
+            <!-- ════ MAIN ════ -->
+            <div class="px-3 pt-2 pb-0.5">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted/60">Main</span>
+            </div>
+
+            {% with url_name=request.resolver_match.url_name %}
+            <a href="{% url 'admin_dashboard' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_dashboard' or url_name == 'admin_operator_dashboard' %}active{% endif %}"
+                {% if url_name == 'admin_dashboard' or url_name == 'admin_operator_dashboard' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_dashboard' or url_name == 'admin_operator_dashboard' %}active{% endif %}">
+                    <i class="bi bi-person-gear"></i>
+                </span>
+                <span>Dashboard</span>
+            </a>
+
+            <!-- ════ ORDERS ════ -->
+            <div class="px-3 pt-4 pb-0.5">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted/60">Orders</span>
+            </div>
+
+            <a href="{% url 'admin_walkin_order' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_walkin_order' %}active{% endif %}"
+                {% if url_name == 'admin_walkin_order' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_walkin_order' %}active{% endif %}">
+                    <i class="bi bi-plus-lg"></i>
+                </span>
+                <span>Walk-in POS</span>
+                <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">NEW</span>
+            </a>
+
+            <a href="{% url 'admin_orders' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_orders' %}active{% endif %}"
+                {% if url_name == 'admin_orders' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_orders' %}active{% endif %}">
+                    <i class="bi bi-list-check"></i>
+                </span>
+                <span>All Orders</span>
+            </a>
+
+            <a href="{% url 'admin_uploaded_files' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_uploaded_files' %}active{% endif %}"
+                {% if url_name == 'admin_uploaded_files' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_uploaded_files' %}active{% endif %}">
+                    <i class="bi bi-folder-fill"></i>
+                </span>
+                <span>Uploaded Files</span>
+            </a>
+
+            <!-- ════ MANAGEMENT ════ -->
+            <div class="px-3 pt-4 pb-0.5">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted/60">Management</span>
+            </div>
+
             {% if request.user.can_manage_users %}
-            <a href="{% url 'admin_users' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_users' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-people-fill"></i> Customers</a>
+            <a href="{% url 'admin_users' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_users' %}active{% endif %}"
+                {% if url_name == 'admin_users' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_users' %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i>
+                </span>
+                <span>Customers</span>
+            </a>
             {% endif %}
+
             {% if request.user.can_edit_pricing %}
-            <a href="{% url 'admin_services' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_services' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-briefcase-fill"></i> Services</a>
-            <a href="{% url 'admin_coupons' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_coupons' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-ticket-perforated-fill"></i> Coupons</a>
-            <a href="{% url 'admin_inventory' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_inventory' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-box-seam-fill"></i> Inventory</a>
-            <a href="{% url 'admin_financial' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_financial' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-wallet-fill"></i> Finance</a>
+            <a href="{% url 'admin_services' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_services' %}active{% endif %}"
+                {% if url_name == 'admin_services' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_services' %}active{% endif %}">
+                    <i class="bi bi-briefcase-fill"></i>
+                </span>
+                <span>Services</span>
+            </a>
+
+            <a href="{% url 'admin_coupons' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_coupons' %}active{% endif %}"
+                {% if url_name == 'admin_coupons' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_coupons' %}active{% endif %}">
+                    <i class="bi bi-ticket-perforated-fill"></i>
+                </span>
+                <span>Coupons</span>
+            </a>
+
+            <a href="{% url 'admin_inventory' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_inventory' %}active{% endif %}"
+                {% if url_name == 'admin_inventory' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_inventory' %}active{% endif %}">
+                    <i class="bi bi-box-seam-fill"></i>
+                </span>
+                <span>Inventory</span>
+            </a>
             {% endif %}
-<a href="{% url 'admin_reports' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_reports' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-bar-chart-line-fill"></i> Reports</a>
-            <a href="{% url 'admin_offline_customers' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_offline_customers' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-person-badge"></i> Walk-in Customers</a>
-            {% if request.user.can_change_settings %}
-            <a href="{% url 'admin_system_status' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_system_status' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-hdd-network"></i> System</a>
-            <a href="{% url 'admin_settings' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_settings' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-gear-fill"></i> Settings</a>
-            {% endif %}
-            <p class="px-4 pt-4 pb-1 text-xs font-bold uppercase text-text-muted">Mail Service</p>
-            <a href="{% url 'admin_mail_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_dashboard' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-envelope-paper"></i> Dashboard</a>
-            <a href="{% url 'admin_mail_compose' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_compose' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-envelope-plus"></i> Compose Email</a>
-            <a href="{% url 'admin_mail_logs' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_logs' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-envelope-paper"></i> Email Logs</a>
-            <a href="{% url 'admin_mail_templates' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_templates' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-file-earmark-text"></i> Templates</a>
-            <a href="{% url 'admin_mail_settings' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_mail_settings' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-gear"></i> Settings</a>
+
+            <a href="{% url 'admin_reports' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_reports' %}active{% endif %}"
+                {% if url_name == 'admin_reports' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_reports' %}active{% endif %}">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                </span>
+                <span>Reports</span>
+            </a>
+
+            <a href="{% url 'admin_offline_customers' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_offline_customers' %}active{% endif %}"
+                {% if url_name == 'admin_offline_customers' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_offline_customers' %}active{% endif %}">
+                    <i class="bi bi-person-badge"></i>
+                </span>
+                <span>Walk-in Customers</span>
+            </a>
+
             {% if request.user.can_manage_users %}
-            <a href="{% url 'admin_staff' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold {% if request.resolver_match.url_name == 'admin_staff' %}bg-primary/10 text-primary{% else %}text-text-muted hover:bg-surface{% endif %}"><i class="bi bi-person-gear"></i> Staff</a>
+            <a href="{% url 'admin_staff' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_staff' %}active{% endif %}"
+                {% if url_name == 'admin_staff' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_staff' %}active{% endif %}">
+                    <i class="bi bi-person-gear"></i>
+                </span>
+                <span>Staff</span>
+            </a>
             {% endif %}
+
+            <!-- ════ FINANCE ════ -->
+            {% if request.user.can_edit_pricing %}
+            <div class="px-3 pt-4 pb-0.5">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted/60">Finance</span>
+            </div>
+
+            <a href="{% url 'admin_financial' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_financial' %}active{% endif %}"
+                {% if url_name == 'admin_financial' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_financial' %}active{% endif %}">
+                    <i class="bi bi-wallet-fill"></i>
+                </span>
+                <span>Finance</span>
+            </a>
+            {% endif %}
+
+            <!-- ════ SYSTEM ════ -->
+            {% if request.user.can_change_settings %}
+            <div class="px-3 pt-4 pb-0.5">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted/60">System</span>
+            </div>
+
+            <a href="{% url 'admin_system_status' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_system_status' %}active{% endif %}"
+                {% if url_name == 'admin_system_status' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_system_status' %}active{% endif %}">
+                    <i class="bi bi-hdd-network"></i>
+                </span>
+                <span>System Status</span>
+            </a>
+
+            <a href="{% url 'admin_settings' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_settings' %}active{% endif %}"
+                {% if url_name == 'admin_settings' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_settings' %}active{% endif %}">
+                    <i class="bi bi-gear-fill"></i>
+                </span>
+                <span>Settings</span>
+            </a>
+            {% endif %}
+
+            <!-- ════ MAIL ════ -->
+            <div class="px-3 pt-4 pb-0.5">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted/60">Mail Service</span>
+            </div>
+
+            <a href="{% url 'admin_mail_dashboard' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_mail_dashboard' %}active{% endif %}"
+                {% if url_name == 'admin_mail_dashboard' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_mail_dashboard' %}active{% endif %}">
+                    <i class="bi bi-envelope-paper"></i>
+                </span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'admin_mail_compose' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_mail_compose' %}active{% endif %}"
+                {% if url_name == 'admin_mail_compose' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_mail_compose' %}active{% endif %}">
+                    <i class="bi bi-envelope-plus"></i>
+                </span>
+                <span>Compose Email</span>
+            </a>
+
+            <a href="{% url 'admin_mail_logs' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_mail_logs' %}active{% endif %}"
+                {% if url_name == 'admin_mail_logs' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_mail_logs' %}active{% endif %}">
+                    <i class="bi bi-envelope-paper"></i>
+                </span>
+                <span>Email Logs</span>
+            </a>
+
+            <a href="{% url 'admin_mail_templates' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_mail_templates' %}active{% endif %}"
+                {% if url_name == 'admin_mail_templates' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_mail_templates' %}active{% endif %}">
+                    <i class="bi bi-file-earmark-text"></i>
+                </span>
+                <span>Templates</span>
+            </a>
+
+            <a href="{% url 'admin_mail_settings' %}" role="menuitem"
+                class="admin-sidebar-link {% if url_name == 'admin_mail_settings' %}active{% endif %}"
+                {% if url_name == 'admin_mail_settings' %}aria-current="page"{% endif %}>
+                <span class="admin-sidebar-icon {% if url_name == 'admin_mail_settings' %}active{% endif %}">
+                    <i class="bi bi-gear"></i>
+                </span>
+                <span>Settings</span>
+            </a>
+            {% endwith %}
         </nav>
-        <div class="p-4 border-t border-surface-border pb-safe">
-            <div class="flex items-center gap-3 p-2 rounded-lg bg-surface">
-                <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
-                    {% if user_avatar_url %}<img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover" onerror="this.src='/static/icons/user-placeholder.png'">{% else %}{{ request.user.first_name|first|upper }}{% endif %}
+        <div class="p-3 border-t border-surface-border bg-surface-soft/40">
+            <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-white border border-surface-border shadow-xs">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0 ring-1 ring-primary/20">
+                    {% if user_avatar_url %}<img src="{{ user_avatar_url|default:'/static/icons/user-placeholder.png' }}" alt="" class="w-full h-full object-cover rounded-lg" onerror="this.src='/static/icons/user-placeholder.png'">{% else %}{{ request.user.first_name|first|upper }}{% endif %}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold truncate">{{ request.user.first_name }}</p>
-                    <p class="text-xs text-text-muted">{{ request.user.get_role_display }}</p>
+                    <p class="text-sm font-semibold truncate text-text-strong leading-tight">{{ request.user.first_name }}</p>
+                    <p class="text-[10px] text-text-muted leading-tight">{{ request.user.get_role_display }}</p>
                 </div>
-                <a href="{% url 'admin_profile' %}" class="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-canvas" title="Profile"><i class="bi bi-person"></i></a>
-                <a href="{% url 'auth_logout' %}" class="w-11 h-11 flex items-center justify-center rounded-lg text-red-600 hover:bg-red-50"><i class="bi bi-power"></i></a>
+                <a href="{% url 'admin_profile' %}" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-soft text-text-muted hover:text-text-strong transition-colors flex-shrink-0" title="Profile" aria-label="Profile settings"><i class="bi bi-person text-xs"></i></a>
+                <a href="{% url 'auth_logout' %}" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-danger-text transition-colors flex-shrink-0" aria-label="Logout"><i class="bi bi-power text-xs"></i></a>
             </div>
         </div>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-surface-border bg-canvas-alt z-30 pt-safe lg:pt-0" style="position: relative !important; overflow: visible !important;">
-            <div class="flex items-center gap-4 flex-1">
-                <button type="button" @click="sidebarOpen=!sidebarOpen" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg border border-surface-border"><i class="bi bi-list text-xl"></i></button>
-                <div class="flex items-center mr-2">
+        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-surface-border bg-white/80 backdrop-blur-sm z-30 pt-safe lg:pt-0 admin-header">
+            <div class="flex items-center gap-3 flex-1">
+                <button type="button" @click="sidebarOpen=!sidebarOpen" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-surface-border hover:bg-primary/5 hover:border-primary/30 transition-all" aria-label="Toggle sidebar"><i class="bi bi-list text-xl"></i></button>
+                <div class="flex items-center mr-2 lg:hidden">
                     {% include "partials/site_logo.html" %}
                 </div>
-                <button type="button" @click="searchOpen=true" class="flex items-center justify-center w-10 h-10 rounded-lg border border-surface-border lg:hidden min-h-[44px] min-w-[44px]" aria-label="Search"><i class="bi bi-search"></i></button>
-                <button type="button" @click="searchOpen=true" class="hidden lg:flex items-center gap-3 px-4 py-2 w-80 rounded-lg bg-surface border border-surface-border text-text-muted text-sm hover:border-primary/30 min-h-[44px]">
-                    <i class="bi bi-search"></i><span>Quick search…</span><kbd class="ml-auto text-xs bg-canvas px-2 py-0.5 rounded border border-surface-border">⌘K</kbd>
+                <button type="button" @click="searchOpen=true" class="flex items-center justify-center w-10 h-10 rounded-xl border border-surface-border lg:hidden min-h-[44px] min-w-[44px] hover:bg-primary/5 hover:border-primary/30 transition-all" aria-label="Search"><i class="bi bi-search"></i></button>
+                <button type="button" @click="searchOpen=true" class="hidden lg:flex items-center gap-3 px-4 py-2 w-80 rounded-xl bg-surface border border-surface-border text-text-muted text-sm hover:border-primary/30 hover:shadow-sm transition-all min-h-[44px]">
+                    <i class="bi bi-search text-primary/60"></i><span>Quick search…</span><kbd class="ml-auto text-[10px] font-medium bg-canvas px-1.5 py-0.5 rounded-md border border-surface-border text-text-muted">⌘K</kbd>
                 </button>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="{% url 'public_index' %}" target="_blank" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border border-surface-border hover:bg-surface"><i class="bi bi-box-arrow-up-right"></i> Site</a>
+            <div class="flex items-center gap-1.5">
+                <a href="{% url 'public_index' %}" target="_blank" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border border-surface-border text-text-muted hover:text-text-primary hover:bg-primary/5 hover:border-primary/30 transition-all"><i class="bi bi-box-arrow-up-right text-xs"></i> Site</a>
                 {% include "partials/notifications_bell.html" with bell_uid="admin" %}
+                <div class="relative" @click.outside="userMenuOpen = false; themeMenuOpen = false">
+                    <button @click="userMenuOpen = !userMenuOpen" class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm hover:bg-primary/20 transition-all min-h-[44px] min-w-[44px] ring-1 ring-primary/20" aria-label="User menu" aria-haspopup="true" :aria-expanded="userMenuOpen">
+                        {% if user_avatar_url %}<img src="{{ user_avatar_url }}" alt="" class="w-full h-full object-cover rounded-xl">{% else %}{{ request.user.first_name|first|upper }}{% endif %}
+                    </button>
+                    <div x-show="userMenuOpen" x-cloak x-transition class="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white border border-surface-border shadow-xl z-[200] overflow-hidden">
+                        <div class="p-4 border-b border-surface-border">
+                            <p class="text-sm font-bold text-text-strong truncate">{{ request.user.display_name }}</p>
+                            <p class="text-xs text-text-muted truncate mt-0.5">{{ request.user.email }}</p>
+                            <span class="inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">{{ request.user.get_role_display }}</span>
+                        </div>
+                        <div class="p-1.5">
+                            <a href="{% url 'admin_profile' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-primary/5 hover:text-text-strong transition-colors">
+                                <i class="bi bi-person"></i> Profile
+                            </a>
+                            <button @click="themeMenuOpen = !themeMenuOpen; userMenuOpen = true" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-primary/5 hover:text-text-strong transition-colors text-left">
+                                <i class="bi bi-palette"></i> Theme
+                                <i class="bi bi-chevron-down ml-auto text-xs"></i>
+                            </button>
+                            <div x-show="themeMenuOpen" x-cloak class="ml-8 mt-1 space-y-0.5">
+                                <button @click="setTheme('printedge-default')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-text-secondary hover:bg-primary/5 hover:text-text-strong transition-colors text-left">
+                                    <span class="w-3 h-3 rounded-full border border-surface-border shrink-0" style="background:#4f46e5"></span>
+                                    <span :class="currentTheme === 'printedge-default' ? 'text-text-strong' : ''">Default</span>
+                                    <span x-show="currentTheme === 'printedge-default'" class="ml-auto text-primary"><i class="bi bi-check text-xs"></i></span>
+                                </button>
+                                <button @click="setTheme('campus-fresh')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-text-secondary hover:bg-primary/5 hover:text-text-strong transition-colors text-left">
+                                    <span class="w-3 h-3 rounded-full border border-surface-border shrink-0" style="background:#0d9488"></span>
+                                    <span :class="currentTheme === 'campus-fresh' ? 'text-text-strong' : ''">Campus Fresh</span>
+                                    <span x-show="currentTheme === 'campus-fresh'" class="ml-auto text-primary"><i class="bi bi-check text-xs"></i></span>
+                                </button>
+                            </div>
+                            <hr class="my-1 border-surface-border">
+                            <a href="{% url 'auth_logout' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-danger-text hover:bg-red-50 transition-colors">
+                                <i class="bi bi-power"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
         <div class="absolute top-20 right-4 z-50 flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4">
             {% for msg in messages %}
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="pointer-events-auto card p-4 flex items-center gap-3 animate-fade-in">
-                <i class="bi {% if msg.tags == 'error' %}bi-x-circle text-red-500{% elif msg.tags == 'success' %}bi-check-circle text-emerald-500{% else %}bi-info-circle text-primary{% endif %} text-xl"></i>
+                <i class="bi {% if msg.tags == 'error' %}bi-x-circle text-danger-text{% elif msg.tags == 'success' %}bi-check-circle text-success-text{% else %}bi-info-circle text-primary{% endif %} text-xl"></i>
                 <p class="text-sm font-semibold flex-1">{{ msg }}</p>
-                <button type="button" @click="show = false" class="text-gray-400"><i class="bi bi-x"></i></button>
+                <button type="button" @click="show = false" class="text-text-muted"><i class="bi bi-x"></i></button>
             </div>
             {% endfor %}
         </div>
@@ -151,6 +385,145 @@
 </div>
 
 <style>
+/* === Admin Sidebar Links === */
+.admin-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.15s ease;
+    color: var(--pe-color-text-muted, #64748b);
+    text-decoration: none;
+    min-height: 2.5rem;
+}
+.admin-sidebar-link:hover {
+    background: var(--pe-color-primary-soft, #eef2ff);
+    color: var(--pe-color-text-strong, #0f172a);
+}
+.admin-sidebar-link.active {
+    background: var(--pe-color-primary-soft, #eef2ff);
+    color: var(--pe-color-primary, #4f46e5);
+}
+.admin-sidebar-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+    background: var(--pe-color-surface-soft, #f1f5f9);
+    color: var(--pe-color-text-muted, #64748b);
+    transition: all 0.15s ease;
+}
+.admin-sidebar-link:hover .admin-sidebar-icon {
+    background: var(--pe-color-surface, #ffffff);
+}
+.admin-sidebar-icon.active {
+    background: var(--pe-color-primary, #4f46e5);
+    color: #ffffff;
+}
+
+/* === Mobile Bottom Nav === */
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 3.5rem;
+    min-height: 2.75rem;
+    justify-content: center;
+    border-radius: 0.75rem;
+    transition: all 0.15s ease;
+    color: var(--pe-color-text-muted, #94a3b8);
+    text-decoration: none;
+    position: relative;
+}
+.mobile-nav-item.active {
+    color: var(--pe-color-primary, #4f46e5);
+}
+.mobile-nav-item:active {
+    transform: scale(0.95);
+}
+.mobile-nav-icon-wrap {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    position: relative;
+}
+.mobile-nav-item.active .mobile-nav-icon-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -0.375rem;
+    border-radius: 0.5rem;
+    background: var(--pe-color-primary-soft, #eef2ff);
+    z-index: -1;
+}
+.mobile-nav-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+}
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--pe-color-border, #e2e8f0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* === Focus-visible rings for keyboard navigation === */
+:focus-visible {
+    outline: 2px solid var(--pe-color-primary, #4f46e5);
+    outline-offset: 2px;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    border-radius: 4px;
+}
+
+/* === Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* === Admin Layout Utility Classes === */
+.sidebar-nav {
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+.admin-header {
+    position: relative !important;
+    overflow: visible !important;
+}
+/* === Sidebar Navigation === */
+aside nav a { text-decoration: none; }
+aside nav a span.bg-surface-soft { transition: background .15s, color .15s; }
+aside nav a:hover span.bg-surface-soft { background: var(--pe-color-surface) !important; color: var(--pe-color-text-strong) !important; }
+aside { border-right: 1px solid var(--pe-color-border); }
 /* Critical dropdown fixes - prevent overflow clipping and ensure proper stacking */
 .premium-card, .card, .card > div {
     overflow: visible !important;
@@ -158,47 +531,27 @@
 [x-show] {
     overflow: visible !important;
 }
-.absolute {
-    z-index: 1050 !important;
-    max-height: 300px !important;
-}
-#notification-dropdown, #searchResults {
-    z-index: 1050 !important;
-}
-#notification-dropdown {
-    max-height: 288px !important;
-    overflow-y: auto !important;
-}
-#searchResults {
-    max-height: 60vh !important;
-    overflow-y: auto !important;
-}
-/* Ensure dropdowns can escape any container */
 .dropdown-escape {
     overflow: visible !important;
 }
 
-/* === Global Select/Dropdown Light Theme === */
+/* === Global Select/Dropdown === */
 select {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    border-color: #e2e8f0 !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2364748b' viewBox='0 0 20 20'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E") !important;
-    background-position: right 0.75rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 1.25em 1.25em !important;
+    background-color: var(--pe-color-surface) !important;
+    color: var(--pe-color-text-strong) !important;
+    border-color: var(--pe-color-border) !important;
     padding-right: 2.5rem !important;
 }
 select option {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
+    background-color: var(--pe-color-surface) !important;
+    color: var(--pe-color-text-strong) !important;
 }
 select:focus, .form-select:focus {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+    border-color: var(--pe-color-primary) !important;
+    box-shadow: 0 0 0 2px var(--pe-color-focus) !important;
 }
 .bg-white\/5, .bg-white\/10, .bg-slate-800\/50, .bg-slate-800\/70 {
-    background-color: #f1f5f9 !important;
+    background-color: var(--pe-color-surface-soft) !important;
 }
 </style>
 

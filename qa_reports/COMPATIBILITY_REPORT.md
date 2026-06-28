@@ -1,5 +1,10 @@
 # Print-Edge Compatibility Report
 
+> Browser, device, and network coverage matrix.  
+> Last updated: 2026-06-24
+
+---
+
 ## Test matrix (code + template audit)
 
 | Area | Coverage | Result |

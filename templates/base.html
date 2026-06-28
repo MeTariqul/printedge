@@ -20,28 +20,56 @@
 <body class="min-h-screen flex flex-col bg-canvas text-text" x-data="{ mobileMenu: false }" :class="mobileMenu ? 'overflow-hidden' : ''">
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <div x-show="mobileMenu" @click="mobileMenu = false" class="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm md:hidden" x-cloak x-transition></div>
+    <div x-show="mobileMenu" @click="mobileMenu = false" class="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm md:hidden" x-cloak x-transition></div>
     <aside x-cloak :class="mobileMenu ? 'translate-x-0' : '-translate-x-full'"
-           class="fixed inset-y-0 left-0 z-[70] w-80 max-w-[88vw] transform transition-transform duration-300 md:hidden flex flex-col border-r border-surface-border bg-canvas-alt shadow-xl">
+           class="fixed inset-y-0 left-0 z-[70] w-80 max-w-[85vw] transform transition-transform duration-300 ease-out md:hidden flex flex-col bg-white shadow-2xl">
         <div class="flex items-center justify-between px-5 h-16 border-b border-surface-border pt-safe">
             {% include "partials/site_logo.html" %}
-            <button type="button" @click="mobileMenu = false" class="w-11 h-11 rounded-lg border border-surface-border text-text" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+            <button type="button" @click="mobileMenu = false" class="w-11 h-11 rounded-xl border border-surface-border text-text-muted hover:text-text-primary hover:bg-primary/5 hover:border-primary/30 transition-all flex items-center justify-center" aria-label="Close"><i class="bi bi-x-lg text-sm"></i></button>
         </div>
-        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
-            <a href="{% url 'public_index' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Home</a>
-            <a href="{% url 'public_services_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Services</a>
-            <a href="{% url 'public_contact_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Contact</a>
+        <div class="flex-1 overflow-y-auto p-4 space-y-0.5">
+            <div class="px-3 pb-2">
+                <span class="text-[11px] font-semibold uppercase tracking-widest text-text-muted/60">Navigate</span>
+            </div>
+            <a href="{% url 'public_index' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-text-muted hover:text-text-primary hover:bg-primary/5 transition-all min-h-[44px] {% if request.resolver_match.url_name == 'public_index' %}text-primary bg-primary/5{% endif %}">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center {% if request.resolver_match.url_name == 'public_index' %}bg-primary text-white{% else %}bg-surface-soft text-text-muted{% endif %} text-sm"><i class="bi bi-house-door-fill"></i></span> Home
+            </a>
+            <a href="{% url 'public_services_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-text-muted hover:text-text-primary hover:bg-primary/5 transition-all min-h-[44px] {% if request.resolver_match.url_name == 'public_services_page' %}text-primary bg-primary/5{% endif %}">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center {% if request.resolver_match.url_name == 'public_services_page' %}bg-primary text-white{% else %}bg-surface-soft text-text-muted{% endif %} text-sm"><i class="bi bi-briefcase-fill"></i></span> Services
+            </a>
+            <a href="{% url 'public_contact_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-text-muted hover:text-text-primary hover:bg-primary/5 transition-all min-h-[44px] {% if request.resolver_match.url_name == 'public_contact_page' %}text-primary bg-primary/5{% endif %}">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center {% if request.resolver_match.url_name == 'public_contact_page' %}bg-primary text-white{% else %}bg-surface-soft text-text-muted{% endif %} text-sm"><i class="bi bi-envelope-fill"></i></span> Contact
+            </a>
             {% if user.is_authenticated %}
-            <a href="{% url 'user_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Dashboard</a>
-            <a href="{% url 'user_profile' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]">Profile</a>
+            <hr class="my-3 border-surface-border">
+            <div class="px-3 pb-2">
+                <span class="text-[11px] font-semibold uppercase tracking-widest text-text-muted/60">Account</span>
+            </div>
+            <a href="{% if user.is_admin_user %}{% url 'admin_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-text-muted hover:text-text-primary hover:bg-primary/5 transition-all min-h-[44px]">
+                <span class="w-8 h-8 rounded-lg bg-surface-soft text-text-muted flex items-center justify-center text-sm"><i class="bi bi-grid-fill"></i></span> Dashboard
+            </a>
+            <a href="{% url 'user_profile' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-text-muted hover:text-text-primary hover:bg-primary/5 transition-all min-h-[44px]">
+                <span class="w-8 h-8 rounded-lg bg-surface-soft text-text-muted flex items-center justify-center text-sm"><i class="bi bi-person-fill"></i></span> Profile
+            </a>
             {% if user.is_admin_user %}
-            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold hover:bg-surface min-h-[44px]"><i class="bi bi-grid-fill"></i> Admin</a>
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-text-muted hover:text-text-primary hover:bg-primary/5 transition-all min-h-[44px]">
+                <span class="w-8 h-8 rounded-lg bg-surface-soft text-text-muted flex items-center justify-center text-sm"><i class="bi bi-shield-fill"></i></span> Admin Panel
+            </a>
             {% endif %}
-            <a href="{% url 'auth_logout' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-danger-text min-h-[44px]">Logout</a>
+            <hr class="my-3 border-surface-border">
+            <a href="{% url 'auth_logout' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-danger-text hover:bg-red-50 transition-all min-h-[44px]">
+                <span class="w-8 h-8 rounded-lg bg-red-50 text-danger-text flex items-center justify-center text-sm"><i class="bi bi-box-arrow-right"></i></span> Logout
+            </a>
             {% else %}
-            <a href="{% url 'auth_login_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold min-h-[44px]">Login</a>
+            <hr class="my-3 border-surface-border">
+            <a href="{% url 'auth_login_page' %}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-primary hover:bg-primary/5 transition-all min-h-[44px]">
+                <span class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm"><i class="bi bi-box-arrow-in-right"></i></span> Login
+            </a>
             {% endif %}
-        </nav>
+        </div>
+        <div class="p-4 border-t border-surface-border bg-surface-soft/50">
+            <p class="text-xs text-text-muted text-center">PrintEdge &copy; {% now "Y" %}</p>
+        </div>
     </aside>
 
     {% include "partials/header_public.html" %}
@@ -56,8 +84,9 @@
         {% endfor %}
     </div>
 
-    <main id="main-content" class="flex-grow md:pb-8" tabindex="-1">{% block content %}{% endblock %}</main>
+    <main id="main-content" class="flex-grow md:pb-8 pb-20 md:pb-8" tabindex="-1">{% block content %}{% endblock %}</main>
     
+    {% include "mobile/bottom_nav.html" %}
     {% include "partials/footer_public.html" %}
 
     {% block extra_js %}

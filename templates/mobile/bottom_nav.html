@@ -1,48 +1,98 @@
 {% load static %}
-{% comment %}Mobile Bottom Navigation Bar - included in base.html{% endcomment %}
-<nav class="mobile-bottom-nav">
-    <div class="flex justify-start h-16 items-center px-4 space-x-6 overflow-x-auto">
-        <a href="{% url 'public_index' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'public_index' or request.resolver_match.url_name == 'user_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
-            <i class="bi bi-house-door-fill nav-icon"></i>Home
+<nav class="mobile-bottom-nav md:hidden" aria-label="Mobile navigation">
+    <div class="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+        <a href="{% url 'public_index' %}"
+           class="mobile-nav-item {% if request.resolver_match.url_name == 'public_index' or request.resolver_match.url_name == 'user_dashboard' %}active{% endif %}">
+            <span class="mobile-nav-icon-wrap">
+                <i class="bi bi-house-door-fill"></i>
+            </span>
+            <span class="mobile-nav-label">Home</span>
         </a>
+
         {% if user.is_authenticated %}
             {% if not user.is_admin_user %}
-                <a href="{% url 'public_services_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'public_services_page' or request.resolver_match.url_name == 'user_new_order' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-briefcase-fill nav-icon"></i>Order
+                <a href="{% url 'user_new_order' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'user_new_order' or request.resolver_match.url_name == 'public_services_page' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </span>
+                    <span class="mobile-nav-label">New Order</span>
                 </a>
-                <a href="{% url 'user_orders' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_orders' or request.resolver_match.url_name == 'user_order_detail' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-receipt nav-icon"></i>Orders
+                <a href="{% url 'user_orders' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'user_orders' or request.resolver_match.url_name == 'user_order_detail' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-receipt"></i>
+                    </span>
+                    <span class="mobile-nav-label">Orders</span>
                 </a>
-                <a href="{% url 'user_notifications' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center relative {% if request.resolver_match.url_name == 'user_notifications' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-bell-fill nav-icon"></i>
-                    {% if unread_count > 0 %}
-                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center">{{ unread_count|default:'0' }}</span>
-                    {% endif %}
-                    <span class="opacity-0">Notifications</span>
+                <a href="{% url 'user_notifications' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'user_notifications' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap relative">
+                        <i class="bi bi-bell-fill"></i>
+                        {% if unread_count > 0 %}
+                        <span class="absolute -top-1 -right-1.5 w-4.5 h-4.5 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-sm border-2 border-white">{{ unread_count|default:'0' }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="mobile-nav-label">Alerts</span>
                 </a>
-                <a href="{% url 'user_profile' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center px-2 {% if request.resolver_match.url_name == 'user_profile' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-person-fill nav-icon"></i>Profile
+                <a href="{% url 'user_profile' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                    <span class="mobile-nav-label">Profile</span>
                 </a>
             {% else %}
-                <a href="{% url 'admin_dashboard' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'admin_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-grid-fill nav-icon"></i>Dashboard
+                <a href="{% url 'admin_dashboard' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-grid-fill"></i>
+                    </span>
+                    <span class="mobile-nav-label">Dashboard</span>
                 </a>
-                <a href="{% url 'admin_orders' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'admin_orders' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-list-check nav-icon"></i>Orders
+                <a href="{% url 'admin_orders' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-list-check"></i>
+                    </span>
+                    <span class="mobile-nav-label">Orders</span>
                 </a>
-                <a href="{% url 'admin_mail_dashboard' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'admin_mail_dashboard' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-envelope-paper nav-icon"></i>Mail
+                <a href="{% url 'admin_walkin_order' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'admin_walkin_order' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-plus-lg"></i>
+                    </span>
+                    <span class="mobile-nav-label">POS</span>
                 </a>
-                <a href="{% url 'user_profile' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center {% if request.resolver_match.url_name == 'user_profile' %}text-primary{% else %}text-text-muted{% endif %}">
-                    <i class="bi bi-person-gear nav-icon"></i>Profile
+                <a href="{% url 'user_profile' %}"
+                   class="mobile-nav-item {% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">
+                    <span class="mobile-nav-icon-wrap">
+                        <i class="bi bi-person-gear"></i>
+                    </span>
+                    <span class="mobile-nav-label">Profile</span>
                 </a>
             {% endif %}
         {% else %}
-                <a href="{% url 'public_services_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center text-text-muted">
-                    <i class="bi bi-tags-fill nav-icon"></i>Services
-                </a>
-            <a href="{% url 'auth_login_page' %}" class="flex flex-col items-center text-xs min-h-[44px] min-w-[44px] justify-center text-text-muted">
-                <i class="bi bi-box-arrow-in-right nav-icon"></i>Login
+            <a href="{% url 'public_services_page' %}"
+               class="mobile-nav-item {% if request.resolver_match.url_name == 'public_services_page' %}active{% endif %}">
+                <span class="mobile-nav-icon-wrap">
+                    <i class="bi bi-briefcase-fill"></i>
+                </span>
+                <span class="mobile-nav-label">Services</span>
+            </a>
+            <a href="{% url 'auth_login_page' %}"
+               class="mobile-nav-item {% if request.resolver_match.url_name == 'auth_login_page' %}active{% endif %}">
+                <span class="mobile-nav-icon-wrap">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </span>
+                <span class="mobile-nav-label">Login</span>
+            </a>
+            <a href="{% url 'auth_register_page' %}"
+               class="mobile-nav-item {% if request.resolver_match.url_name == 'auth_register_page' %}active{% endif %}">
+                <span class="mobile-nav-icon-wrap">
+                    <i class="bi bi-person-plus-fill"></i>
+                </span>
+                <span class="mobile-nav-label">Sign Up</span>
             </a>
         {% endif %}
     </div>

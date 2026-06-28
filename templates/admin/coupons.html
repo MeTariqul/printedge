@@ -3,22 +3,22 @@
 {% block breadcrumb %}Coupons{% endblock %}
 
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-    <h1 class="text-2xl font-semibold">Coupons & Discounts</h1>
+<div class="pe-page-head">
+    <h1 class="text-2xl font-bold text-text-primary">Coupons & Discounts</h1>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- List -->
     <div class="lg:col-span-2 space-y-4">
         {% for coupon in coupons %}
-        <div class="card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 {% if not coupon.is_active %}opacity-60{% endif %}">
+        <div class="border border-surface-border bg-surface rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 {% if not coupon.is_active %}opacity-60{% endif %}">
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <h3 class="font-bold text-lg text-primary">{{ coupon.code }}</h3>
                     {% if coupon.is_active and coupon.is_valid %}
-                        <span class="badge bg-success/10 text-success-text">Active</span>
+                        <span class="badge bg-emerald-100 text-success-text">Active</span>
                     {% else %}
-                        <span class="badge bg-danger/10 text-danger-text">Inactive</span>
+                        <span class="badge bg-red-100 text-danger-text">Inactive</span>
                     {% endif %}
                 </div>
                 <p class="text-sm text-text-muted">
@@ -53,13 +53,13 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="coupon_id" value="{{ coupon.pk }}">
-                    <button class="text-danger-text hover:text-red-700 p-2"><i class="bi bi-trash"></i></button>
+                    <button class="text-danger-text hover:text-danger-text/80 p-2"><i class="bi bi-trash"></i></button>
                 </form>
                 {% endif %}
             </div>
         </div>
         {% empty %}
-        <div class="card p-8 text-center text-text-muted">
+        <div class="border border-surface-border bg-surface rounded-2xl p-8 text-center text-text-muted">
             <i class="bi bi-ticket-perforated text-4xl mb-3 block opacity-50"></i>
             <p>No coupons created yet.</p>
         </div>
@@ -67,7 +67,7 @@
     </div>
 
     <!-- Create form -->
-    <div class="card p-6 h-fit sticky top-24">
+    <div class="border border-surface-border bg-surface rounded-2xl p-6 h-fit sticky top-24">
         <h3 class="font-semibold mb-4">Create New Coupon</h3>
         <form method="post" class="space-y-4">
             {% csrf_token %}
@@ -75,41 +75,41 @@
             
             <div>
                 <label class="block text-xs text-text-muted mb-1">Coupon Code</label>
-                <input type="text" name="code" required class="form-input uppercase" placeholder="e.g. SUMMER20">
+                <input type="text" name="code" required class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm uppercase focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. SUMMER20">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-text-muted mb-1">Type</label>
-                    <select name="discount_type" class="form-input">
+                    <select name="discount_type" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                         <option value="percentage">Percentage (%)</option>
                         <option value="fixed">Fixed Amount (৳)</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs text-text-muted mb-1">Value</label>
-                    <input type="number" name="discount_value" required step="0.01" min="0" class="form-input" placeholder="e.g. 10">
+                    <input type="number" name="discount_value" required step="0.01" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" placeholder="e.g. 10">
                 </div>
             </div>
             
             <div>
                 <label class="block text-xs text-text-muted mb-1">Min Order Amount (৳) [Optional]</label>
-                <input type="number" name="min_order_amount" min="0" step="0.01" class="form-input">
+                <input type="number" name="min_order_amount" min="0" step="0.01" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
             </div>
             
             <div>
                 <label class="block text-xs text-text-muted mb-1">Max Uses (Leave blank for unlimited)</label>
-                <input type="number" name="max_uses" min="0" class="form-input">
+                <input type="number" name="max_uses" min="0" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
             </div>
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs text-text-muted mb-1">Valid From</label>
-                    <input type="date" name="valid_from" class="form-input">
+                    <input type="date" name="valid_from" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-text-muted mb-1">Valid To</label>
-                    <input type="date" name="valid_to" class="form-input">
+                    <input type="date" name="valid_to" class="w-full px-3 py-2 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none">
                 </div>
             </div>
             
@@ -143,7 +143,7 @@ function editCoupon(id, code, type, value, minAmt, maxUses, validFrom, validTo) 
     const submitBtn = form.querySelector('button[type=submit]');
     submitBtn.textContent = 'Update Coupon';
     submitBtn.classList.remove('btn-primary');
-    submitBtn.classList.add('bg-amber-600', 'text-white', 'hover:bg-amber-700');
+    submitBtn.classList.add('btn-warning');
     
     if (!document.getElementById('cancel-edit-btn')) {
         const cancelBtn = document.createElement('button');
@@ -157,7 +157,7 @@ function editCoupon(id, code, type, value, minAmt, maxUses, validFrom, validTo) 
             if (idField) idField.remove();
             submitBtn.textContent = 'Create Coupon';
             submitBtn.classList.add('btn-primary');
-            submitBtn.classList.remove('bg-amber-600', 'text-white', 'hover:bg-amber-700');
+            submitBtn.classList.remove('btn-warning');
             this.remove();
         };
         form.appendChild(cancelBtn);

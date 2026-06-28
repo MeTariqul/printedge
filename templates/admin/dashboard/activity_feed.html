@@ -1,21 +1,36 @@
-<div class="premium-card rounded-2xl overflow-hidden">
-  <div class="p-5 md:p-6 border-b border-surface-border">
-    <h3 class="text-lg font-bold text-text-primary">Recent Activity</h3>
-    <p class="text-xs text-text-muted font-medium mt-1">Latest 5 events</p>
+<div class="dash-card">
+  <div class="dash-card-header">
+    <div>
+      <h3 class="text-base font-bold text-text-strong">Recent Activity</h3>
+      <p class="text-xs text-text-muted mt-0.5">Latest events</p>
+    </div>
+    <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-success-text/10 text-success-text border border-success-text/20">
+      <span class="w-1.5 h-1.5 rounded-full bg-success-text animate-pulse"></span> Live
+    </span>
   </div>
-  <div class="p-4 md:p-6 max-h-[520px] overflow-y-auto space-y-3">
+  <div class="p-3 max-h-[500px] overflow-y-auto space-y-0.5">
     {% for ev in events %}
-    <a href="{{ ev.link|default:'#' }}" class="flex items-start gap-3 p-3 rounded-xl bg-surface/60 hover:bg-surface transition-colors group">
-      <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
-        <i class="{{ ev.icon }} text-sm text-primary"></i>
+    <a href="{{ ev.link|default:'#' }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-primary/5 transition-all duration-150 group">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm border
+        {% if ev.icon == 'bi bi-check-circle' or 'paid' in ev.text|lower %}bg-success-text/10 text-success-text border-success-text/20
+        {% elif 'warning' in ev.text|lower or 'error' in ev.text|lower %}bg-warning-text/10 text-warning-text border-warning-text/20
+        {% elif 'fail' in ev.text|lower %}bg-danger-text/10 text-danger-text border-danger-text/20
+        {% else %}bg-primary/10 text-primary border-primary/20{% endif %}">
+        <i class="{{ ev.icon|default:'bi bi-receipt' }}"></i>
       </div>
       <div class="min-w-0 flex-1">
-        <p class="text-sm text-text-primary font-medium leading-snug">{{ ev.text }}</p>
-        <p class="text-[11px] text-text-muted mt-1 font-medium">{{ ev.time }}</p>
+        <p class="text-sm text-text-primary font-semibold leading-snug group-hover:text-primary transition-colors">{{ ev.text }}</p>
+        <p class="text-[11px] text-text-muted mt-0.5 font-medium">{{ ev.time }}</p>
       </div>
+      <i class="bi bi-chevron-right text-text-muted/40 text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity"></i>
     </a>
     {% empty %}
-    <p class="text-sm text-text-muted text-center py-6">No recent activity</p>
+    <div class="text-center py-10">
+      <div class="w-14 h-14 rounded-2xl bg-surface-soft flex items-center justify-center mx-auto mb-3">
+        <i class="bi bi-clock-history text-2xl text-text-muted/40"></i>
+      </div>
+      <p class="text-sm font-semibold text-text-muted">No recent activity</p>
+    </div>
     {% endfor %}
   </div>
 </div>

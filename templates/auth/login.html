@@ -1,79 +1,502 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Sign In | Print-Edge{% endblock %}
 
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js_inline %}
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif !important; }
+
+  .auth-split {
+    display: flex;
+    min-height: calc(100vh - 4rem);
+    position: relative;
+    z-index: 2;
+  }
+
+  .auth-brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 45%;
+    padding: 3.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .auth-brand::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, var(--pe-color-primary, #4f46e5) 0%, var(--pe-color-primary-hover, #4338ca) 50%, var(--pe-color-accent, #0ea5e9) 100%);
+  }
+  .auth-brand::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(ellipse 80% 60% at 20% 80%, rgba(255,255,255,.15) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 20%, rgba(255,255,255,.08) 0%, transparent 60%);
+  }
+
+  .brand-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .brand-circle-1 {
+    width: 480px; height: 480px;
+    top: -180px; right: -120px;
+    background: radial-gradient(circle, rgba(255,255,255,.10) 0%, transparent 70%);
+    animation: brandFloat 12s ease-in-out infinite alternate;
+  }
+  .brand-circle-2 {
+    width: 320px; height: 320px;
+    bottom: -80px; left: -80px;
+    background: radial-gradient(circle, rgba(255,255,255,.06) 0%, transparent 70%);
+    animation: brandFloat 16s ease-in-out infinite alternate-reverse;
+  }
+  .brand-circle-3 {
+    width: 200px; height: 200px;
+    top: 40%; right: 10%;
+    background: radial-gradient(circle, rgba(255,255,255,.07) 0%, transparent 70%);
+    animation: brandFloat 10s ease-in-out infinite alternate;
+  }
+  @keyframes brandFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(20px, -20px) scale(1.05); }
+  }
+
+  .brand-top {
+    position: relative;
+    z-index: 1;
+  }
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+  }
+  .brand-logo img {
+    height: 36px;
+    width: auto;
+    filter: brightness(0) invert(1);
+  }
+  .brand-logo span {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: #fff;
+    letter-spacing: -.02em;
+  }
+
+  .brand-content {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    margin-bottom: auto;
+    max-width: 440px;
+  }
+  .brand-content h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #fff;
+    letter-spacing: -.03em;
+    margin-bottom: .75rem;
+  }
+  .brand-content p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,.78);
+    font-weight: 400;
+    margin-bottom: 2rem;
+  }
+
+  .brand-stats {
+    display: flex;
+    gap: 2.5rem;
+  }
+  .brand-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.02em;
+  }
+  .brand-stat-label {
+    font-size: .82rem;
+    color: rgba(255,255,255,.65);
+    margin-top: .15rem;
+  }
+
+  .brand-bottom {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .brand-bottom a {
+    color: rgba(255,255,255,.7);
+    text-decoration: none;
+    font-size: .84rem;
+    font-weight: 500;
+    transition: color .2s;
+  }
+  .brand-bottom a:hover { color: #fff; }
+  .brand-dot { color: rgba(255,255,255,.35); font-size: .5rem; }
+
+  .auth-form-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    background: var(--pe-color-bg, #f8fafc);
+  }
+  .auth-form-container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .auth-form-header {
+    margin-bottom: 2rem;
+  }
+  .auth-form-header h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--pe-color-text-strong, #0f172a);
+    letter-spacing: -.025em;
+    line-height: 1.2;
+  }
+  .auth-form-header p {
+    font-size: .92rem;
+    color: var(--pe-color-text-muted, #64748b);
+    margin-top: .35rem;
+    line-height: 1.5;
+  }
+
+  .auth-form { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; }
+
+  .auth-field { width: 100%; }
+  .auth-field label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--pe-color-text, #475569);
+    margin-bottom: .35rem;
+  }
+  .auth-field input {
+    width: 100%;
+    padding: .75rem 1rem;
+    border: 1.5px solid var(--pe-color-border, #e2e8f0);
+    border-radius: .625rem;
+    background: var(--pe-color-surface, #fff);
+    font-family: inherit;
+    font-size: .92rem;
+    color: var(--pe-color-text, #1e293b);
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  .auth-field input::placeholder { color: var(--pe-color-text-muted, #94a3b8); }
+  .auth-field input:focus {
+    border-color: var(--pe-color-primary, #4f46e5);
+    box-shadow: 0 0 0 3px var(--pe-color-focus, rgba(79,70,229,.18));
+  }
+  .auth-field input.input-error {
+    border-color: var(--pe-status-danger, #ef4444) !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,.15) !important;
+  }
+
+  .password-wrap { position: relative; }
+  .password-wrap input { padding-right: 2.75rem; }
+  .password-toggle {
+    position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--pe-color-text-muted, #94a3b8);
+    padding: .35rem; line-height: 0; border-radius: .375rem;
+    transition: color .2s, background .2s;
+  }
+  .password-toggle:hover { color: var(--pe-color-primary, #4f46e5); background: var(--pe-color-primary-soft, #eef2ff); }
+
+  .auth-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+  .auth-check {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .auth-check input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--pe-color-primary, #4f46e5);
+    border-radius: .25rem;
+    cursor: pointer;
+  }
+  .auth-check-text {
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--pe-color-text, #475569);
+  }
+  .auth-forgot {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--pe-color-primary, #4f46e5);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .auth-forgot:hover { color: var(--pe-color-primary-hover, #4338ca); }
+
+  .auth-submit {
+    width: 100%;
+    padding: .82rem;
+    border: none;
+    border-radius: .625rem;
+    background: var(--pe-color-primary, #4f46e5);
+    color: #fff;
+    font-family: inherit;
+    font-size: .95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    transition: background .2s, box-shadow .2s, transform .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-submit:hover {
+    background: var(--pe-color-primary-hover, #4338ca);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--pe-color-primary, #4f46e5) 40%, transparent);
+  }
+  .auth-submit:active { transform: scale(.98); }
+
+  .auth-submit .spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: pe-spin .7s linear infinite;
+  }
+  .auth-submit.is-loading .spinner { display: block; }
+  .auth-submit.is-loading .btn-label { opacity: .75; }
+  @keyframes pe-spin { to { transform: rotate(360deg); } }
+
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--pe-color-border, #e2e8f0);
+  }
+  .auth-divider span {
+    font-size: .78rem;
+    color: var(--pe-color-text-muted, #94a3b8);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .auth-alt {
+    text-align: center;
+    font-size: .9rem;
+    color: var(--pe-color-text-muted, #64748b);
+  }
+  .auth-alt a {
+    font-weight: 700;
+    color: var(--pe-color-primary, #4f46e5);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .auth-alt a:hover { color: var(--pe-color-primary-hover, #4338ca); }
+
+  .auth-django-messages { width: 100%; }
+  .msg-box {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    padding: .7rem 1rem;
+    border-radius: .625rem;
+    font-size: .84rem;
+    font-weight: 600;
+    width: 100%;
+  }
+  .msg-error {
+    background: color-mix(in srgb, var(--pe-status-danger, #dc2626) 8%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--pe-status-danger, #dc2626) 20%, transparent);
+    color: var(--pe-status-danger, #b91c1c);
+  }
+  .msg-success {
+    background: color-mix(in srgb, var(--pe-status-success, #059669) 8%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--pe-status-success, #059669) 20%, transparent);
+    color: var(--pe-status-success, #15803d);
+  }
+  .msg-box svg { flex-shrink: 0; margin-top: 2px; }
+
+  .auth-fade-in {
+    animation: fadeSlideUp .5s ease both;
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .auth-fade-in-d2 { animation-delay: .1s; }
+  .auth-fade-in-d3 { animation-delay: .2s; }
+  .auth-fade-in-d4 { animation-delay: .3s; }
+
+  @media (max-width: 1023px) {
+    .auth-split { flex-direction: column; min-height: auto; }
+    .auth-brand {
+      width: 100%;
+      padding: 2.5rem 1.5rem 2rem;
+      min-height: auto;
+      border-radius: 0 0 2rem 2rem;
+    }
+    .brand-content h1 { font-size: 1.8rem; }
+    .brand-content p { font-size: .95rem; margin-bottom: 1.5rem; }
+    .brand-stats { gap: 1.5rem; }
+    .brand-stat-value { font-size: 1.25rem; }
+    .brand-bottom { display: none; }
+    .brand-circle-1 { width: 300px; height: 300px; top: -100px; right: -80px; }
+    .brand-circle-2 { width: 200px; height: 200px; bottom: -60px; left: -60px; }
+    .brand-circle-3 { display: none; }
+
+    .auth-form-panel {
+      padding: 1.75rem 1.25rem 2.5rem;
+    }
+    .auth-form-header h2 { font-size: 1.4rem; }
+  }
+
+  @media (max-width: 480px) {
+    .auth-brand { padding: 1.75rem 1.25rem 1.5rem; }
+    .brand-content h1 { font-size: 1.5rem; }
+    .brand-stats { gap: 1rem; flex-wrap: wrap; }
+    .auth-form-panel { padding: 1.5rem 1rem 2rem; }
+    .auth-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/10 blur-[120px] pointer-events-none z-0"></div>
-<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none z-0"></div>
+<div class="auth-split">
+  <div class="auth-brand">
+    <div class="brand-circle brand-circle-1"></div>
+    <div class="brand-circle brand-circle-2"></div>
+    <div class="brand-circle brand-circle-3"></div>
 
-<div class="flex-grow flex items-center justify-center px-4 py-12 relative z-10 min-h-[calc(100vh-8rem)]">
-    <div class="w-full max-w-md animate-fade-in">
-
-        <div class="text-center mb-8">
-            <div class="mx-auto mb-6 flex justify-center">
-                {% include "partials/site_logo.html" %}
-            </div>
-            <h1 class="text-3xl font-display font-bold text-text-primary mb-2">Welcome Back</h1>
-            <p class="text-text-muted font-medium">Enter your credentials to access your account</p>
-        </div>
-
-        <div class="premium-card rounded-3xl p-8 shadow-xl">
-            <form method="post" class="space-y-6">
-                {% csrf_token %}
-
-                <div>
-                    <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Email Address</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <i class="bi bi-envelope text-text-muted"></i>
-                        </div>
-                        <input type="email" name="email" required autocomplete="email" autofocus
-                               class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white border border-surface-border text-text-primary placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors outline-none font-medium"
-                               placeholder="student@g.bracu.ac.bd">
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider">Password</label>
-                        <a href="{% url 'password_reset' %}" class="text-xs font-bold text-primary hover:text-primary-dark">Forgot password?</a>
-                    </div>
-                    <div class="relative" x-data="{ show: false }">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <i class="bi bi-lock text-text-muted"></i>
-                        </div>
-                        <input :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password"
-                               class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white border border-surface-border text-text-primary placeholder-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors outline-none font-medium"
-                               placeholder="••••••••">
-                        <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-text-muted hover:text-primary transition-colors">
-                            <i class="bi" :class="show ? 'bi-eye-slash' : 'bi-eye'"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center">
-                    <label class="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-surface-border text-primary focus:ring-primary">
-                        <span class="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">Keep me signed in</span>
-                    </label>
-                </div>
-
-                <button type="submit" class="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-purple-600 hover:from-primary-dark hover:to-purple-500 shadow-xl shadow-primary/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
-                    <i class="bi bi-box-arrow-in-right text-lg"></i>
-                    Sign In
-                </button>
-            </form>
-
-            <div class="mt-8 text-center border-t border-surface-border pt-6">
-                <p class="text-sm text-text-muted font-medium">
-                    Don't have an account?
-                    <a href="{% url 'auth_register_page' %}" class="text-primary hover:text-primary-dark font-bold ml-1">Create one →</a>
-                </p>
-                <p class="text-xs text-text-muted mt-4">
-                    <a href="{% url 'auth_verify_pending' %}" class="text-text-muted hover:text-primary">Resend verification email</a>
-                </p>
-            </div>
-        </div>
-
+    <div class="brand-top">
+      <div class="brand-logo">
+        <img src="{% static 'icons/logo.svg' %}" alt="PrintEdge" onerror="this.src='{% static 'icons/logo.png' %}'">
+        <span>PrintEdge</span>
+      </div>
     </div>
+
+    <div class="brand-content auth-fade-in auth-fade-in-d2">
+      <h1>Print smarter,<br>not harder.</h1>
+      <p>Upload documents, get instant quotes, and track your orders — all in one place. Campus printing made effortless.</p>
+      <div class="brand-stats">
+        <div>
+          <div class="brand-stat-value">10K+</div>
+          <div class="brand-stat-label">Orders Completed</div>
+        </div>
+        <div>
+          <div class="brand-stat-value">99%</div>
+          <div class="brand-stat-label">On-Time Delivery</div>
+        </div>
+        <div>
+          <div class="brand-stat-value">4.9★</div>
+          <div class="brand-stat-label">User Rating</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-bottom">
+      <a href="{% url 'public_contact_page' %}">Contact</a>
+      <span class="brand-dot">●</span>
+      <a href="{% url 'public_services_page' %}">Services</a>
+      <span class="brand-dot">●</span>
+      <a href="{% url 'public_index' %}">Home</a>
+    </div>
+  </div>
+
+  <div class="auth-form-panel">
+    <div class="auth-form-container">
+      <div class="auth-form-header auth-fade-in auth-fade-in-d3">
+        <h2>Welcome back</h2>
+        <p>Sign in to your account to manage orders and track progress.</p>
+      </div>
+
+      <form method="post" action="{% url 'auth_login_page' %}" novalidate id="login-form" class="auth-form auth-fade-in auth-fade-in-d4">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+        {% if messages %}
+          <div class="auth-django-messages">
+            {% for message in messages %}
+              <div class="msg-box {{ message.tags }}">
+                {% if message.tags == 'error' %}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6" stroke-linecap="round"/></svg>
+                {% elif message.tags == 'success' %}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.3-8.8" stroke-linecap="round"/><polyline points="22 4 12 14.01 9 11.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {% endif %}
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="auth-field">
+          <label for="login-email">Email address</label>
+          <input type="email" name="email" id="login-email" autocomplete="email" placeholder="you@university.edu" value="{{ email_value|default_if_none:'' }}">
+        </div>
+
+        <div class="auth-field password-wrap">
+          <label for="login-password">Password</label>
+          <input type="password" name="password" id="login-password" autocomplete="current-password" placeholder="Enter your password">
+          <button type="button" class="password-toggle" aria-label="Show / hide password" tabindex="-1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <div class="auth-row">
+          <label class="auth-check">
+            <input type="checkbox" name="remember_me" id="remember_me">
+            <span class="auth-check-text">Remember me</span>
+          </label>
+          <a href="{% url 'password_reset' %}" class="auth-forgot">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="auth-submit">
+          <span class="btn-label">Sign In</span>
+          <span class="spinner"></span>
+        </button>
+
+        <div class="auth-alt">
+          Don't have an account?&nbsp;<a href="{% url 'auth_register_page' %}">Create one</a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

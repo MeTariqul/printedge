@@ -5,8 +5,8 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto animate-fade-in">
-    <div class="mb-8">
-        <h1 class="text-2xl font-display font-bold text-text-primary mb-1">Site Settings</h1>
+    <div class="pe-page-head">
+        <h1 class="text-2xl font-bold text-text-primary">Site Settings</h1>
         <p class="text-text-muted text-sm">Manage business details, social links, and system configuration used across the Print-Edge platform.</p>
     </div>
 
@@ -14,9 +14,9 @@
         {% csrf_token %}
 
         <!-- ── Business Profile ─────────────────────────────────────────── -->
-        <div class="premium-card rounded-2xl p-8">
+        <div class="pe-card rounded-2xl p-8">
             <h2 class="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
-                <span class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><i class="bi bi-building"></i></span>
+                <span class="w-8 h-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center"><i class="bi bi-building"></i></span>
                 Business Profile
             </h2>
 
@@ -50,7 +50,7 @@
         </div>
 
         <!-- ── Social & Contact Links ───────────────────────────────────── -->
-        <div class="premium-card rounded-2xl p-8">
+        <div class="pe-card rounded-2xl p-8">
             <h2 class="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-success-text/10 text-success-text flex items-center justify-center"><i class="bi bi-share-fill"></i></span>
                 Social & Contact Links
@@ -70,7 +70,7 @@
                 </div>
 
                 <!-- Messenger -->
-                <div class="p-4 rounded-xl border border-surface-border bg-primary/5">
+                <div class="p-4 rounded-xl border border-surface-border bg-blue-50">
                     <label class="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
                         <i class="bi bi-messenger text-primary text-base"></i> Facebook Messenger Link
                     </label>
@@ -81,7 +81,7 @@
                 </div>
 
                 <!-- Facebook Page -->
-                <div class="p-4 rounded-xl border border-surface-border bg-primary/5">
+                <div class="p-4 rounded-xl border border-surface-border bg-blue-50">
                     <label class="flex items-center gap-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
                         <i class="bi bi-facebook text-primary text-base"></i> Facebook Page URL
                     </label>
@@ -109,7 +109,7 @@
                 <p class="text-xs font-bold text-success-text mb-2"><i class="bi bi-eye"></i> Live on your website:</p>
                 <div class="flex gap-3 flex-wrap">
                     {% if site.messenger_link %}
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-primary text-xs font-bold">
                         <i class="bi bi-messenger"></i> Messenger button ✓
                     </span>
                     {% endif %}
@@ -124,7 +124,7 @@
         </div>
 
         <!-- ── Payment Settings ────────────────────────────────────────── -->
-        <div class="premium-card rounded-2xl p-8">
+        <div class="pe-card rounded-2xl p-8">
             <h2 class="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-success-text/10 text-success-text flex items-center justify-center"><i class="bi bi-wallet2"></i></span>
                 Payment Settings
@@ -156,7 +156,7 @@
         </div>
 
         <!-- ── Order & System Settings ──────────────────────────────────── -->
-        <div class="premium-card rounded-2xl p-8">
+        <div class="pe-card rounded-2xl p-8">
             <h2 class="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-warning-text/10 text-warning-text flex items-center justify-center"><i class="bi bi-sliders"></i></span>
                 Order & System Settings
@@ -195,7 +195,7 @@
             </div>
         </div>
 
-        <div class="premium-card rounded-2xl p-8">
+        <div class="pe-card rounded-2xl p-8">
             <h2 class="text-lg font-bold text-text-primary mb-6">Live chat widget</h2>
             <div class="grid sm:grid-cols-2 gap-4">
                 <div>
@@ -215,7 +215,7 @@
 
         <!-- Save Button -->
         <button type="submit"
-                class="w-full py-4 rounded-xl font-bold text-white bg-primary hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99]">
+                class="w-full py-4 rounded-xl font-bold text-white bg-primary hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 hover:scale-[1.01] active:scale-[0.99]">
             <i class="bi bi-save-fill text-lg"></i> Save All Settings
         </button>
     </form>

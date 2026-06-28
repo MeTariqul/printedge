@@ -1,5 +1,10 @@
 # PrintEdge — Deployment Summary
 
+> What was implemented and how to finish the rollout.  
+> Last updated: 2026-06-24
+
+---
+
 ## What was implemented
 
 - **Supabase Storage**: Uploads use `django-storages` + S3 API when `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `SUPABASE_STORAGE_BUCKET` are set. System Status page includes bucket name and write test.

@@ -1,5 +1,10 @@
 # Print-Edge Performance Report
 
+> Lighthouse + code-based performance review.  
+> Last updated: 2026-06-24
+
+---
+
 **Note:** Lighthouse not executed in QA sandbox (Python unavailable). Metrics below are code-based estimates.
 
 ## Expected bottlenecks

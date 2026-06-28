@@ -10,6 +10,7 @@
 
 ### Added
 - `static/icons/logo.svg` — new vector SVG logo (document icon + wordmark) with PNG fallback.
+- `static/icons/favicon.svg` — square SVG favicon (icon mark only, no text).
 - Mobile bottom navigation bar wired into `base.html` for all pages.
 - Premium admin dashboard redesign with `.dash-card`, `.dash-kpi-card` component system.
 - Graphical effects on admin dashboard: ambient blurred background blobs, card shimmer sweep, gradient top border on hover, glass reflection on KPI icons, staggered card entrance animation.
@@ -29,8 +30,7 @@
 
 ### Fixed
 - `templates/admin_base.html` — fixed Django template `{% with %}` syntax error (removed `==` expressions from `{% with %}` tags).
-
-### Removed
+- Navbar backgrounds changed from translucent glassmorphism (`bg-white/75 backdrop-blur-xl`) to solid `bg-white` for full opacity on all platforms.
 - Redundant "PrintEdge" text span from admin sidebar header (logo SVG already contains the wordmark).
 - Temporary scratch files (`.chunk1.done`, `.chunk2.done`, `nul`, `regen_md.py`, `write_probe.txt`).
 

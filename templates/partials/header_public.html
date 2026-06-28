@@ -1,5 +1,5 @@
 {% load static %}
-<nav id="public-navbar" class="hidden md:block sticky top-0 z-50 bg-white/75 backdrop-blur-xl border-b border-white/20 transition-all duration-300" data-navbar>
+<nav id="public-navbar" class="hidden md:block sticky top-0 z-50 bg-white border-b border-surface-border transition-all duration-300" data-navbar>
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
@@ -76,7 +76,7 @@
     </div>
 </nav>
 
-<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white/20 md:hidden pt-safe" data-mobile-header>
+<header class="sticky top-0 z-50 bg-white border-b border-surface-border md:hidden pt-safe" data-mobile-header>
     <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 h-14">
         <button type="button" @click="mobileMenu = true" class="w-11 h-11 flex items-center justify-center rounded-xl border border-surface-border hover:bg-primary/5 hover:border-primary/30 transition-all" aria-label="Open menu">
             <i class="bi bi-list text-xl"></i>
@@ -94,11 +94,9 @@
     if (!nav) return;
     window.addEventListener('scroll', function(){
         if (window.scrollY > 20) {
-            nav.classList.add('shadow-sm', 'bg-white/90');
-            nav.classList.remove('bg-white/75');
+            nav.classList.add('shadow-sm');
         } else {
-            nav.classList.remove('shadow-sm', 'bg-white/90');
-            nav.classList.add('bg-white/75');
+            nav.classList.remove('shadow-sm');
         }
     }, { passive: true });
 })();

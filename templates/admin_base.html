@@ -6,7 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Admin | Print-Edge{% endblock %}</title>
-    <link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/png">
+    <link rel="icon" href="{% static 'icons/favicon.svg' %}" type="image/svg+xml">
+<link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/png" media="(prefers-color-scheme: light)">
+<link rel="icon" href="{% static 'icons/favicon.png' %}" type="image/png">
     <meta name="theme-color" content="#f8fafc">
     <meta name="csrf-token" content="{{ csrf_token }}">
     {% include "partials/head_assets.html" %}
@@ -302,7 +304,7 @@
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-surface-border bg-white/80 backdrop-blur-sm z-30 pt-safe lg:pt-0 admin-header">
+        <header class="h-16 flex items-center justify-between px-4 lg:px-8 border-b border-surface-border bg-white z-30 pt-safe lg:pt-0 admin-header">
             <div class="flex items-center gap-3 flex-1">
                 <button type="button" @click="sidebarOpen=!sidebarOpen" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-surface-border hover:bg-primary/5 hover:border-primary/30 transition-all" aria-label="Toggle sidebar"><i class="bi bi-list text-xl"></i></button>
                 <div class="flex items-center mr-2 lg:hidden">

@@ -166,7 +166,7 @@
 <div id="addServiceModal" x-data="{ open: false }" x-show="open" x-cloak
      class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
-    <div class="border border-surface-border bg-surface rounded-2xl w-full max-w-lg p-6">
+    <div class="border border-surface-border bg-white rounded-2xl w-full max-w-lg p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Add New Service</h3>
         <form method="post">
             {% csrf_token %}
@@ -211,7 +211,7 @@
     <div id="editServiceModal" x-data="{ open: false }" x-show="open" x-cloak
          class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
          @click.self="open = false">
-        <div class="border border-surface-border bg-surface rounded-2xl w-full max-w-lg p-6">
+        <div class="border border-surface-border bg-white rounded-2xl w-full max-w-lg p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Edit Service</h3>
         <form method="post" id="editServiceForm">
             {% csrf_token %}
@@ -257,7 +257,7 @@
 <div id="addVariantModal" x-data="{ open: false }" x-show="open" x-cloak
      class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4"
      @click.self="open = false">
-    <div class="border border-surface-border bg-surface rounded-2xl w-full max-w-lg p-6">
+    <div class="border border-surface-border bg-white rounded-2xl w-full max-w-lg p-6">
         <h3 class="font-semibold mb-4 text-text-primary">Add Variant</h3>
         <form method="post" id="addVariantForm">
             {% csrf_token %}

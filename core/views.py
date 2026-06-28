@@ -988,6 +988,8 @@ def admin_walkin_order(request):
     ctx = build_order_form_context()
     ctx['walkin_customers'] = WalkInCustomer.objects.order_by('-last_visit')[:50]
     ctx['SITE'] = SiteSettings.get()
+    ctx['service_requires_file'] = False
+    ctx['note_categories'] = ['stationery', 'binding', 'lamination']
 
     if request.method == 'POST':
         try:

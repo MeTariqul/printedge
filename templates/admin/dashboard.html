@@ -12,27 +12,44 @@
   </div>
 
   <div class="relative z-10">
-  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-    <div>
-      <h1 class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-text-strong via-primary to-accent bg-clip-text text-transparent mb-1">Dashboard</h1>
-      <p class="text-text-muted text-sm flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-success-text animate-pulse"></span>
-        Welcome back, {{ request.user.first_name|default:request.user.email }}
-      </p>
-    </div>
-    <div class="flex items-center gap-2">
-      <div class="flex gap-0.5 p-0.5 rounded-2xl bg-surface-soft border border-surface-border shadow-sm">
-        {% for b in chart_backtests %}
-        <a href="?range={{ b.value }}"
-           class="px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all duration-200 min-h-[32px]
-                  {% if chart_range == b.value %}bg-primary text-white shadow-md shadow-primary/20{% else %}text-text-muted hover:text-text-primary hover:bg-surface{% endif %}">
-          {{ b.label }}
-        </a>
-        {% endfor %}
+  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface via-surface to-primary/[0.02] border border-surface-border/80 shadow-sm p-5 sm:p-6 mb-2">
+    <div class="absolute top-0 right-0 w-72 h-72 bg-primary/[0.03] rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+    <div class="absolute bottom-0 left-0 w-48 h-48 bg-accent/[0.03] rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/4"></div>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 relative">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <div class="w-1 h-8 rounded-full bg-gradient-to-b from-primary to-accent"></div>
+          <h1 class="text-2xl lg:text-3xl font-bold text-text-primary tracking-tight">Dashboard</h1>
+        </div>
+        <p class="text-text-muted text-sm flex items-center gap-2.5 pl-4">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50 animate-pulse"></span>
+          <span class="font-medium">Welcome back,</span>
+          <span class="text-text-primary font-semibold">{{ request.user.first_name|default:request.user.email }}</span>
+          <span class="text-text-muted/40 hidden sm:inline">&middot;</span>
+          <span class="text-xs text-text-muted/60 hidden sm:inline">{% now "l, j F Y" %}</span>
+        </p>
       </div>
-      <a href="?range={{ chart_range }}" class="px-3 py-1.5 rounded-xl border border-surface-border text-text-muted hover:bg-surface hover:text-text-primary hover:border-primary/30 text-sm min-h-[36px] flex items-center gap-1.5 transition-all duration-200" title="Refresh">
-        <i class="bi bi-arrow-clockwise"></i>
-      </a>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-1.5 pr-3 border-r border-surface-border/50">
+          <i class="bi bi-calendar-range text-text-muted/50 text-xs"></i>
+          <span class="text-[10px] font-semibold uppercase tracking-widest text-text-muted/40">Range</span>
+        </div>
+        <div class="flex gap-0.5 p-0.5 rounded-xl bg-surface border border-surface-border/60 shadow-sm">
+          {% for b in chart_backtests %}
+          <a href="?range={{ b.value }}"
+             class="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 min-h-[32px] tracking-wide select-none
+                    {% if chart_range == b.value %}bg-sky-100 text-sky-700 font-bold shadow-sm{% else %}text-text-muted hover:text-text-primary hover:bg-surface-soft{% endif %}"
+             {% if chart_range == b.value %}aria-current="page"{% endif %}>
+            {{ b.label }}
+          </a>
+          {% endfor %}
+        </div>
+        <a href="?range={{ chart_range }}"
+           class="w-9 h-9 rounded-xl border border-surface-border/60 text-text-muted hover:text-primary hover:border-primary/30 hover:bg-primary/[0.04] text-sm flex items-center justify-center transition-all duration-200 group relative"
+           title="Refresh dashboard">
+          <i class="bi bi-arrow-clockwise group-hover:rotate-180 transition-transform duration-500"></i>
+        </a>
+      </div>
     </div>
   </div>
 

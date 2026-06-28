@@ -323,6 +323,25 @@ def _order_form_context():
         'services': Service.objects.filter(is_active=True).prefetch_related('variants'),
     }
 
+
+def order_context_with_service(request):
+    """Build order form context with optional preselected service."""
+    from .order_service import build_order_form_context
+    ctx = build_order_form_context()
+    ctx['accepting_orders'] = SiteSettings.get().accepting_orders
+    ctx['SITE'] = SiteSettings.get()
+    service_id = request.GET.get('service')
+    if service_id:
+        try:
+            ctx['preselected_service'] = Service.objects.get(pk=service_id)
+        except Service.DoesNotExist:
+            pass
+    preselected = ctx.get('preselected_service')
+    ctx['service_requires_file'] = preselected and preselected.requires_file
+    ctx['show_service_notes'] = preselected and not preselected.requires_file
+    ctx['note_categories'] = ['stationery', 'binding', 'lamination']
+    return ctx
+
 def public_services(request):
     services = Service.objects.filter(is_active=True).prefetch_related('variants').order_by('category', 'name')
     return render(request, 'services.html', {'services': services})
@@ -330,15 +349,12 @@ def public_services(request):
 
 @login_required_custom
 def user_new_order(request):
-    from .email_verification import customer_needs_verification
-    from .models import Service
-    if customer_needs_verification(request.user):
-        messages.warning(request, 'Please verify your email before placing an order.')
-        return redirect('auth_verify_pending')
+    from .order_service import place_online_order, OrderCreationError, build_order_form_context
+    ctx = build_order_form_context()
     site = SiteSettings.get()
-    ctx = _order_form_context()
     ctx['accepting_orders'] = site.accepting_orders
-    
+    ctx['SITE'] = site
+
     service_id = request.GET.get('service')
     if service_id:
         try:
@@ -349,157 +365,24 @@ def user_new_order(request):
         if request.method == 'GET':
             messages.info(request, 'Please select a service first.')
             return redirect('public_services_page')
-    preselected_service = ctx.get('preselected_service')
-    service_requires_file = preselected_service and preselected_service.requires_file
-    ctx['service_requires_file'] = service_requires_file
-    ctx['show_service_notes'] = preselected_service and not service_requires_file
-    note_categories = ['stationery', 'binding', 'lamination']
-    ctx['note_categories'] = note_categories
+    preselected = ctx.get('preselected_service')
+    ctx['service_requires_file'] = preselected and preselected.requires_file
+    ctx['show_service_notes'] = preselected and not preselected.requires_file
+    ctx['note_categories'] = ['stationery', 'binding', 'lamination']
+
     if request.method == 'POST':
-        if not site.accepting_orders:
-            messages.error(request, 'We are temporarily not accepting new orders. Please check back later.')
-            return render(request, 'user/new_order.html', ctx)
-
-        files_config = parse_files_config(request.POST.get('files_config', '[]'))
-        is_urgent = request.POST.get('is_urgent') == 'on'
-        addon_ids = request.POST.getlist('addons')
-        instructions = request.POST.get('special_instructions', '')[:500]
-        fulfillment_type = request.POST.get('fulfillment_type', 'pickup')
-        if fulfillment_type not in ('pickup', 'delivery'):
-            fulfillment_type = 'pickup'
-        delivery_address = request.POST.get('delivery_address', '').strip()[:500]
-        delivery_phone = request.POST.get('delivery_contact_phone', '').strip()[:20]
-        if fulfillment_type == 'delivery' and not delivery_address:
-            messages.error(request, 'Please enter a delivery address.')
-            return render(request, 'user/new_order.html', ctx)
-
-        from django.core.files.base import ContentFile
-        uploads = []
-        for f in request.FILES.getlist('files'):
-            if f.name.lower().endswith('.zip'):
-                zip_files, zip_err = extract_zip_files(f)
-                if zip_err:
-                    messages.error(request, zip_err)
-                    return render(request, 'user/new_order.html', ctx)
-                for name, buf, size in zip_files:
-                    uploads.append(ContentFile(buf.getvalue(), name=name))
-            else:
-                err = validate_upload_file(f)
-                if err:
-                    messages.error(request, err)
-                    return render(request, 'user/new_order.html', ctx)
-                uploads.append(f)
-
-        if service_requires_file and not uploads:
-            messages.error(request, 'Please upload at least one file.')
-            return render(request, 'user/new_order.html', ctx)
-
-        while len(files_config) < len(uploads):
-            idx = len(files_config)
-            uploads_cfg = uploads[idx] if idx < len(uploads) else None
-            pages = detect_pages_for_upload(uploads_cfg) if uploads_cfg else 1
-            files_config.append({
-                'print_type': 'bw', 'sides': 'single', 'paper_size': 'A4',
-                'copies': 1, 'pages_detected': pages, 'ranges': [],
-            })
-
-        for i, cfg in enumerate(files_config[:len(uploads)]):
-            cfg['file_name'] = getattr(uploads[i], 'name', f'file_{i}')
-            if not cfg.get('pages_detected') and not cfg.get('pages_override'):
-                cfg['pages_detected'] = detect_pages_for_upload(uploads[i])
-            pages = int(cfg.get('pages_override') or cfg.get('pages_detected') or 1)
-            cfg['pages'] = pages
-
-        coupon_str = request.POST.get('promo_code', '').strip().upper()
-        promo_obj = None
-        if coupon_str:
-            try:
-                promo_obj = Coupon.objects.get(code=coupon_str)
-                if not promo_obj.is_valid:
-                    messages.error(request, 'Coupon is invalid or expired.')
-                    promo_obj = None
-            except Coupon.DoesNotExist:
-                messages.error(request, 'Coupon not found.')
-
-        tier_pct = Decimal(request.user.tier_discount())
         try:
-            breakdown = calculate_order_from_files(
-                files_config[:len(uploads)],
-                addon_ids=addon_ids,
-                is_urgent=is_urgent,
-                coupon_obj=promo_obj,
-                tier_discount_pct=tier_pct,
-                urgent_percent=site.urgent_surcharge_percent,
-            )
-            
-            if promo_obj and breakdown.get('total') is not None:
-                subtotal_before_discount = breakdown.get('base_price', Decimal('0')) + breakdown.get('addons_price', Decimal('0')) + breakdown.get('urgent_surcharge', Decimal('0'))
-                if promo_obj.min_order_amount is not None and subtotal_before_discount < promo_obj.min_order_amount:
-                    min_amt = promo_obj.min_order_amount
-                    breakdown = calculate_order_from_files(
-                        files_config[:len(uploads)],
-                        addon_ids=addon_ids,
-                        is_urgent=is_urgent,
-                        coupon_obj=None,
-                        tier_discount_pct=tier_pct,
-                        urgent_percent=site.urgent_surcharge_percent,
-                    )
-                    promo_obj = None
-                    messages.warning(request, f'Minimum order amount of ৳{min_amt} required for this coupon.')
-            
-        except ValueError as exc:
+            order, coupon_warning = place_online_order(request)
+            if coupon_warning:
+                messages.warning(request, coupon_warning)
+            messages.success(request, f'Order {order.order_number} placed successfully!')
+            return redirect('user_order_detail', pk=order.pk)
+        except OrderCreationError as exc:
             messages.error(request, str(exc))
-            return render(request, 'user/new_order.html', ctx)
-
-        primary = files_config[0]
-        uploaded_pairs = [(f'files', u, getattr(u, 'name', '')) for u in uploads]
-        try:
-            order = create_order_with_files(
-                order_kwargs={
-                    'source': 'online',
-                    'customer': request.user,
-                    'print_type': primary.get('print_type', 'bw'),
-                    'sides': primary.get('sides', 'single'),
-                    'paper_size': primary.get('paper_size', 'A4'),
-                    'pages': primary.get('pages', 1),
-                    'copies': primary.get('copies', 1),
-                    'is_urgent': is_urgent,
-                    'special_instructions': instructions,
-                    'fulfillment_type': fulfillment_type,
-                    'delivery_address': delivery_address if fulfillment_type == 'delivery' else '',
-                    'delivery_contact_phone': delivery_phone if fulfillment_type == 'delivery' else '',
-                    'coupon': promo_obj,
-                    'created_by': request.user,
-                    'service': preselected_service if preselected_service else None,
-                },
-                uploaded_files=uploaded_pairs,
-                files_config=files_config[:len(uploads)],
-                breakdown=breakdown,
-                addon_ids=addon_ids,
-            )
         except (OSError, ImproperlyConfigured) as exc:
             messages.error(request, f'Could not upload your file. ({exc})')
-            return render(request, 'user/new_order.html', ctx)
         except Exception as exc:
             messages.error(request, f'Order could not be placed: {exc}')
-            return render(request, 'user/new_order.html', ctx)
-
-        if promo_obj:
-            promo_obj.used_count += 1
-            promo_obj.save(update_fields=['used_count'])
-        OrderStatusLog.objects.create(
-            order=order, new_status='pending', changed_by=request.user, note='Order placed by customer.'
-        )
-        request.user.total_orders += 1
-        request.user.save(update_fields=['total_orders'])
-        notify_new_online_order(order)
-        
-        # Send order confirmation email
-        from .email_order import send_order_confirmation_email
-        send_order_confirmation_email(request, order)
-        
-        messages.success(request, f'Order {order.order_number} placed successfully!')
-        return redirect('user_order_detail', pk=order.pk)
     return render(request, 'user/new_order.html', ctx)
 
 
@@ -1101,192 +984,20 @@ def admin_order_detail(request, pk):
 
 @permission_required('walkin_order')
 def admin_walkin_order(request):
-    from django.core.files.base import ContentFile
-
-    from .order_line_items import create_order_with_files, parse_files_config, detect_pages_for_upload
-
-    site = SiteSettings.get()
-    ctx = _order_form_context()
+    from .order_service import place_walkin_order, OrderCreationError, build_order_form_context
+    ctx = build_order_form_context()
     ctx['walkin_customers'] = WalkInCustomer.objects.order_by('-last_visit')[:50]
+    ctx['SITE'] = SiteSettings.get()
+
     if request.method == 'POST':
         try:
-            walkin_id = request.POST.get('walkin_customer_id')
-            if walkin_id:
-                walkin = get_object_or_404(WalkInCustomer, pk=walkin_id)
-            else:
-                from .walkin_helpers import get_or_create_walkin_customer
-
-                name = request.POST.get('customer_name', '').strip()
-                phone = request.POST.get('customer_phone', '').strip()
-                walkin = get_or_create_walkin_customer(name=name, phone=phone)
-
-            files_config = parse_files_config(request.POST.get('files_config', '[]'))
-            is_urgent = request.POST.get('is_urgent') == 'on'
-            is_physical = request.POST.get('is_physical_document') == 'on'
-            addon_ids = request.POST.getlist('addons')
-            manual_discount = Decimal(request.POST.get('manual_discount', '0') or '0')
-            payment_method = request.POST.get('payment_method', 'Cash')
-            amount_paid = Decimal(request.POST.get('amount_paid', '0') or '0')
-
-            uploads = []
-            for f in request.FILES.getlist('files'):
-                if f.name.lower().endswith('.zip'):
-                    zip_files, zip_err = extract_zip_files(f)
-                    if zip_err:
-                        messages.error(request, zip_err)
-                        return render(request, 'admin/walkin_order.html', ctx)
-                    for name, buf, size in zip_files:
-                        uploads.append(ContentFile(buf.getvalue(), name=name))
-                else:
-                    err = validate_upload_file(f)
-                    if err:
-                        messages.error(request, err)
-                        return render(request, 'admin/walkin_order.html', ctx)
-                    uploads.append(f)
-
-            if not uploads and not is_physical:
-                messages.error(request, 'Upload at least one file or mark as physical document.')
-                return render(request, 'admin/walkin_order.html', ctx)
-
-            physical_description = request.POST.get('physical_description', '').strip()
-
-            if is_physical and not uploads:
-                physical_pages = max(1, int(request.POST.get('physical_pages', 1) or 1))
-                physical_print_type = request.POST.get('physical_print_type', 'bw')
-                physical_sides = request.POST.get('physical_sides', 'single')
-                physical_copies = max(1, int(request.POST.get('physical_copies', 1) or 1))
-                files_config = [{
-                    'print_type': physical_print_type,
-                    'sides': physical_sides,
-                    'paper_size': 'A4',
-                    'copies': physical_copies,
-                    'pages': physical_pages,
-                    'pages_detected': physical_pages,
-                    'file_name': physical_description or 'Physical document',
-                    'ranges': [],
-                }]
-            elif uploads:
-                while len(files_config) < len(uploads):
-                    idx = len(files_config)
-                    pages = detect_pages_for_upload(uploads[idx]) if idx < len(uploads) else 1
-                    files_config.append({
-                        'print_type': 'bw', 'sides': 'single', 'paper_size': 'A4',
-                        'copies': 1, 'pages_detected': pages, 'ranges': [],
-                    })
-
-                for i, cfg in enumerate(files_config[:len(uploads)]):
-                    cfg['file_name'] = getattr(uploads[i], 'name', f'file_{i}')
-                    if not cfg.get('pages_detected') and not cfg.get('pages_override'):
-                        cfg['pages_detected'] = detect_pages_for_upload(uploads[i])
-                    pages = int(cfg.get('pages_override') or cfg.get('pages_detected') or 1)
-                    cfg['pages'] = pages
-
-            coupon_str = request.POST.get('promo_code', '').strip().upper()
-            promo_obj = None
-            if coupon_str:
-                try:
-                    promo_obj = Coupon.objects.get(code=coupon_str)
-                    if not promo_obj.is_valid:
-                        messages.error(request, 'Coupon is invalid or expired.')
-                        promo_obj = None
-                except Coupon.DoesNotExist:
-                    messages.error(request, 'Coupon not found.')
-
-            try:
-                breakdown = calculate_order_from_files(
-                    files_config if (is_physical and not uploads) else files_config[:len(uploads)],
-                    addon_ids=addon_ids,
-                    is_urgent=is_urgent,
-                    manual_discount=manual_discount,
-                    coupon_obj=promo_obj,
-                    tier_discount_pct=Decimal('0'),
-                    urgent_percent=site.urgent_surcharge_percent,
-                )
-                
-                if promo_obj and breakdown.get('total') is not None:
-                    subtotal_before_discount = breakdown.get('base_price', Decimal('0')) + breakdown.get('addons_price', Decimal('0')) + breakdown.get('urgent_surcharge', Decimal('0'))
-                    if promo_obj.min_order_amount is not None and subtotal_before_discount < promo_obj.min_order_amount:
-                        min_amt = promo_obj.min_order_amount
-                        breakdown = calculate_order_from_files(
-                            files_config if (is_physical and not uploads) else files_config[:len(uploads)],
-                            addon_ids=addon_ids,
-                            is_urgent=is_urgent,
-                            manual_discount=manual_discount,
-                            coupon_obj=None,
-                            tier_discount_pct=Decimal('0'),
-                            urgent_percent=site.urgent_surcharge_percent,
-                        )
-                        promo_obj = None
-                        messages.warning(request, f'Minimum order amount of ৳{min_amt} required for this coupon.')
-                        
-            except ValueError as exc:
-                messages.error(request, str(exc))
-                return render(request, 'admin/walkin_order.html', ctx)
-
-            payment_status = 'paid' if amount_paid >= breakdown['total'] else (
-                'partial' if amount_paid > 0 else 'unpaid'
-            )
-            primary = files_config[0] if files_config else {
-                'print_type': 'bw', 'sides': 'single', 'paper_size': 'A4', 'pages': 1, 'copies': 1,
-            }
-            order_kwargs = {
-                'source': 'offline',
-                'walkin_customer': walkin,
-                'print_type': primary.get('print_type', 'bw'),
-                'sides': primary.get('sides', 'single'),
-                'paper_size': primary.get('paper_size', 'A4'),
-                'pages': primary.get('pages', 1),
-                'copies': primary.get('copies', 1),
-                'is_urgent': is_urgent,
-                'is_physical_document': is_physical,
-                'special_instructions': physical_description if is_physical else '',
-                'discount_reason': request.POST.get('discount_reason', ''),
-                'coupon': promo_obj,
-                'payment_method': payment_method,
-                'amount_paid': amount_paid,
-                'payment_status': payment_status,
-                'created_by': request.user,
-            }
-
-            if uploads:
-                uploaded_pairs = [(f'files', u, getattr(u, 'name', '')) for u in uploads]
-                order = create_order_with_files(
-                    order_kwargs=order_kwargs,
-                    uploaded_files=uploaded_pairs,
-                    files_config=files_config[:len(uploads)],
-                    breakdown=breakdown,
-                    addon_ids=addon_ids,
-                )
-            else:
-                order = Order.objects.create(**order_kwargs)
-                order.base_price = breakdown['base_price']
-                order.addons_price = breakdown['addons_price']
-                order.urgent_surcharge = breakdown['urgent_surcharge']
-                order.discount_amount = breakdown['total_discount']
-                order.total_amount = breakdown['total']
-                order.save()
-                if addon_ids:
-                    order.addons.set(addon_ids)
-
-            if promo_obj:
-                promo_obj.used_count += 1
-                promo_obj.save(update_fields=['used_count'])
-
-            OrderStatusLog.objects.create(
-                order=order, new_status='pending',
-                changed_by=request.user, note=f'Walk-in order created by {request.user.display_name}.',
-            )
-            walkin.total_orders += 1
-            walkin.last_visit = timezone.now()
-            walkin.save(update_fields=['total_orders', 'last_visit'])
-            notify_new_walkin_order(order, request.user)
-            
-            # Send order confirmation email
-            from .email_order import send_order_confirmation_email
-            send_order_confirmation_email(request, order)
-            
+            order, coupon_warning, walkin = place_walkin_order(request)
+            if coupon_warning:
+                messages.warning(request, coupon_warning)
             messages.success(request, f'Walk-in order {order.order_number} created!')
             return redirect('admin_order_detail', pk=order.pk)
+        except OrderCreationError as exc:
+            messages.error(request, str(exc))
         except (OSError, ImproperlyConfigured) as exc:
             messages.error(request, f'Could not save the order: {exc}. Please try again or contact support.')
         except Exception as exc:

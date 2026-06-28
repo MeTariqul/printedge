@@ -295,26 +295,40 @@
 <script>
 const SERVICE_ATTRIBUTE_SPECS = JSON.parse('{{ service_attribute_specs|escapejs }}');
 
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    if (window.Alpine && Alpine.$data) {
+        Alpine.$data(el).open = true;
+        return true;
+    }
+    if (el.__x) {
+        el.__x.$data.open = true;
+        return true;
+    }
+    el.style.display = 'flex';
+    return true;
+}
+
 function openAddServiceModal() {
-    const modal = document.getElementById('addServiceModal');
-    if (modal && modal.__x) modal.__x.$data.open = true;
+    openModal('addServiceModal');
 }
 
 function openEditServiceModal(pk) {
     const modal = document.getElementById('editServiceModal');
-    if (!modal || !modal.__x) return;
+    if (!modal) return;
     document.getElementById('editServiceId').value = pk;
     document.getElementById('editServiceName').value = '';
     document.getElementById('editServiceCategory').value = 'printing';
     document.getElementById('editServicePrice').value = '';
     document.getElementById('editServiceDescription').value = '';
     document.getElementById('editServiceRequiresFile').checked = false;
-    modal.__x.$data.open = true;
+    openModal('editServiceModal');
 }
 
 function openAddVariantModal(serviceId) {
     const modal = document.getElementById('addVariantModal');
-    if (!modal || !modal.__x) return;
+    if (!modal) return;
     document.getElementById('addVariantServiceId').value = serviceId;
     const container = document.getElementById('dynamicSpecFields');
     container.innerHTML = '';
@@ -331,7 +345,7 @@ function openAddVariantModal(serviceId) {
                 (field.max !== undefined ? 'max="' + field.max + '"' : '') + '>');
         container.appendChild(div);
     });
-    modal.__x.$data.open = true;
+    openModal('addVariantModal');
 }
 
 function openEditVariantModal(variantId, serviceId) {

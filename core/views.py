@@ -987,9 +987,11 @@ def admin_walkin_order(request):
     from .order_service import place_walkin_order, OrderCreationError, build_order_form_context
     ctx = build_order_form_context()
     ctx['walkin_customers'] = WalkInCustomer.objects.order_by('-last_visit')[:50]
-    ctx['SITE'] = SiteSettings.get()
+    site = SiteSettings.get()
+    ctx['SITE'] = site
     ctx['service_requires_file'] = False
     ctx['note_categories'] = ['stationery', 'binding', 'lamination']
+    ctx['accepting_orders'] = site.accepting_orders
 
     if request.method == 'POST':
         try:

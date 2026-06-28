@@ -49,7 +49,7 @@
     <div id="django-messages" class="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4 md:px-0">
         {% for msg in messages %}
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="pointer-events-auto card p-4 flex items-center gap-3 animate-fade-in">
-            <i class="bi {% if msg.tags == 'error' %}bi-x-circle text-red-600{% elif msg.tags == 'success' %}bi-check-circle text-emerald-600{% else %}bi-info-circle text-primary{% endif %} text-xl"></i>
+            <i class="bi {% if msg.tags == 'error' %}bi-x-circle text-danger-text{% elif msg.tags == 'success' %}bi-check-circle text-success-text{% else %}bi-info-circle text-primary{% endif %} text-xl"></i>
             <p class="text-sm font-semibold flex-1">{{ msg }}</p>
             <button type="button" @click="show = false" class="text-text-muted w-11 h-11 flex items-center justify-center" aria-label="Dismiss"><i class="bi bi-x"></i></button>
         </div>
@@ -83,19 +83,22 @@
             type = type || 'info';
             var el = document.createElement('div');
             el.className = 'fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-bold min-h-[44px] flex items-center';
-            if (type === 'success') el.className += ' bg-emerald-600 text-white';
-            else if (type === 'error') el.className += ' bg-red-600 text-white';
-            else el.className += ' bg-primary text-white';
+            var bgColor = type === 'success' ? 'var(--pe-status-success, #059669)' :
+                          type === 'error' ? 'var(--pe-status-danger, #dc2626)' :
+                          'var(--pe-color-primary, #4f46e5)';
+            el.style.backgroundColor = bgColor;
+            el.style.color = '#ffffff';
             el.textContent = message;
             document.body.appendChild(el);
             setTimeout(function() { el.remove(); }, 3000);
           }
-      }
+        }
     };
 
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function(e) {
       const active = document.activeElement;
       if (active && active.tagName.match(/INPUT|TEXTAREA|SELECT/)) {
+        if (e.target && e.target === active) return;
         active.blur();
       }
     });

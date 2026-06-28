@@ -24,7 +24,7 @@
 {% block content %}
 <!-- Ambient Glow Elements -->
 <div class="fixed top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
-<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0"></div>
+<div class="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full blur-[120px] pointer-events-none mix-blend-screen z-0" style="background: var(--pe-color-accent, #0ea5e9); opacity: 0.2;"></div>
 
 <!-- Hero Section -->
 <section class="relative min-h-[calc(100vh-5rem)] flex items-center pt-10 pb-20 lg:pt-0 overflow-hidden">
@@ -48,13 +48,9 @@
                 </p>
                 
                 <div class="flex flex-col sm:flex-row gap-4 animate-slide-up" style="animation-delay: 0.3s;">
-                    <a href="{% url 'public_services_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-purple-600 hover:from-primary-dark hover:to-purple-500 shadow-xl shadow-primary/25 transition-all hover:scale-105 active:scale-98">
+                    <a href="{% url 'public_services_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-white shadow-xl shadow-primary/25 transition-all hover:scale-105 active:scale-98" style="background: linear-gradient(to right, var(--pe-color-primary, #4f46e5), var(--pe-color-accent, #0ea5e9));">
                         <i class="bi bi-briefcase-fill text-xl"></i>
                         Our Services
-                    </a>
-                    <a href="{% url 'public_services_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-primary bg-white border border-surface-border hover:border-primary/40 transition-all hover:scale-105 active:scale-98">
-                        <i class="bi bi-cart-fill"></i>
-                        Order Now
                     </a>
                     <a href="{% url 'public_contact_page' %}" class="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-primary bg-white border border-primary/30 hover:bg-primary/5 transition-all hover:scale-105 active:scale-98">
                         <i class="bi bi-telephone-fill"></i>
@@ -86,7 +82,7 @@
                 <div class="absolute w-[360px] h-[360px] rounded-full border border-primary/20" style="animation: spin 20s linear infinite;"></div>
 
                 <!-- Background radial glow -->
-                <div class="absolute w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-primary/25 via-indigo-500/15 to-purple-500/20 blur-3xl"></div>
+                <div class="absolute w-[400px] h-[400px] rounded-full blur-3xl" style="background: linear-gradient(to top right, var(--pe-color-primary, #4f46e5) 0.25, var(--pe-color-accent, #0ea5e9) 0.15);"></div>
 
                 <!-- Main Illustration Card -->
                 <div class="relative z-10 w-[340px] h-[340px] md:w-[400px] md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-primary/30 ring-1 ring-primary/20 backdrop-blur-sm bg-gradient-to-br from-surface/80 to-canvas-alt/80 transition-transform hover:scale-[1.02] duration-500">
@@ -225,7 +221,7 @@
             {% endfor %}
         </div>
         <div class="text-center mt-12">
-            <a href="{% url 'public_services_page' %}" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-primary to-purple-600 hover:from-primary-dark hover:to-purple-500 shadow-xl shadow-primary/25 transition-all hover:scale-105">
+            <a href="{% url 'public_services_page' %}" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white shadow-xl shadow-primary/25 transition-all hover:scale-105" style="background: linear-gradient(to right, var(--pe-color-primary, #4f46e5), var(--pe-color-accent, #0ea5e9));">
                 View All Services <i class="bi bi-arrow-right"></i>
             </a>
         </div>

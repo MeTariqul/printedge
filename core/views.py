@@ -109,7 +109,7 @@ def auth_register(request):
     if request.method == 'POST':
         if is_rate_limited(request, 'register', django_settings.AUTH_RATE_LIMIT_ATTEMPTS, django_settings.AUTH_RATE_LIMIT_WINDOW):
             messages.error(request, 'Too many registration attempts. Please try again later.')
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {'mode': 'signup'})
 
         first_name = request.POST.get('first_name', '').strip()[:50]
         last_name = request.POST.get('last_name', '').strip()[:50]
@@ -120,30 +120,78 @@ def auth_register(request):
         
         if not re.match(r'^(\+88)?01[3-9]\d{8}$', phone):
             messages.error(request, 'Invalid Bangladeshi phone number format.')
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {
+                'mode': 'signup',
+                'signup_data': {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
+                },
+            })
             
         # Email validation: format and popular providers
         email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_regex, email):
             messages.error(request, 'Please provide a valid email address.')
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {
+                'mode': 'signup',
+                'signup_data': {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
+                },
+            })
 
         popular_domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'g.bracu.ac.bd', 'live.com', 'msn.com']
         domain = email.split('@')[-1] if '@' in email else ''
         if domain not in popular_domains:
             messages.error(request, 'Please use an email from a popular provider (e.g., Gmail, Outlook, Yahoo).')
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {
+                'mode': 'signup',
+                'signup_data': {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
+                },
+            })
 
         if password != password2:
             messages.error(request, 'Passwords do not match.')
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {
+                'mode': 'signup',
+                'signup_data': {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
+                },
+            })
         pwd_err = validate_password_strength(password)
         if pwd_err:
             messages.error(request, pwd_err)
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {
+                'mode': 'signup',
+                'signup_data': {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
+                },
+            })
         if User.objects.filter(email=email).exists() or User.objects.filter(phone=phone).exists():
             messages.error(request, 'This email or phone is already registered.')
-            return render(request, 'auth/register.html')
+            return render(request, 'auth/login.html', {
+                'mode': 'signup',
+                'signup_data': {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'email': email,
+                    'phone': phone,
+                },
+            })
             
         username = email.split('@')[0]
         base_username = username
@@ -165,7 +213,9 @@ def auth_register(request):
         send_verification_email(request, user)
         messages.success(request, 'Registration successful! Please check your email to verify your account.')
         return redirect('auth_verify_pending')
-    return render(request, 'auth/register.html')
+
+    # GET: render unified login template; explicitly set mode=signup so signup becomes the active panel
+    return render(request, 'auth/login.html', {'mode': 'signup'})
 
 
 def auth_verify_pending(request):

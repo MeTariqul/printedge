@@ -3,6 +3,7 @@
 <html lang="en" data-pe-theme="{{ SITE.theme_slug|default:'printedge-default' }}">
 <script>document.documentElement.setAttribute('data-pe-theme', localStorage.getItem('pe_theme') || '{{ SITE.theme_slug|default:"printedge-default" }}')</script>
 <head>
+    <script>if('ontouchstart' in window||navigator.maxTouchPoints>0){document.documentElement.classList.add('touch');document.addEventListener('touchstart',function(){},{passive:true})}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Admin | Print-Edge{% endblock %}</title>
@@ -16,7 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/touch-fixes.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{% static 'css/touch-fixes.css' %}">
     {% block extra_css %}{% endblock %}
     <script>
         function adminShell() {

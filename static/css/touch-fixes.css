@@ -3,13 +3,12 @@ button, a, [role="button"], input[type="submit"], input[type="button"], select, 
   touch-action: manipulation;
 }
 
-@media (hover: none) {
-  button:hover, a:hover, .btn:hover, .dropdown-toggle:hover, .nav-link:hover {
-    background-color: inherit !important;
-    color: inherit !important;
+@media (hover: none) and (pointer: coarse) {
+  a:active, button:active, [role="button"]:active, .btn:active, .nav-link:active, .dropdown-toggle:active {
+    opacity: 0.8;
+    transition: none;
   }
 }
-
 /* Ensure dropdowns and popovers don’t clip on mobile */
 .dropdown-menu, [data-notification-dropdown], .absolute.dropdown-escape {
   position: absolute !important;

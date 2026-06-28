@@ -63,26 +63,6 @@ button:active,
   transition: transform 50ms ease-out;
 }
 
-/* Override Tailwind hover classes for touch devices - prevents double-tap issue */
-@media (hover: none) {
-  [class*="hover:"] {
-    background-color: inherit !important;
-    color: inherit !important;
-    transform: none !important;
-    box-shadow: inherit !important;
-    border-color: inherit !important;
-  }
-  a:hover,
-  button:hover,
-  tr:hover,
-  .nav-item:hover,
-  .mobile-card:hover,
-  .mobile-fab:hover {
-    background-color: inherit !important;
-    color: inherit !important;
-  }
-}
-
 /* CSS Custom Properties - Semantic color system (light theme) */
 :root {
   /* Base colors */

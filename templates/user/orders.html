@@ -10,9 +10,8 @@
             <p class="text-text-muted font-medium">{{ page_obj.paginator.count }} total order{{ page_obj.paginator.count|pluralize }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <form method="get" class="flex items-center gap-2">
-                <label class="text-xs font-bold text-text-muted uppercase tracking-wider" for="statusFilter">Filter</label>
-                <select name="status" id="statusFilter" onchange="this.form.submit()" class="bg-white border border-surface-border text-text-primary text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5 min-h-[44px]">
+            <form method="get" class="pe-filter-bar">
+                <select name="status" id="statusFilter" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none min-h-[44px]">
                     <option value="" {% if not status_filter %}selected{% endif %}>All Statuses</option>
                     {% for key, label in status_choices %}
                     <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
@@ -51,13 +50,7 @@
                             <td class="p-4 text-xs font-medium text-text-muted">{{ o.get_print_type_display }} · {{ o.get_sides_display }} · {{ o.pages }}p × {{ o.copies }}</td>
                             <td class="p-4 font-bold text-text-primary text-sm">৳{{ o.total_amount|floatformat:0 }}</td>
                             <td class="p-4">
-                                <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border
-                                    {% if o.status == 'delivered' or o.status == 'ready' %}bg-success/10 text-success-text border-success/20
-                                    {% elif o.status == 'printing' %}bg-primary/10 text-primary border-primary/20
-                                    {% elif o.status == 'cancelled' %}bg-danger/10 text-danger-text border-danger/20
-                                    {% else %}bg-warning/10 text-warning-text border-warning/20{% endif %}">
-                                    {{ o.get_status_display }}
-                                </span>
+                                {% include "partials/_status_badge.html" with status=o.status label=o.get_status_display %}
                             </td>
                             <td class="p-4 pr-6 md:pr-8 text-right">
                                 <div class="flex items-center justify-end gap-2">
@@ -114,7 +107,7 @@
                 </div>
                 <div class="mobile-order-detail">
                     <span class="mobile-order-label">Status</span>
-                    <span class="mobile-order-value">{{ o.get_status_display }}</span>
+                    {% include "partials/_status_badge.html" with status=o.status label=o.get_status_display %}
                 </div>
             </div>
             <div class="mobile-order-actions">

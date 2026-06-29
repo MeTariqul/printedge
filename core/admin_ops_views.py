@@ -423,7 +423,8 @@ def order_invoice_pdf(request, pk):
         messages.error(request, 'You do not have permission to view this invoice.')
         return redirect('auth_login_page' if not request.user.is_authenticated else 'user_dashboard')
     try:
-        pdf_bytes = generate_order_invoice_pdf(order)
+        domain = request.build_absolute_uri('/')[:-1]
+        pdf_bytes = generate_order_invoice_pdf(order, domain=domain)
     except Exception as exc:
         messages.error(request, f'Could not generate invoice: {exc}')
         if request.user.is_admin_user:

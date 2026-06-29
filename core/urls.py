@@ -39,6 +39,7 @@ urlpatterns = [
     path('admin/operator/', frontend_views.admin_operator_dashboard, name='admin_operator_dashboard'),
     path('admin/profile/', frontend_views.admin_profile, name='admin_profile'),
     path('admin/orders/', views.admin_orders, name='admin_orders'),
+    path('admin/orders/table/', views.admin_orders_table, name='admin_orders_table'),
     path('admin/orders/<int:pk>/', views.admin_order_detail, name='admin_order_detail'),
     path('admin/orders/walkin/', views.admin_walkin_order, name='admin_walkin_order'),
     path('admin/customers/online/', views.admin_users, name='admin_users'),

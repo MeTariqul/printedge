@@ -6,7 +6,7 @@
 <div class="pe-page-head">
     <div>
         <h1 class="text-2xl font-bold text-text-primary mb-1">All Orders</h1>
-        <p class="text-text-muted text-sm">{{ total_count }} total orders</p>
+        <p class="text-text-muted text-sm"><span id="orderCount">{{ total_count }}</span> total orders</p>
     </div>
     <div class="flex gap-2">
     <a href="{% url 'admin_orders_export' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg font-bold border border-surface-border text-text-secondary hover:bg-surface transition-colors">
@@ -39,211 +39,49 @@
 
 <!-- Filters -->
 <div class="pe-card p-4 pe-mb">
-    <form method="get" class="pe-filter-bar">
+    <form method="get" class="pe-filter-bar"
+          hx-get="{% url 'admin_orders_table' %}"
+          hx-target="#order-table-container"
+          hx-push-url="true"
+          hx-trigger="submit">
         <div class="relative flex-1" style="min-width:180px">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                 <i class="bi bi-search text-text-muted text-sm"></i>
             </div>
-            <input type="text" name="q" value="{{ search_query }}" placeholder="Search by order #, name, phone…"
-                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary focus:outline-none">
+            <input type="text" name="q" value="{{ search_query }}"
+                   placeholder="Search by order #, name, phone…"
+                   class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm placeholder-text-muted focus:border-primary focus:outline-none"
+                   hx-get="{% url 'admin_orders_table' %}"
+                   hx-target="#order-table-container"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-include="[name='status'],[name='source']">
         </div>
-        <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
+        <select name="status"
+                hx-get="{% url 'admin_orders_table' %}"
+                hx-target="#order-table-container"
+                hx-trigger="change"
+                hx-include="[name='q'],[name='source']"
+                class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
             <option value="">All Status</option>
             {% for key, label in status_choices %}
             <option value="{{ key }}" {% if current_status == key %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
-        <select name="source" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
+        <select name="source"
+                hx-get="{% url 'admin_orders_table' %}"
+                hx-target="#order-table-container"
+                hx-trigger="change"
+                hx-include="[name='q'],[name='status']"
+                class="px-4 py-2.5 rounded-xl bg-surface-input border border-surface-border text-text-primary text-sm focus:border-primary focus:outline-none">
             <option value="">All Sources</option>
             <option value="online" {% if current_source == 'online' %}selected{% endif %}>Online</option>
             <option value="offline" {% if current_source == 'offline' %}selected{% endif %}>Walk-in</option>
         </select>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-surface text-text-secondary text-sm font-semibold border border-surface-border hover:bg-surface-elevated transition-colors">
-            <i class="bi bi-funnel"></i> Filter
-        </button>
     </form>
 </div>
 
-<!-- Orders Table -->
-<div class="pe-table-wrap">
-    <table class="w-full text-left border-collapse responsive-table">
-        <thead>
-            <tr class="text-text-secondary text-[10px] uppercase tracking-wider font-semibold">
-                <th class="p-3 pl-5"><input type="checkbox" id="selectAll" class="w-4 h-4 rounded" title="Select all"></th>
-                <th class="p-3">Order</th>
-                <th class="p-3">Source</th>
-                <th class="p-3">Customer</th>
-                <th class="p-3">Specs</th>
-                <th class="p-3">Amount</th>
-                <th class="p-3">Payment</th>
-                <th class="p-3">Status</th>
-                <th class="p-3 pr-5"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-surface-border">
-            {% for o in orders %}
-            <tr class="hover:bg-surface transition-colors">
-                <td class="p-3 pl-5"><input type="checkbox" name="selected_orders" value="{{ o.pk }}" class="row-check w-4 h-4 rounded" data-order="{{ o.pk }}"></td>
-                <td class="p-3" data-label="Order">
-                    <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
-                    <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
-                </td>
-                <td class="p-3" data-label="Source">
-                    {% if o.source == 'offline' %}
-                    <span class="pe-badge pe-badge-warning">Walk-in</span>
-                    {% else %}
-                    <span class="pe-badge pe-badge-info">Online</span>
-                    {% endif %}
-                </td>
-                <td class="p-3" data-label="Customer">
-                    <div class="text-sm font-medium text-text-primary">{{ o.customer_name }}</div>
-                    <div class="text-[10px] text-text-muted">{{ o.customer_phone }}</div>
-                </td>
-                <td class="p-3 text-xs text-text-secondary" data-label="Specs">
-                    {% if o.file_count > 1 %}<span class="pe-badge pe-badge-info mr-1">Multi</span>{% endif %}
-                    {{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}
-                    {% if o.is_urgent %}<span class="text-warning-text font-bold">⚡</span>{% endif %}
-                </td>
-                <td class="p-3 font-bold text-sm text-text-primary" data-label="Amount">৳{{ o.total_amount|floatformat:0 }}</td>
-                <td class="p-3" data-label="Payment">
-                    <span class="pe-badge
-                        {% if o.payment_status == 'paid' %}pe-badge-success
-                        {% elif o.payment_status == 'partial' %}pe-badge-warning
-                        {% else %}pe-badge-danger{% endif %}">
-                        {{ o.get_payment_status_display }}
-                    </span>
-                </td>
-                <td class="p-3" data-label="Status">
-                    <span class="pe-badge
-                        {% if o.status == 'delivered' or o.status == 'ready' %}pe-badge-success
-                        {% elif o.status == 'printing' %}pe-badge-info
-                        {% elif o.status == 'cancelled' %}pe-badge-danger
-                        {% else %}pe-badge-warning{% endif %}">
-                        {{ o.get_status_display }}
-                    </span>
-                </td>
-                <td class="p-3 pr-5 text-right" data-label="">
-                    <a href="{% url 'admin_order_detail' o.pk %}" class="w-11 h-11 inline-flex items-center justify-center rounded-lg border border-surface-border text-text-muted hover:text-primary transition-colors" aria-label="View order">
-                        <i class="bi bi-eye"></i>
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="9" class="p-12 text-center">
-                    <div class="pe-empty">
-                        <div class="pe-empty-icon"><i class="bi bi-inbox"></i></div>
-                        <div class="pe-empty-title">No orders found</div>
-                        <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<!-- Mobile Card View -->
-<div class="md:hidden space-y-4">
-    {% for o in orders %}
-    <div class="pe-card p-4 space-y-3">
-        <div class="flex items-start justify-between gap-3">
-            <div>
-                <div class="font-semibold text-sm text-text-primary">{{ o.order_number }}</div>
-                <div class="text-[10px] text-text-muted mt-0.5">{{ o.created_at|date:"M d, g:i A" }}</div>
-            </div>
-            <span class="pe-badge
-                {% if o.status == 'delivered' or o.status == 'ready' %}pe-badge-success
-                {% elif o.status == 'printing' %}pe-badge-info
-                {% elif o.status == 'cancelled' %}pe-badge-danger
-                {% else %}pe-badge-warning{% endif %}">
-                {{ o.get_status_display }}
-            </span>
-        </div>
-        <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Source</span>
-                {% if o.source == 'offline' %}
-                <span class="text-info-text font-semibold">Walk-in</span>
-                {% else %}
-                <span class="text-primary font-semibold">Online</span>
-                {% endif %}
-            </div>
-            <div>
-                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Customer</span>
-                <span class="text-text-primary font-semibold">{{ o.customer_name }}</span>
-            </div>
-            <div>
-                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Specs</span>
-                <span class="text-text-secondary">{{ o.get_print_type_display }} · {{ o.pages }}p × {{ o.copies }}</span>
-            </div>
-            <div>
-                <span class="text-text-muted block text-[10px] uppercase tracking-wider font-bold">Payment</span>
-                <span class="pe-badge
-                    {% if o.payment_status == 'paid' %}pe-badge-success
-                    {% elif o.payment_status == 'partial' %}pe-badge-warning
-                    {% else %}pe-badge-danger{% endif %}">
-                    {{ o.get_payment_status_display }}
-                </span>
-            </div>
-        </div>
-        <div class="flex items-center justify-between pt-2 border-t border-surface-border">
-            <span class="text-sm font-bold text-text-primary">৳{{ o.total_amount|floatformat:0 }}</span>
-            <a href="{% url 'admin_order_detail' o.pk %}" class="px-4 py-2 rounded-lg bg-surface border border-surface-border text-text-secondary hover:text-primary transition-colors text-xs font-bold min-h-[44px] inline-flex items-center gap-1">
-                <i class="bi bi-eye"></i> View
-            </a>
-        </div>
-    </div>
-    {% empty %}
-    <div class="pe-card p-8 text-center">
-        <div class="pe-empty">
-            <div class="pe-empty-icon"><i class="bi bi-inbox"></i></div>
-            <div class="pe-empty-title">No orders found</div>
-            <p class="text-text-muted text-sm">Try adjusting your filters or create a new walk-in order.</p>
-        </div>
-    </div>
-    {% endfor %}
+<div id="order-table-container">
+    {% include "partials/_order_table.html" %}
 </div>
 </form>
-
-<script>
-(function() {
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.row-check');
-    const bulkBar = document.getElementById('bulkBar');
-    const countEl = document.getElementById('selectedCount');
-
-    function updateBar() {
-        const checked = document.querySelectorAll('.row-check:checked');
-        countEl.textContent = checked.length;
-        bulkBar.style.display = checked.length > 0 ? '' : 'none';
-    }
-
-    if (selectAll) {
-        selectAll.addEventListener('change', function() {
-            checkboxes.forEach(cb => { cb.checked = this.checked; });
-            updateBar();
-        });
-    }
-    checkboxes.forEach(cb => { cb.addEventListener('change', updateBar); });
-})();
-
-function submitBulkAction(action) {
-    const checked = document.querySelectorAll('.row-check:checked');
-    if (!checked.length) return;
-    document.getElementById('bulkActionInput').value = action;
-    if (action === 'bulk_status') {
-        document.getElementById('bulkStatusValue').value = document.getElementById('bulkStatusSelect').value;
-    }
-    document.getElementById('bulkForm').submit();
-}
-
-function confirmBulkDelete() {
-    const checked = document.querySelectorAll('.row-check:checked');
-    if (!checked.length) return;
-    if (!confirm('Are you sure you want to delete ' + checked.length + ' order(s)? This cannot be undone.')) return;
-    document.getElementById('bulkActionInput').value = 'bulk_delete';
-    document.getElementById('bulkForm').submit();
-}
-</script>
 {% endblock %}

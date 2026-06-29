@@ -391,16 +391,11 @@ def user_cancel_order(request, pk):
     if request.method != 'POST':
         return redirect('user_order_detail', pk=pk)
     order = get_object_or_404(Order, pk=pk, customer=request.user)
-    if order.status != 'pending':
-        messages.error(request, 'Only pending orders can be cancelled.')
+    try:
+        order.transition_status('cancelled', changed_by=request.user, note='Cancelled by customer.')
+    except ValueError as exc:
+        messages.error(request, str(exc))
         return redirect('user_order_detail', pk=pk)
-    old = order.status
-    order.status = 'cancelled'
-    order.save(update_fields=['status', 'updated_at'])
-    OrderStatusLog.objects.create(
-        order=order, old_status=old, new_status='cancelled',
-        changed_by=request.user, note='Cancelled by customer.',
-    )
     from .notifications import notify_order_cancelled
     notify_order_cancelled(order, cancelled_by=request.user)
     messages.success(request, 'Order cancelled.')
@@ -851,16 +846,15 @@ def admin_orders(request):
             else:
                 updated = 0
                 for order in orders:
-                    old_status = order.status
-                    order.status = new_status
+                    try:
+                        old_status = order.transition_status(
+                            new_status, changed_by=request.user,
+                            note='Bulk status update.',
+                        )
+                    except ValueError:
+                        continue
                     if new_status == 'delivered':
                         apply_order_delivered(order)
-                    order.save()
-                    OrderStatusLog.objects.create(
-                        order=order, old_status=old_status,
-                        new_status=new_status, changed_by=request.user,
-                        note='Bulk status update.',
-                    )
                     notify_order_status_change(order, old_status, changed_by=request.user)
                     updated += 1
                 messages.success(request, f'{updated} order(s) updated to {new_status}.')
@@ -888,6 +882,34 @@ def admin_orders(request):
 
 
 @admin_required
+def admin_orders_table(request):
+    """HTMX endpoint — returns only the table fragment for filter/search updates."""
+    qs = Order.objects.select_related(
+        'customer', 'walkin_customer', 'assigned_to',
+    ).prefetch_related('order_files').order_by('-created_at')
+    status_filter = request.GET.get('status', '')
+    source_filter = request.GET.get('source', '')
+    search = request.GET.get('q', '').strip()
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+    if source_filter:
+        qs = qs.filter(source=source_filter)
+    if search:
+        qs = qs.filter(
+            Q(order_number__icontains=search) |
+            Q(customer__first_name__icontains=search) |
+            Q(customer__last_name__icontains=search) |
+            Q(customer__email__icontains=search) |
+            Q(customer__phone__icontains=search) |
+            Q(walkin_customer__name__icontains=search) |
+            Q(walkin_customer__phone__icontains=search)
+        )
+    return render(request, 'partials/_order_table.html', {
+        'orders': qs[:100],
+    })
+
+
+@admin_required
 def admin_order_detail(request, pk):
     order = get_object_or_404(Order, pk=pk)
     staff_list = User.objects.filter(role__in=['operator', 'manager', 'admin', 'super_admin'])
@@ -898,20 +920,14 @@ def admin_order_detail(request, pk):
         action = request.POST.get('action')
         if action == 'status':
             new_status = request.POST.get('status')
-            valid_statuses = [s[0] for s in Order.STATUS_CHOICES]
-            if new_status not in valid_statuses:
-                messages.error(request, 'Invalid order status.')
-                return redirect('admin_order_detail', pk=pk)
-            old_status = order.status
             note = request.POST.get('note', '')
-            order.status = new_status
+            try:
+                old_status = order.transition_status(new_status, changed_by=request.user, note=note)
+            except ValueError as exc:
+                messages.error(request, str(exc))
+                return redirect('admin_order_detail', pk=pk)
             if new_status == 'delivered':
                 apply_order_delivered(order)
-            order.save()
-            OrderStatusLog.objects.create(
-                order=order, old_status=old_status,
-                new_status=new_status, changed_by=request.user, note=note
-            )
             notify_order_status_change(order, old_status, changed_by=request.user)
         elif action == 'assign':
             uid = request.POST.get('assigned_to')
@@ -1606,28 +1622,18 @@ def api_order_status_update(request, pk):
     try:
         data = json.loads(request.body)
         new_status = data.get('status')
-        valid = [s[0] for s in Order.STATUS_CHOICES]
-        if new_status not in valid:
+        if new_status not in dict(Order.STATUS_CHOICES):
             return JsonResponse({'error': 'Invalid status'}, status=400)
-        if new_status == 'cancelled' and order.status != 'pending':
-            return JsonResponse({'error': 'Only pending orders can be cancelled'}, status=400)
-        old_status = order.status
-        order.status = new_status
+        old_status = order.transition_status(new_status, changed_by=request.user)
         if new_status == 'delivered':
             apply_order_delivered(order)
-        elif new_status == 'printing' and old_status != 'printing':
+        elif new_status == 'printing':
             from .inventory_helpers import deduct_inventory_for_order
             deduct_inventory_for_order(order, request.user)
-            
-        order.save()
-        OrderStatusLog.objects.create(
-            order=order, old_status=old_status,
-            new_status=new_status, changed_by=request.user
-        )
         notify_order_status_change(order, old_status, changed_by=request.user)
         return JsonResponse({'success': True, 'status': new_status})
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return JsonResponse({'error': 'Invalid request data'}, status=400)
+    except (ValueError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        return JsonResponse({'error': str(exc)}, status=400)
 
 
 @login_required_custom

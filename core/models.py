@@ -312,6 +312,16 @@ class Order(DualWriteMixin, models.Model):
         ('cancelled', 'Cancelled'),
         ('on_hold', 'On Hold'),
     ]
+    VALID_TRANSITIONS = {
+        'pending': {'confirmed', 'cancelled'},
+        'confirmed': {'printing', 'cancelled'},
+        'printing': {'quality_check', 'on_hold'},
+        'quality_check': {'ready', 'printing', 'on_hold'},
+        'ready': {'delivered', 'on_hold'},
+        'delivered': set(),
+        'cancelled': set(),
+        'on_hold': {'confirmed', 'printing', 'quality_check', 'ready'},
+    }
     PAYMENT_STATUS = [
         ('unpaid', 'Unpaid'),
         ('partial', 'Partial'),
@@ -430,17 +440,43 @@ class Order(DualWriteMixin, models.Model):
     def __str__(self):
         return self.order_number
 
+    def transition_status(self, new_status, changed_by=None, note=''):
+        if new_status not in dict(self.STATUS_CHOICES):
+            raise ValueError(f'Invalid status: {new_status}')
+        old_status = self.status
+        if old_status == new_status:
+            return old_status
+        allowed = self.VALID_TRANSITIONS.get(old_status, set())
+        if new_status not in allowed:
+            raise ValueError(f'Cannot transition from {old_status} to {new_status}')
+        self.status = new_status
+        if new_status == 'confirmed' and not self.confirmed_at:
+            self.confirmed_at = timezone.now()
+        if new_status == 'delivered' and not self.completed_at:
+            self.completed_at = timezone.now()
+        self.save(update_fields=['status', 'confirmed_at', 'completed_at', 'updated_at'])
+        OrderStatusLog.objects.create(
+            order=self, old_status=old_status,
+            new_status=new_status, changed_by=changed_by, note=note or '',
+        )
+        return old_status
+
     def save(self, *args, **kwargs):
         if not self.order_number:
-            from django.utils import timezone as tz
-            today = tz.now().strftime('%Y%m%d')
-            if self.source == 'offline':
-                prefix = 'PE-OFF'
-            else:
-                prefix = 'PE-ON'
-            count = Order.objects.using('default').filter(created_at__date=tz.now().date()).count() + 1
-            self.order_number = f'{prefix}-{today}-{count:04d}'
-        # Calculate total sheets (skip when multi-file line items own the totals)
+            from django.db import transaction
+            prefix = 'PE-OFF' if self.source == 'offline' else 'PE-ON'
+            today = timezone.now().strftime('%Y%m%d')
+            try:
+                last = Order.objects.select_for_update(skip_locked=True).filter(
+                    order_number__startswith=f'{prefix}-{today}'
+                ).order_by('-order_number').first()
+                if last:
+                    num = int(last.order_number.rsplit('-', 1)[-1]) + 1
+                else:
+                    num = 1
+            except Exception:
+                num = Order.objects.filter(order_number__startswith=f'{prefix}-{today}').count() + 1
+            self.order_number = f'{prefix}-{today}-{num:04d}'
         if self.pk and self.order_files.exists():
             pass
         elif self.sides == 'double':
@@ -468,6 +504,10 @@ class Order(DualWriteMixin, models.Model):
     @property
     def amount_due(self):
         return self.total_amount - self.amount_paid
+
+    @property
+    def calculated_total(self):
+        return self.base_price + self.addons_price + self.urgent_surcharge - self.discount_amount
 
     @property
     def has_stored_file(self):
@@ -536,6 +576,10 @@ class OrderFile(DualWriteMixin, models.Model):
     @property
     def pages(self):
         return self.effective_pages
+
+    @property
+    def unit_price(self):
+        return self.line_base_price / self.copies if self.copies else Decimal('0')
 
     def sheets_for_file(self):
         pages = self.effective_pages

@@ -25,9 +25,12 @@
     </div>
 
     {% if order.payment_status == 'rejected' and order.payment_rejection_reason %}
-    <div class="card p-4 mb-6 border border-red-500/30 bg-red-500/10">
-        <p class="text-sm font-semibold text-danger-text mb-1">Rejection Reason</p>
-        <p class="text-sm text-text">{{ order.payment_rejection_reason }}</p>
+    <div class="pe-callout-info mb-6" style="border-left-color: var(--pe-status-danger, #dc2626);">
+        <i class="bi bi-exclamation-triangle pe-callout-info-icon" style="color: var(--pe-status-danger, #dc2626);"></i>
+        <div>
+            <strong style="color: var(--pe-status-danger, #dc2626);">Rejection Reason</strong>
+            <p class="mt-1">{{ order.payment_rejection_reason }}</p>
+        </div>
     </div>
     {% endif %}
 

@@ -54,7 +54,7 @@ def _format_ranges(order_file):
     return ", ".join(parts)
 
 
-def generate_order_invoice_pdf(order):
+def generate_order_invoice_pdf(order, domain=''):
     """Return PDF bytes for an order confirmation invoice using ReportLab."""
     site = SiteSettings.get()
 
@@ -251,7 +251,8 @@ def generate_order_invoice_pdf(order):
         elements.append(payment_table)
 
     # QR code for order tracking
-    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://printedge.vercel.app/user/orders/{order.pk}/"
+    base = domain.rstrip('/') if domain else 'https://printedge.vercel.app'
+    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={base}/user/orders/{order.pk}/"
     qr_img = _fetch_qr_image(qr_url)
     if qr_img:
         elements.append(Spacer(1, 12))
